@@ -90,9 +90,9 @@ Proin id leo nec nisi eleifend eleifend.
         }
 
         // filter after comparision text-tag.key
-        AC.filter = (compareResult, i, filteredTags, stop) => {
-          // console.log("filter", compareResult);
-          const { tag, parts, score, accurracy, match, } = compareResult;
+        AC.filter = (res, i, candidates, stop) => {
+          // console.log("filter", res);
+          const { tag, parts, score, accurracy, match, } = res;
           const text = parts.body;
 
           if (AC.result.length >= MAX_ITEM_COUNT) {
