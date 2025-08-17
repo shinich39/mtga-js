@@ -1,0 +1,37 @@
+{
+  "name": "mtga-js",
+  "version": "1.0.0",
+  "description": "Make Textarea Garbage Again",
+  "keywords": [
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "shinich39 <shinich39@gmail.com>",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/mtga.min.mjs",
+      "require": "./dist/mtga.min.cjs"
+    }
+  },
+  "main": "./dist/mtga.min.mjs",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "dev": "tsc-watch --noClear --onSuccess \"npm run build\"",
+    "test": "tsx --test \"**/*.test.{js,jsx,ts,tsx}\"",
+    "build": "npm run lint && node esbuild.config.js && tsc",
+    "lint": "eslint \"src/**/*\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@types/node": "^22.14.0",
+    "esbuild": "^0.25.2",
+    "eslint": "^9.24.0",
+    "rimraf": "^6.0.1",
+    "tsc-watch": "^7.1.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.0"
+  }
+}

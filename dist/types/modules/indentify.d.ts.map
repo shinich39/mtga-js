@@ -1,0 +1,1 @@
+{"version":3,"file":"indentify.d.ts","sourceRoot":"","sources":["../../../src/modules/indentify.ts"],"names":[],"mappings":"AAEA,qBAAa,SAAS;IACpB,OAAO,EAAE,mBAAmB,CAAC;IAC7B,GAAG,EAAE,MAAM,CAAC;IACZ,aAAa,EAAE,MAAM,CAAC;IACtB,QAAQ,EAAE,MAAM,CAAC;gBAEL,EAAE,EAAE,mBAAmB;IAOnC,OAAO,CAAC,CAAC,EAAE,aAAa;IAMxB,IAAI,CAAC,CAAC,EAAE,aAAa;CA+BtB"}
