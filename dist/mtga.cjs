@@ -60,26 +60,40 @@ var setState = function(el, state) {
 var getCaretPosition = function(el) {
   const mirror = document.createElement("div");
   mirror.style.position = "absolute";
+  mirror.style.whiteSpace = "pre-wrap";
   mirror.style.visibility = "hidden";
-  mirror.style.left = el.offsetLeft + "px";
-  mirror.style.top = el.offsetTop + "px";
+  mirror.style.left = "0";
+  mirror.style.top = "0";
   const style = getComputedStyle(el);
   const props = [
-    "fontFamily",
-    "fontSize",
-    "fontWeight",
-    "fontStyle",
-    "letterSpacing",
-    "textTransform",
-    "wordSpacing",
-    "textIndent",
-    "whiteSpace",
-    "lineHeight",
-    "padding",
-    "border",
     "boxSizing",
     "width",
-    "height"
+    "height",
+    "overflowX",
+    "overflowY",
+    "borderTopWidth",
+    "borderRightWidth",
+    "borderBottomWidth",
+    "borderLeftWidth",
+    "paddingTop",
+    "paddingRight",
+    "paddingBottom",
+    "paddingLeft",
+    "fontStyle",
+    "fontVariant",
+    "fontWeight",
+    "fontStretch",
+    "fontSize",
+    "fontSizeAdjust",
+    "lineHeight",
+    "fontFamily",
+    "textAlign",
+    "textTransform",
+    "textIndent",
+    "textDecoration",
+    "letterSpacing",
+    "wordSpacing",
+    "tabSize"
   ];
   for (const p of props) {
     mirror.style[p] = style[p];
@@ -90,13 +104,11 @@ var getCaretPosition = function(el) {
   span.textContent = "\u200B";
   mirror.appendChild(span);
   document.body.appendChild(mirror);
-  const spanRect = span.getBoundingClientRect();
-  const top = spanRect.top;
-  const left = spanRect.left;
+  const rect = span.getBoundingClientRect();
   document.body.removeChild(mirror);
   return {
-    top,
-    left
+    top: rect.top,
+    left: rect.left
   };
 };
 var parseKeyboardEvent = function(e) {

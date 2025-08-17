@@ -151,13 +151,14 @@ Proin id leo nec nisi eleifend eleifend.
         const show = () => {
           if (!isShown()) {
             const caretPosition = mtga.getCaretPosition();
-            const rect = listEl.getBoundingClientRect();
+            const taRect = mtga.element.getBoundingClientRect();
+            const listRect = listEl.getBoundingClientRect();
             listEl.style.visibility = "";
             listEl.style.zIndex = 3939;
-            listEl.style.top = (caretPosition.top + 18) + "px";
+            listEl.style.top = (taRect.top + caretPosition.top + 18) + "px";
             listEl.style.left = Math.min(
-              document.body.offsetWidth - rect.width, 
-              caretPosition.left - 11,
+              taRect.left + document.documentElement.clientWidth - listRect.width, 
+              taRect.left + caretPosition.left - 11,
             ) + "px";
           }
           index = -1;
