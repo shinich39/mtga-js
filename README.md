@@ -12,7 +12,7 @@ Make Textarea Garbage Again
 
 ## Getting Started
 
-[DEMO](https://shinich39.github.io/mtga-js/);
+[DEMO](https://shinich39.github.io/mtga-js/)
 
 ### Installation
 

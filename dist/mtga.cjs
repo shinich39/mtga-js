@@ -197,7 +197,7 @@ var getRows = function(el) {
     const isLastRow = i === arr.length - 1;
     const value = isLastRow ? item : item + "\n";
     const startIndex = offset;
-    const endIndex = offset + value.length;
+    const endIndex = offset + item.length + 1;
     let selectionStart = -1, selectionEnd = -1, selectionValue = "";
     if (short >= startIndex && short < endIndex) {
       selectionStart = short - startIndex;

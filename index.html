@@ -190,7 +190,7 @@ Proin id leo nec nisi eleifend eleifend.
       const loadHandler = (result) => {
         console.log("onLoad", result);
 
-        ACState = mtga.getState();
+        ACState = mtga.getState(true);
         ACItems = [];
         ACIndex = -1;
 

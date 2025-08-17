@@ -218,7 +218,7 @@ export function getAllCombinations<T>(arr: T[]) {
 
 export const getRows = function(el: HTMLTextAreaElement) {
   const { short, long } = getState(el);
-  // const isRange = short === long;
+  // const isRange = short !== long;
   const arr = el.value.split(/\n/);
 
   const rows: IRow[] = [];
@@ -232,7 +232,7 @@ export const getRows = function(el: HTMLTextAreaElement) {
     const value = isLastRow ? item : item + "\n";
 
     const startIndex = offset;
-    const endIndex = offset + value.length;
+    const endIndex = offset + item.length + 1;
 
     let selectionStart = -1,
         selectionEnd = -1,
@@ -241,7 +241,7 @@ export const getRows = function(el: HTMLTextAreaElement) {
     if (short >= startIndex && short < endIndex) {
       selectionStart = short - startIndex;
     }
-
+    
     if (long > startIndex && long < endIndex) {
       selectionEnd = long - startIndex;
     }
@@ -286,7 +286,6 @@ export const getRows = function(el: HTMLTextAreaElement) {
   return {
     rows,
     selectedRows,
-
   };
 }
 
