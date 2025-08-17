@@ -204,14 +204,18 @@ Proin id leo nec nisi eleifend eleifend.
 
           listEl.innerHTML = "";
 
-          const sorted = result.sort((a, b) => b.score - a.score);
+          const sorted = result
+            .filter((item) => !item.match.some(([type, value]) => type === -1))
+            .sort((a, b) => b.score - a.score);
+
           if (sorted.length < 1) {
-            return hide();
+            hide();
+            return;
           }
 
           // render items
           for (let i = 0; i < sorted.length; i++) {
-            const index = i;
+            const idx = i;
             const res = sorted[i];
             const { tag, match } = res;
             const itemEl = document.createElement("div");
@@ -221,22 +225,16 @@ Proin id leo nec nisi eleifend eleifend.
 
             let html = "";
             for (const [type, value] of match) {
-              if (type === -1) {
-                html = "";
-                break;
-              }
-
               html += type === 0
                 ? `<span style="background-color: yellow; color: black;">${value}</span>` 
                 : `<span>${value}</span>`;
             }
-
-            html += ` (${tag.value})`;
+            // html += ` (${tag.value})`;
 
             itemEl.innerHTML = html;
             itemEl.addEventListener("click", (e) => {
               e.preventDefault();
-              index = index;
+              index = idx;
               load();
             });
 
