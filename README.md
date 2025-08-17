@@ -2,7 +2,6 @@
 
 Make Textarea Garbage Again
 
-
 ## Features
 
 - Commentify
@@ -12,6 +11,8 @@ Make Textarea Garbage Again
 - Undo, Redo
 
 ## Getting Started
+
+[DEMO](https://shinich39.github.io/mtga-js/);
 
 ### Installation
 
