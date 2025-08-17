@@ -29,7 +29,7 @@ export declare class AutoComplete {
     createIndex(size?: number): void;
     reset(): void;
     set(result: Result): void;
-    exec(): Result[];
+    exec(): Promise<void>;
 }
 export {};
 //# sourceMappingURL=auto-complete.d.ts.map

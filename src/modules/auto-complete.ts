@@ -101,7 +101,9 @@ export class AutoComplete {
 
       const head = el.value.substring(0, selectionStart);
       // re-format selection value for seaching
-      const body = el.value.substring(selectionStart, selectionEnd).trim().replace(/\s/g, "_");
+      const body = el.value.substring(selectionStart, selectionEnd)
+        .trim()
+        .replace(/\s/g, "_");
       const tail = el.value.substring(selectionEnd);
 
       return {
@@ -116,14 +118,16 @@ export class AutoComplete {
   }
 
   stop(preventCallback?: boolean) {
-    if (this._stop) {
-      this._stop(preventCallback);
+    const stop = this._stop;
+    if (stop) {
+      stop(preventCallback);
     }
   }
 
   clear() {
-    if (this._stop) {
-      this._stop(true);
+    const stop = this._stop;
+    if (stop) {
+      stop(true);
     }
     this.result = [];
   }
@@ -153,18 +157,17 @@ export class AutoComplete {
     setState(this.element, state);
   }
 
-  exec() {
+  async exec() {
     this.clear();
 
     this._state = getState(this.element, true);
 
     let isStopped = false,
-        preventCallback = false;
+        isKilled = false;
 
-
-    this._stop = (prevent) => {
+    this._stop = (preventCallback) => {
       isStopped = true;
-      preventCallback = prevent || false;
+      isKilled = preventCallback || false;
       this._stop = null;
     };
 
@@ -194,12 +197,14 @@ export class AutoComplete {
       if (isStopped) {
         break;
       }
+
+      if (i % 39 === 0) {
+        await new Promise((r) => setTimeout(r, 0));
+      }
     }
 
-    if (!preventCallback) {
+    if (!isKilled) {
       this.onLoad?.(result);
     }
-
-    return result;
   }
 }

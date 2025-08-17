@@ -569,13 +569,15 @@ var AutoComplete = class {
     this.onLoad = null;
   }
   stop(preventCallback) {
-    if (this._stop) {
-      this._stop(preventCallback);
+    const stop = this._stop;
+    if (stop) {
+      stop(preventCallback);
     }
   }
   clear() {
-    if (this._stop) {
-      this._stop(true);
+    const stop = this._stop;
+    if (stop) {
+      stop(true);
     }
     this.result = [];
   }
@@ -596,13 +598,13 @@ var AutoComplete = class {
     };
     setState(this.element, state);
   }
-  exec() {
+  async exec() {
     this.clear();
     this._state = getState(this.element, true);
-    let isStopped = false, preventCallback = false;
-    this._stop = (prevent) => {
+    let isStopped = false, isKilled = false;
+    this._stop = (preventCallback) => {
       isStopped = true;
-      preventCallback = prevent || false;
+      isKilled = preventCallback || false;
       this._stop = null;
     };
     const stop = this._stop;
@@ -624,11 +626,13 @@ var AutoComplete = class {
       if (isStopped) {
         break;
       }
+      if (i % 39 === 0) {
+        await new Promise((r) => setTimeout(r, 0));
+      }
     }
-    if (!preventCallback) {
+    if (!isKilled) {
       this.onLoad?.(result);
     }
-    return result;
   }
 };
 

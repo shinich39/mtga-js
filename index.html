@@ -62,31 +62,11 @@ Proin id leo nec nisi eleifend eleifend.
             index = -1;
 
         // default parser
-        AC.parser = (el) => {
-          const parts = el.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
-          const index = el.selectionStart;
-
-          let selectionStart = 0,
-              selectionEnd = 0;
-
-          for (const part of parts) {
-            selectionEnd = selectionStart + part.length;
-            if (index >= selectionStart && index <= selectionEnd) {
-              break;
-            }
-            selectionStart = selectionEnd + 1;
-          }
-
-          const head = el.value.substring(0, selectionStart);
-          // re-format selection value for seaching
-          const body = el.value.substring(selectionStart, selectionEnd).trim().replace(/\s/g, "_");
-          const tail = el.value.substring(selectionEnd);
-
-          return {
-            head,
-            body,
-            tail,
-          }
+        const origParser = AC.parser;
+        AC.parser = (...args) => {
+          const r = origParser(...args);
+          r.body = r.body.toLowerCase();
+          return r;
         }
 
         // filter after comparision text-tag.key
@@ -200,7 +180,7 @@ Proin id leo nec nisi eleifend eleifend.
           }
         }
 
-        const loadHandler = (result) => {
+        const onLoad = (result) => {
           console.log("onLoad", result);
 
           items = [];
@@ -229,11 +209,14 @@ Proin id leo nec nisi eleifend eleifend.
 
             let html = "";
             for (const [type, value] of match) {
+              if (type === -1) {
+                continue;
+              }
+
               html += type === 0
                 ? `<span style="background-color: yellow; color: black;">${value}</span>` 
                 : `<span>${value}</span>`;
             }
-            // html += ` (${tag.value})`;
 
             itemEl.innerHTML = html;
             itemEl.addEventListener("click", (e) => {
@@ -257,7 +240,7 @@ Proin id leo nec nisi eleifend eleifend.
         AC.element.addEventListener("keydown", keydownHandler, true);
         AC.element.addEventListener("click", hide, true);
         AC.element.addEventListener("blur", hide, true);
-        AC.onLoad = loadHandler;
+        AC.onLoad = onLoad;
       })();
 
     </script>
