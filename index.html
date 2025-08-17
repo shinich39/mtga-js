@@ -22,6 +22,7 @@ Proin id leo nec nisi eleifend eleifend.
 
 </textarea>
 
+    <script src="test/textarea-caret-position.js"></script>
     <script src="dist/mtga.js"></script>
     <script>
       const { MTGA } = window.MtgaJs;
@@ -150,7 +151,7 @@ Proin id leo nec nisi eleifend eleifend.
 
         const show = () => {
           if (!isShown()) {
-            const caretPosition = mtga.getCaretPosition();
+            const caretPosition = getCaretCoordinates(mtga.element, mtga.element.selectionEnd);
             const taRect = mtga.element.getBoundingClientRect();
             const listRect = listEl.getBoundingClientRect();
             listEl.style.visibility = "";

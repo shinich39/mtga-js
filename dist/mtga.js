@@ -57,60 +57,6 @@ var MtgaJs = (() => {
     }
     el.focus();
   };
-  var getCaretPosition = function(el) {
-    const mirror = document.createElement("div");
-    mirror.style.position = "absolute";
-    mirror.style.whiteSpace = "pre-wrap";
-    mirror.style.visibility = "hidden";
-    mirror.style.left = "0";
-    mirror.style.top = "0";
-    const style = getComputedStyle(el);
-    const props = [
-      "boxSizing",
-      "width",
-      "height",
-      "overflowX",
-      "overflowY",
-      "borderTopWidth",
-      "borderRightWidth",
-      "borderBottomWidth",
-      "borderLeftWidth",
-      "paddingTop",
-      "paddingRight",
-      "paddingBottom",
-      "paddingLeft",
-      "fontStyle",
-      "fontVariant",
-      "fontWeight",
-      "fontStretch",
-      "fontSize",
-      "fontSizeAdjust",
-      "lineHeight",
-      "fontFamily",
-      "textAlign",
-      "textTransform",
-      "textIndent",
-      "textDecoration",
-      "letterSpacing",
-      "wordSpacing",
-      "tabSize"
-    ];
-    for (const p of props) {
-      mirror.style[p] = style[p];
-    }
-    const value = el.value.substring(0, el.selectionStart);
-    mirror.textContent = value;
-    const span = document.createElement("span");
-    span.textContent = "\u200B";
-    mirror.appendChild(span);
-    document.body.appendChild(mirror);
-    const rect = span.getBoundingClientRect();
-    document.body.removeChild(mirror);
-    return {
-      top: rect.top,
-      left: rect.left
-    };
-  };
   var parseKeyboardEvent = function(e) {
     const key = e.key;
     const altKey = e.altKey;
@@ -777,9 +723,6 @@ var MtgaJs = (() => {
     }
     setState(state) {
       setState(this.element, state);
-    }
-    getCaretPosition() {
-      return getCaretPosition(this.element);
     }
     _clearKeydownState() {
       this._keydownState = null;

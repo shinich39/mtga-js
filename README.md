@@ -19,3 +19,5 @@ Make Textarea Garbage Again
 ### Usage
 
 ## Acknowledgements
+
+- [textarea-caret-position](https://github.com/component/textarea-caret-position)

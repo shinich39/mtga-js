@@ -20,10 +20,6 @@ export declare class MTGA {
     constructor(el: HTMLTextAreaElement);
     getState(withValue?: boolean): IState;
     setState(state: IState): void;
-    getCaretPosition(): {
-        top: number;
-        left: number;
-    };
     _clearKeydownState(): void;
     _setKeydownState(e: KeyboardEvent): void;
 }

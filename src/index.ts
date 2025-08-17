@@ -1,5 +1,5 @@
 import { AutoPairing } from "./modules/auto-pairing.js";
-import { getState, getCaretPosition, IState, setState } from "./modules/utils.js";
+import { getState, IState, setState } from "./modules/utils.js";
 import { History, isRedo, isUndo } from "./modules/history.js";
 import { Commentify } from "./modules/commentify.js";
 import { Indentify } from "./modules/indentify.js";
@@ -129,10 +129,6 @@ export class MTGA {
 
   setState(state: IState) {
     setState(this.element, state);
-  }
-
-  getCaretPosition() {
-    return getCaretPosition(this.element);
   }
 
   _clearKeydownState() {

@@ -16,10 +16,6 @@ export interface IRow {
 }
 export declare const getState: (el: HTMLTextAreaElement, withValue?: boolean) => IState;
 export declare const setState: (el: HTMLTextAreaElement, state: IState) => void;
-export declare const getCaretPosition: (el: HTMLTextAreaElement) => {
-    top: number;
-    left: number;
-};
 export declare const parseKeyboardEvent: (e: KeyboardEvent) => {
     key: string;
     altKey: boolean;

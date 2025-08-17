@@ -58,50 +58,6 @@ export const setState = function(
   el.focus();
 }
 
-export const getCaretPosition = function(el: HTMLTextAreaElement) {
-  const mirror = document.createElement("div");
-  mirror.style.position = "absolute";
-  mirror.style.whiteSpace = "pre-wrap";
-  // mirror.style.wordWrap = "break-word";
-  mirror.style.visibility = "hidden";
-  mirror.style.left = "0";
-  mirror.style.top = "0";
-
-  const style = getComputedStyle(el);
-  const props = [
-    "boxSizing", "width", "height", "overflowX", "overflowY",
-    "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth",
-    "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
-    "fontStyle", "fontVariant", "fontWeight", "fontStretch",
-    "fontSize", "fontSizeAdjust", "lineHeight", "fontFamily",
-    "textAlign", "textTransform", "textIndent", "textDecoration",
-    "letterSpacing", "wordSpacing", "tabSize",
-  ] as const;
-
-  for (const p of props) {
-    mirror.style[p] = style[p];
-  }
-
-  const value = el.value.substring(0, el.selectionStart);
-  mirror.textContent = value;
-
-  const span = document.createElement("span");
-  span.textContent = "\u200b";
-
-  mirror.appendChild(span);
-
-  document.body.appendChild(mirror);
-
-  const rect = span.getBoundingClientRect();
-
-  document.body.removeChild(mirror);
-
-  return {
-    top: rect.top,
-    left: rect.left,
-  };
-}
-
 export const parseKeyboardEvent = function(e: KeyboardEvent) {
   const key = e.key;
   const altKey = e.altKey;
