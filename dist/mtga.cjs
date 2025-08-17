@@ -578,11 +578,13 @@ var AutoComplete = class {
   parser;
   filter;
   onLoad;
+  _state;
   _stop;
   constructor(el) {
     this.element = el;
     this.tags = [];
     this.index = {};
+    this._state = getState(el, true);
     this.result = [];
     this.parser = (el2) => {
       const parts = el2.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
@@ -609,23 +611,46 @@ var AutoComplete = class {
     this.onLoad = null;
   }
   stop(preventCallback) {
-    this._stop?.(preventCallback);
-    this._stop = null;
+    if (this._stop) {
+      this._stop(preventCallback);
+    }
+  }
+  clear() {
+    if (this._stop) {
+      this._stop(true);
+    }
+    this.result = [];
   }
   createIndex(size = 1) {
     this.index = createIndex(this.tags, size);
   }
-  execSync() {
-    this.stop(true);
+  reset() {
+    setState(this.element, this._state);
+  }
+  set(result) {
+    const short = result.parts.head.length + result.tag.value.length;
+    const long = result.parts.head.length + result.tag.value.length;
+    const value = result.parts.head + result.tag.value + result.parts.tail;
+    const state = {
+      short,
+      long,
+      value
+    };
+    setState(this.element, state);
+  }
+  exec() {
+    this.clear();
+    this._state = getState(this.element, true);
     let isStopped = false, preventCallback = false;
     this._stop = (prevent) => {
       isStopped = true;
       preventCallback = prevent || false;
+      this._stop = null;
     };
-    const result = [];
+    const stop = this._stop;
+    const result = this.result;
     const parts = this.parser(this.element);
     const text = parts.body;
-    this.result = result;
     const candidates = !text ? [] : findIndex(this.index, text) || this.tags;
     for (let i = 0; i < candidates.length; i++) {
       const tag = candidates[i];
@@ -634,7 +659,7 @@ var AutoComplete = class {
         tag,
         parts
       };
-      const ok = this.filter ? this.filter(res, i, candidates) : true;
+      const ok = this.filter(res, i, candidates, stop);
       if (ok) {
         result.push(res);
       }
@@ -646,9 +671,6 @@ var AutoComplete = class {
       this.onLoad?.(result);
     }
     return result;
-  }
-  async exec() {
-    return this.execSync();
   }
 };
 

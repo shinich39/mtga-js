@@ -26,233 +26,237 @@ Proin id leo nec nisi eleifend eleifend.
     <script>
       const { MTGA } = window.MtgaJs;
       const mtga = new MTGA(document.getElementById("textarea"));
+      const AC = mtga.AutoComplete;
 
-      let AC = mtga.AutoComplete,
-          ACItemCount = 5,
-          ACState,
-          ACItems = [],
-          ACIndex = -1;
-
-      const tags = [
-        { key: "john_doe", value: "John Doe" },
-        { key: "jane_smith", value: "Jane Smith" },
-        { key: "michael_johnson", value: "Michael Johnson" },
-        { key: "emily_davis", value: "Emily Davis" },
-        { key: "daniel_wilson", value: "Daniel Wilson" },
-        { key: "sarah_miller", value: "Sarah Miller" },
-        { key: "david_brown", value: "David Brown" },
-        { key: "olivia_jones", value: "Olivia Jones" },
-        { key: "james_garcia", value: "James Garcia" },
-        { key: "emma_martinez", value: "Emma Martinez" },
-      ];
+      const tags = [];
+      for (let i = 0; i < 10000; i++) {
+        tags.push(
+          { key: "john_doe", value: "John Doe" },
+          { key: "jane_smith", value: "Jane Smith" },
+          { key: "michael_johnson", value: "Michael Johnson" },
+          { key: "emily_davis", value: "Emily Davis" },
+          { key: "daniel_wilson", value: "Daniel Wilson" },
+          { key: "sarah_miller", value: "Sarah Miller" },
+          { key: "david_brown", value: "David Brown" },
+          { key: "olivia_jones", value: "Olivia Jones" },
+          { key: "james_garcia", value: "James Garcia" },
+          { key: "emma_martinez", value: "Emma Martinez" },      
+        );
+      }
 
       AC.tags = tags;
 
-      const indexSize = 1;
-      AC.createIndex(indexSize);
-
-      AC.parser = (el) => {
-        const parts = el.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
-        const index = el.selectionStart;
-
-        let selectionStart = 0,
-            selectionEnd = 0;
-
-        for (const part of parts) {
-          selectionEnd = selectionStart + part.length;
-          if (index >= selectionStart && index <= selectionEnd) {
-            break;
-          }
-          selectionStart = selectionEnd + 1;
-        }
-
-        const head = el.value.substring(0, selectionStart);
-        // re-format selection value for seaching
-        const body = el.value.substring(selectionStart, selectionEnd).toLowerCase().trim().replace(/\s/g, "_");
-        const tail = el.value.substring(selectionEnd);
-
-        return {
-          head,
-          body,
-          tail,
-        }
-      }
-
-      // filter after comparision text-tag.key
-      const LIMIT = 100;
-      AC.filter = (compareResult, i, filteredTags) => {
-        const { tag, parts, score, accurracy, match, } = compareResult;
-        const text = parts.body;
-
-        if (AC.result.length >= LIMIT) {
-          AC.stop();
-          return false;
-        }
-
-        return score >= text.length;
-      }
-
-      const listEl = document.createElement("div");
-      listEl.style.position = "absolute";
-      listEl.style.visibility = "hidden";
-      listEl.style.backgroundColor = "#FFF";
-      listEl.style.borderTop = "1px solid";
-      listEl.style.borderLeft = "1px solid";
-
-      document.body.appendChild(listEl);
-
-      const load = (index) => {
-        if (index === -1) {
-          mtga.setState(ACState);
-        } else if (ACItems[index]) {
-          mtga.setState(ACItems[index]);
-        }
-
-        const fixedIndex = Math.max(index, 0);
-
-        let min = Math.max(0, fixedIndex - ACItemCount / 2);
-        const max = Math.min(ACItems.length, min + ACItemCount);
-        if (max - min < ACItemCount) {
-          min = Math.max(0, max - ACItemCount);
-        }
-
-        for (let i = 0; i < ACItems.length; i++) {
-          const el = ACItems[i].element;
-
-          el.style.color = "";
-          el.style.backgroundColor = "";
-
-          if (i >= min && i < max) {
-            el.style.display = "";
-
-            if (i === index) {
-              el.style.color = "#FFF";
-              el.style.backgroundColor = "#000";
-            }
-          } else {
-            el.style.display = "none";
-          }
-        }
-      }
-      
-      const isShown = () => {
-        return listEl.style.visibility === "";
-      }
-
-      const show = () => {
-        if (!isShown()) {
-          const caretPosition = mtga.getCaretPosition();
-          const rect = listEl.getBoundingClientRect();
-          listEl.style.visibility = "";
-          listEl.style.zIndex = 3939;
-          listEl.style.top = (caretPosition.top + 18) + "px";
-          listEl.style.left = Math.min(
-            document.body.offsetWidth - rect.width, 
-            caretPosition.left - 11,
-          ) + "px";
-        }
-        ACIndex = -1;
-      }
-
-      const hide = () => {
-        listEl.style.visibility = "hidden";
-      }
-
-      const keydownHandler = (e) => {
-        const { key } = e;
-        if (isShown()) {
-          switch(key) {
-            case "ArrowUp":
-              e.preventDefault();
-              ACIndex = Math.max(-1, ACIndex - 1);
-              load(ACIndex);
-              break;
-            case "ArrowDown":
-              e.preventDefault();
-              ACIndex = Math.min(ACItems.length - 1, ACIndex + 1);
-              load(ACIndex);
-              break;
-            case "Escape":
-              e.preventDefault();
-              hide();
-              break;
-            case "Enter":
-            case "ArrowLeft":
-            case "ArrowRight":
-              e.preventDefault();
-              mtga.History.add();
-              hide();
-              break;
-          }
-        }
-      }
-
-      const loadHandler = (result) => {
-        console.log("onLoad", result);
-
-        ACState = mtga.getState(true);
-        ACItems = [];
-        ACIndex = -1;
-
-        listEl.innerHTML = "";
-
-        const sorted = result.sort((a, b) => b.score - a.score);
-        if (sorted.length < 1) {
-          return hide();
-        }
-
-        for (let i = 0; i < sorted.length; i++) {
-          const index = i;
-          const { tag, parts, match } = sorted[i];
-          const itemEl = document.createElement("div");
-          itemEl.style.padding = "2px 4px";
-          itemEl.style.borderRight = "1px solid black";
-          itemEl.style.borderBottom = "1px solid black";
-
-          const short = parts.head.length;
-          const value = parts.head + tag.value + parts.tail;
-          const long = parts.head.length + tag.value.length;
-
-          let html = "";
-          for (const [type, value] of match) {
-            if (type === -1) {
-              html = "";
-              break;
-            }
-
-            html += type === 0
-              ? `<span style="background-color: yellow; color: black;">${value}</span>` 
-              : `<span>${value}</span>`;
-          }
-
-          html += ` (${tag.value})`;
-
-          itemEl.innerHTML = html;
-          itemEl.addEventListener("click", (e) => {
-            e.preventDefault();
-            ACIndex = index;
-            load(ACIndex);
-          });
-
-          ACItems.push({
-            short,
-            long,
-            value,
-            element: itemEl,
-          });
-
-          listEl.appendChild(itemEl);
-        }
-
-        show();
-        load(-1);
-      }
-
-      AC.element.addEventListener("keydown", keydownHandler, true);
-      AC.element.addEventListener("click", hide, true);
-      AC.onLoad = loadHandler;
+      // console.time("indexing");
+      // const indexSize = 1;
+      // AC.createIndex(indexSize);
+      // console.timeEnd("indexing");
 
       console.log(mtga);
+
+      ;(() => {
+        const MAX_ITEM_COUNT = 39;
+        const VISIBLE_COUNT = 5;
+        
+        let items = [],
+            index = -1;
+
+        // default parser
+        AC.parser = (el) => {
+          const parts = el.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
+          const index = el.selectionStart;
+
+          let selectionStart = 0,
+              selectionEnd = 0;
+
+          for (const part of parts) {
+            selectionEnd = selectionStart + part.length;
+            if (index >= selectionStart && index <= selectionEnd) {
+              break;
+            }
+            selectionStart = selectionEnd + 1;
+          }
+
+          const head = el.value.substring(0, selectionStart);
+          // re-format selection value for seaching
+          const body = el.value.substring(selectionStart, selectionEnd).trim().replace(/\s/g, "_");
+          const tail = el.value.substring(selectionEnd);
+
+          return {
+            head,
+            body,
+            tail,
+          }
+        }
+
+        // filter after comparision text-tag.key
+        AC.filter = (compareResult, i, filteredTags, stop) => {
+          // console.log("filter", compareResult);
+          const { tag, parts, score, accurracy, match, } = compareResult;
+          const text = parts.body;
+
+          if (AC.result.length >= MAX_ITEM_COUNT) {
+            stop();
+            return false;
+          }
+
+          return score >= text.length;
+        }
+
+        const listEl = document.createElement("div");
+        listEl.style.position = "absolute";
+        listEl.style.visibility = "hidden";
+        listEl.style.backgroundColor = "#FFF";
+        listEl.style.borderTop = "1px solid";
+        listEl.style.borderLeft = "1px solid";
+
+        document.body.appendChild(listEl);
+
+        const load = () => {
+          if (index === -1) {
+            AC.reset();
+          } else if (items[index]?.result) {
+            AC.set(items[index].result);
+          }
+          
+          render();
+        }
+
+        const render = () => {
+          let min = Math.max(0, index - VISIBLE_COUNT / 2);
+          const max = Math.min(items.length, min + VISIBLE_COUNT);
+          if (max - min < VISIBLE_COUNT) {
+            min = Math.max(0, max - VISIBLE_COUNT);
+          }
+
+          for (let i = 0; i < items.length; i++) {
+            const el = items[i].element;
+            el.style.color = "";
+            el.style.backgroundColor = "";
+            if (i >= min && i < max) {
+              el.style.display = "";
+              if (i === index) {
+                el.style.color = "#FFF";
+                el.style.backgroundColor = "#000";
+              }
+            } else {
+              el.style.display = "none";
+            }
+          }
+        }
+        
+        const isShown = () => {
+          return listEl.style.visibility === "";
+        }
+
+        const show = () => {
+          if (!isShown()) {
+            const caretPosition = mtga.getCaretPosition();
+            const rect = listEl.getBoundingClientRect();
+            listEl.style.visibility = "";
+            listEl.style.zIndex = 3939;
+            listEl.style.top = (caretPosition.top + 18) + "px";
+            listEl.style.left = Math.min(
+              document.body.offsetWidth - rect.width, 
+              caretPosition.left - 11,
+            ) + "px";
+          }
+          index = -1;
+        }
+
+        const hide = () => {
+          listEl.style.visibility = "hidden";
+        }
+
+        const keydownHandler = (e) => {
+          const { key } = e;
+          if (isShown()) {
+            switch(key) {
+              case "ArrowUp":
+                e.preventDefault();
+                index = Math.max(-1, index - 1);
+                load();
+                break;
+              case "ArrowDown":
+                e.preventDefault();
+                index = Math.min(items.length - 1, index + 1);
+                load();
+                break;
+              case "Escape":
+                e.preventDefault();
+                hide();
+                break;
+              case "Enter":
+              case "ArrowLeft":
+              case "ArrowRight":
+                e.preventDefault();
+                mtga.History.add();
+                hide();
+                break;
+            }
+          }
+        }
+
+        const loadHandler = (result) => {
+          console.log("onLoad", result);
+
+          items = [];
+          index = -1;
+
+          listEl.innerHTML = "";
+
+          const sorted = result.sort((a, b) => b.score - a.score);
+          if (sorted.length < 1) {
+            return hide();
+          }
+
+          // render items
+          for (let i = 0; i < sorted.length; i++) {
+            const index = i;
+            const res = sorted[i];
+            const { tag, match } = res;
+            const itemEl = document.createElement("div");
+            itemEl.style.padding = "2px 4px";
+            itemEl.style.borderRight = "1px solid black";
+            itemEl.style.borderBottom = "1px solid black";
+
+            let html = "";
+            for (const [type, value] of match) {
+              if (type === -1) {
+                html = "";
+                break;
+              }
+
+              html += type === 0
+                ? `<span style="background-color: yellow; color: black;">${value}</span>` 
+                : `<span>${value}</span>`;
+            }
+
+            html += ` (${tag.value})`;
+
+            itemEl.innerHTML = html;
+            itemEl.addEventListener("click", (e) => {
+              e.preventDefault();
+              index = index;
+              load();
+            });
+
+            items.push({
+              result: res,
+              element: itemEl,
+            });
+
+            listEl.appendChild(itemEl);
+          }
+
+          show();
+          load();
+        }
+
+        AC.element.addEventListener("keydown", keydownHandler, true);
+        AC.element.addEventListener("click", hide, true);
+        AC.onLoad = loadHandler;
+      })();
+
     </script>
   </body>
 </html>

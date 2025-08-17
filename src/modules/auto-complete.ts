@@ -1,4 +1,4 @@
-import { compareString, getAllCombinations } from "./utils.js";
+import { compareString, getAllCombinations, getState, IState, setState } from "./utils.js";
 
 interface ITag {
   key: string;
@@ -12,7 +12,7 @@ interface IParts {
   tail: string,
 }
 
-type CompareResult = ReturnType<typeof compareString> & {
+type Result = ReturnType<typeof compareString> & {
   tag: ITag,
   parts: IParts,
 };
@@ -68,17 +68,20 @@ export class AutoComplete {
   element: HTMLTextAreaElement;
   tags: ITag[];
   index: Record<string, ITag[]>;
-  result: CompareResult[];
+  result: Result[];
 
   parser: (el: HTMLTextAreaElement) => IParts;
-  filter: (result: CompareResult, index: number, candidates: ITag[]) => boolean;
-  onLoad: ((result: CompareResult[]) => void) | null;
+  filter: (result: Result, index: number, candidates: ITag[], stop: () => void) => boolean;
+  onLoad: ((result: Result[]) => void) | null;
+
+  _state: IState;
   _stop: ((preventCallback?: boolean) => void) | null;
 
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
     this.tags = [];
     this.index = {};
+    this._state = getState(el, true);
     this.result = [];
 
     this.parser = (el) => {
@@ -113,31 +116,62 @@ export class AutoComplete {
   }
 
   stop(preventCallback?: boolean) {
-    this._stop?.(preventCallback);
-    this._stop = null;
+    if (this._stop) {
+      this._stop(preventCallback);
+    }
+  }
+
+  clear() {
+    if (this._stop) {
+      this._stop(true);
+    }
+    this.result = [];
   }
 
   createIndex(size = 1) {
     this.index = createIndex(this.tags, size);
   }
 
-  execSync() {
-    this.stop(true);
+  reset() {
+    setState(this.element, this._state);
+  }
+
+  set(result: Result) {
+    // const short = res.parts.head.length;
+    const short = result.parts.head.length + result.tag.value.length;
+    const long = result.parts.head.length + result.tag.value.length;
+    const value = result.parts.head 
+      + result.tag.value 
+      + result.parts.tail;
+
+    const state = {
+      short,
+      long,
+      value,
+    }
+
+    setState(this.element, state);
+  }
+
+  exec() {
+    this.clear();
+
+    this._state = getState(this.element, true);
 
     let isStopped = false,
         preventCallback = false;
 
+
     this._stop = (prevent) => {
       isStopped = true;
       preventCallback = prevent || false;
+      this._stop = null;
     };
 
-    const result: CompareResult[] = [];
+    const stop = this._stop;
+    const result = this.result;
     const parts = this.parser(this.element);
     const text = parts.body;
-    
-    this.result = result;
-
     const candidates = !text
       ? []
       : findIndex(this.index, text) || this.tags;
@@ -145,15 +179,13 @@ export class AutoComplete {
     for (let i = 0; i < candidates.length; i++) {
       const tag = candidates[i];
 
-      const res: CompareResult = {
+      const res: Result = {
         ...compareString(text, tag.key),
         tag,
         parts,
       }
 
-      const ok = this.filter 
-        ? this.filter(res, i, candidates) 
-        : true;
+      const ok = this.filter(res, i, candidates, stop);
 
       if (ok) {
         result.push(res);
@@ -169,9 +201,5 @@ export class AutoComplete {
     }
 
     return result;
-  }
-
-  async exec() {
-    return this.execSync();
   }
 }

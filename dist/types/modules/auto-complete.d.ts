@@ -1,4 +1,4 @@
-import { compareString } from "./utils.js";
+import { compareString, IState } from "./utils.js";
 interface ITag {
     key: string;
     value: string;
@@ -9,7 +9,7 @@ interface IParts {
     body: string;
     tail: string;
 }
-type CompareResult = ReturnType<typeof compareString> & {
+type Result = ReturnType<typeof compareString> & {
     tag: ITag;
     parts: IParts;
 };
@@ -17,16 +17,19 @@ export declare class AutoComplete {
     element: HTMLTextAreaElement;
     tags: ITag[];
     index: Record<string, ITag[]>;
-    result: CompareResult[];
+    result: Result[];
     parser: (el: HTMLTextAreaElement) => IParts;
-    filter: (result: CompareResult, index: number, candidates: ITag[]) => boolean;
-    onLoad: ((result: CompareResult[]) => void) | null;
+    filter: (result: Result, index: number, candidates: ITag[], stop: () => void) => boolean;
+    onLoad: ((result: Result[]) => void) | null;
+    _state: IState;
     _stop: ((preventCallback?: boolean) => void) | null;
     constructor(el: HTMLTextAreaElement);
     stop(preventCallback?: boolean): void;
+    clear(): void;
     createIndex(size?: number): void;
-    execSync(): CompareResult[];
-    exec(): Promise<CompareResult[]>;
+    reset(): void;
+    set(result: Result): void;
+    exec(): Result[];
 }
 export {};
 //# sourceMappingURL=auto-complete.d.ts.map
