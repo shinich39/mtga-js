@@ -4,11 +4,11 @@ Make Textarea Garbage Again
 
 ## Features
 
-- Commentify
-- Indentify
+- Commentify: Ctrl+/
+- Indentify: Tab, Shift+Tab
 - Auto-Complete
-- Auto-Pairing
-- Undo, Redo
+- Auto-Pairing: All brackets with ", ', `
+- Undo, Redo: Ctrl+Z, Ctrl+Shift+Z
 
 ## Getting Started
 
