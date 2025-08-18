@@ -25,14 +25,15 @@ export class AutoComplete {
   timeout: number;
   result: IRequest[];
 
-  parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
-  filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
+  parser: (el: HTMLTextAreaElement) => IParts;
+  filter: (req: IRequest, index: number, candidates: ITag[]) => boolean;
   onData: (chunks: IRequest[]) => void;
   onEnd: (result: IRequest[]) => void;
 
   _reqId: number;
   _chunkSize: number;
   _state: IState;
+  _stop: (kill?: boolean) => void;
 
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
@@ -74,6 +75,7 @@ export class AutoComplete {
     this._reqId = 0;
     this._chunkSize = 100;
     this._state = getState(el, true);
+    this._stop = () => undefined;
   }
 
   findIndex(value: string) {
@@ -142,6 +144,11 @@ export class AutoComplete {
     return compareString(a, b);
   }
 
+  stop(kill?: boolean) {
+    const stop = this._stop;
+    stop?.(kill);
+  }
+
   reset() {
     setState(this.element, this._state);
   }
@@ -164,6 +171,8 @@ export class AutoComplete {
   }
 
   exec() {
+    this.stop(true);
+    
     const reqId = this._reqId + 1;
     const chunkSize = this._chunkSize;
     const startedAt = Date.now();
@@ -178,7 +187,7 @@ export class AutoComplete {
       isKilled = kill || false;
     };
 
-    const parts = this.parser(this.element, stop);
+    const parts = this.parser(this.element);
     const text = parts.body;
 
     const candidates = !text
@@ -188,26 +197,11 @@ export class AutoComplete {
     this.result = result;
     this._state = getState(this.element, true);
     this._reqId = reqId;
+    this._stop = stop;
 
     // console.time("" + reqId);
 
     const processChunk = () => {
-      if (
-        this._reqId !== reqId || 
-        isKilled
-      ) {
-        return;
-      }
-
-      if (
-        isStopped ||
-        (this.timeout && Date.now() - startedAt >= this.timeout)
-      ) {
-        // console.timeEnd("" + reqId);
-        this.onEnd?.(result);
-        return;
-      }
-
       const chunks: IRequest[] = [];
 
       let j = i + chunkSize;
@@ -219,7 +213,7 @@ export class AutoComplete {
           parts,
         }
 
-        const ok = this.filter(req, i, candidates, stop);
+        const ok = this.filter(req, i, candidates);
 
         if (ok) {
           chunks.push(req);
@@ -229,7 +223,24 @@ export class AutoComplete {
         i++;
       }
 
-      isStopped = i >= candidates.length;
+      if (
+        isKilled ||
+        this._reqId !== reqId
+      ) {
+        return;
+      }
+
+      if (
+        isStopped ||
+        i >= candidates.length || 
+        (this.timeout && Date.now() - startedAt >= this.timeout)
+      ) {
+        // console.timeEnd("" + reqId);
+        this.onData?.(chunks);
+        this.onEnd?.(result);
+        return;
+      }
+      
       this.onData?.(chunks);
       setTimeout(processChunk, 0);
     }

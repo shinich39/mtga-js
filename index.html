@@ -25,10 +25,13 @@ Proin id leo nec nisi eleifend eleifend.
     <script src="test/textarea-caret-position.js"></script>
     <script src="dist/mtga.js"></script>
     <script>
+      const MAX_ITEM_COUNT = 100;
+      const VISIBLE_COUNT = 10;
+
       const { MTGA } = window.MtgaJs;
       const mtga = new MTGA(document.getElementById("textarea"));
       const ac = mtga.AutoComplete;
-      ac.timeout = 1000;
+      ac.timeout = 0;
 
       const tags = [];
       for (let i = 0; i < 10000; i++) {
@@ -60,37 +63,34 @@ Proin id leo nec nisi eleifend eleifend.
 
       console.log(mtga);
 
-      ;(() => {
-        const MAX_ITEM_COUNT = 39;
-        const VISIBLE_COUNT = 5;
-        
+      ;(() => {        
         let items = [],
             index = -1;
 
         const origParser = ac.parser;
-        ac.parser = (el, stop) => {
+        ac.parser = (el) => {
           // console.log("parser", el);
-          const r = origParser(el, stop);
+          const r = origParser(el);
           const text = r.body.toLowerCase();
 
           hide();
 
           if (text.length < 1 || text.length > 16) {
-            stop();
+            ac.stop();
             return r;
           }
 
           return r;
         }
 
-        ac.filter = (req, i, candidates, stop) => {
+        ac.filter = (req, i, candidates) => {
           // console.log("filter", res);
           const { tag, parts } = req;
           const a = parts.body;
           const b = tag.key;
 
           if (ac.result.length >= MAX_ITEM_COUNT) {
-            stop();
+            ac.stop();
             return false;
           }
 
@@ -117,8 +117,6 @@ Proin id leo nec nisi eleifend eleifend.
           } else if (items[index]?.result) {
             ac.set(items[index].result);
           }
-          
-          render();
         }
 
         const render = () => {
@@ -169,6 +167,7 @@ Proin id leo nec nisi eleifend eleifend.
           index = -1;
           listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
+          ac.stop(true);
         }
 
         const keydownHandler = (e) => {
@@ -178,23 +177,24 @@ Proin id leo nec nisi eleifend eleifend.
               case "ArrowUp":
                 e.preventDefault();
                 index = Math.max(-1, index - 1);
-                load();
+                render();
                 break;
               case "ArrowDown":
                 e.preventDefault();
                 index = Math.min(items.length - 1, index + 1);
-                load();
+                render();
                 break;
               case "Escape":
                 e.preventDefault();
-                index = -1;
-                load();
+                hide();
+                break;
+              case "ArrowLeft":
+              case "ArrowRight":
                 hide();
                 break;
               case "Enter":
-              case "ArrowLeft":
-              case "ArrowRight":
                 e.preventDefault();
+                load();
                 mtga.History.add();
                 hide();
                 break;
@@ -232,7 +232,7 @@ Proin id leo nec nisi eleifend eleifend.
             itemEl.addEventListener("mousedown", (e) => {
               e.preventDefault();
               index = idx;
-              load();
+              render();
             });
 
             items.push({

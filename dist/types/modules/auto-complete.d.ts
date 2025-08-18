@@ -20,13 +20,14 @@ export declare class AutoComplete {
     index: Record<string, ITag[]>;
     timeout: number;
     result: IRequest[];
-    parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
-    filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
+    parser: (el: HTMLTextAreaElement) => IParts;
+    filter: (req: IRequest, index: number, candidates: ITag[]) => boolean;
     onData: (chunks: IRequest[]) => void;
     onEnd: (result: IRequest[]) => void;
     _reqId: number;
     _chunkSize: number;
     _state: IState;
+    _stop: (kill?: boolean) => void;
     constructor(el: HTMLTextAreaElement);
     findIndex(value: string): ITag[] | undefined;
     createIndex(size: number): Promise<Record<string, ITag[]>>;
@@ -35,6 +36,7 @@ export declare class AutoComplete {
         score: number;
         match: [0 | 1 | -1, string][];
     };
+    stop(kill?: boolean): void;
     reset(): void;
     set(result: IRequest): void;
     exec(): void;
