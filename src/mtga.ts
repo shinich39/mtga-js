@@ -117,11 +117,13 @@ export class MTGA {
 
     // auto-complete
     el.addEventListener("keyup", (e) => {
+      const { metaKey, ctrlKey, key } = e;
       if (
-        e.key.length === 1 || 
-        e.key === "Backspace"
+        !metaKey &&
+        !ctrlKey &&
+        (key.length === 1 || key === "Backspace")
       ) {
-        // console.log("keyup", e.key);
+        // console.log("keyup", key);
         this.AutoComplete.exec();
       }
     }, true);

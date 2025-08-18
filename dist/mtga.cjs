@@ -742,7 +742,8 @@ var MTGA = class {
       }
     }, true);
     el.addEventListener("keyup", (e) => {
-      if (e.key.length === 1 || e.key === "Backspace") {
+      const { metaKey, ctrlKey, key } = e;
+      if (!metaKey && !ctrlKey && (key.length === 1 || key === "Backspace")) {
         this.AutoComplete.exec();
       }
     }, true);
