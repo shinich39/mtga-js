@@ -27,7 +27,7 @@ Proin id leo nec nisi eleifend eleifend.
     <script>
       const { MTGA } = window.MtgaJs;
       const mtga = new MTGA(document.getElementById("textarea"));
-      const AC = mtga.AutoComplete;
+      const ac = mtga.AutoComplete;
 
       const tags = [];
       for (let i = 0; i < 10000; i++) {
@@ -45,12 +45,17 @@ Proin id leo nec nisi eleifend eleifend.
         );
       }
 
-      AC.tags = tags;
+      ac.tags = tags;
 
-      // console.time("indexing");
-      // const indexSize = 1;
-      // AC.createIndex(indexSize);
-      // console.timeEnd("indexing");
+      ;(() => {
+        console.log("start indexing");
+        console.time("indexing");
+        const size = 1;
+        ac.createIndex(size).then((result) => {
+          console.timeEnd("indexing");
+          console.log("indexing complete:", Object.keys(ac.index).length);
+        });
+      })();
 
       console.log(mtga);
 
@@ -61,21 +66,21 @@ Proin id leo nec nisi eleifend eleifend.
         let items = [],
             index = -1;
 
-        // default parser
-        const origParser = AC.parser;
-        AC.parser = (...args) => {
-          const r = origParser(...args);
+        const origParser = ac.parser;
+        ac.parser = (el, stop) => {
+          // console.log("parser", el);
+          const r = origParser(el, stop);
           r.body = r.body.toLowerCase();
           return r;
         }
 
         // filter after comparision text-tag.key
-        AC.filter = (res, i, candidates, stop) => {
+        ac.filter = (res, i, candidates, stop) => {
           // console.log("filter", res);
           const { tag, parts, score, accurracy, match, } = res;
           const text = parts.body;
 
-          if (AC.result.length >= MAX_ITEM_COUNT) {
+          if (ac.result.length >= MAX_ITEM_COUNT) {
             stop();
             return false;
           }
@@ -94,9 +99,9 @@ Proin id leo nec nisi eleifend eleifend.
 
         const load = () => {
           if (index === -1) {
-            AC.reset();
+            ac.reset();
           } else if (items[index]?.result) {
-            AC.set(items[index].result);
+            ac.set(items[index].result);
           }
           
           render();
@@ -238,10 +243,10 @@ Proin id leo nec nisi eleifend eleifend.
           load();
         }
 
-        AC.element.addEventListener("keydown", keydownHandler, true);
-        AC.element.addEventListener("click", hide);
-        AC.element.addEventListener("blur", hide);
-        AC.onLoad = onLoad;
+        ac.element.addEventListener("keydown", keydownHandler, true);
+        ac.element.addEventListener("click", hide);
+        ac.element.addEventListener("blur", hide);
+        ac.onLoad = onLoad;
       })();
 
     </script>

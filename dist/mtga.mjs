@@ -469,39 +469,6 @@ var Indentify = class {
 };
 
 // src/modules/auto-complete.ts
-var findIndex = function(index, value) {
-  const keys = Object.keys(index).sort((a, b) => b.length - a.length);
-  for (const k of keys) {
-    const { score } = compareString(k, value);
-    if (score === k.length) {
-      return index[k];
-    }
-  }
-};
-var createIndex = function(tags, maxIndexSize) {
-  const result = {};
-  if (maxIndexSize > 0) {
-    for (const tag of tags) {
-      const { key, value } = tag;
-      const acc = [];
-      const combos = getAllCombinations(key.split(""));
-      for (const c of combos) {
-        if (c.length <= maxIndexSize) {
-          acc.push(c.join(""));
-        }
-      }
-      const uniqCombos = [...new Set(acc)];
-      for (const c of uniqCombos) {
-        if (!result[c]) {
-          result[c] = [tag];
-        } else {
-          result[c].push(tag);
-        }
-      }
-    }
-  }
-  return result;
-};
 var AutoComplete = class {
   element;
   tags;
@@ -542,8 +509,54 @@ var AutoComplete = class {
     this._state = getState(el, true);
     this._reqId = 0;
   }
-  createIndex(size = 1) {
-    this.index = createIndex(this.tags, size);
+  findIndex(value) {
+    const index = this.index;
+    const keys = Object.keys(index).sort((a, b) => b.length - a.length);
+    for (const k of keys) {
+      const { score } = compareString(k, value);
+      if (score === k.length) {
+        return index[k];
+      }
+    }
+  }
+  createIndex(size) {
+    const tags = this.tags;
+    const result = {};
+    this.index = result;
+    return new Promise((resolve) => {
+      let i = 0;
+      const processChunk = () => {
+        let j = i + 100;
+        while (i < tags.length) {
+          if (i >= j) {
+            setTimeout(processChunk, 0);
+            return;
+          }
+          const tag = tags[i];
+          const acc = [];
+          const combos = getAllCombinations(tag.key.split(""));
+          for (const c of combos) {
+            if (c.length <= size) {
+              const v = c.join("");
+              if (v) {
+                acc.push(v);
+              }
+            }
+          }
+          const uniqCombos = [...new Set(acc)];
+          for (const c of uniqCombos) {
+            if (!result[c]) {
+              result[c] = [tag];
+            } else {
+              result[c].push(tag);
+            }
+          }
+          i++;
+        }
+        resolve(result);
+      };
+      processChunk();
+    });
   }
   reset() {
     setState(this.element, this._state);
@@ -562,17 +575,17 @@ var AutoComplete = class {
   exec() {
     const reqId = this._reqId + 1;
     const result = [];
-    const parts = this.parser(this.element);
-    const text = parts.body;
-    const candidates = !text ? [] : findIndex(this.index, text) || this.tags;
-    this.result = result;
-    this._state = getState(this.element, true);
-    this._reqId = reqId;
     let isStopped = false, isKilled = false, i = 0;
     const stop = (kill) => {
       isStopped = true;
       isKilled = kill || false;
     };
+    const parts = this.parser(this.element, stop);
+    const text = parts.body;
+    const candidates = !text ? [] : this.findIndex(text) || this.tags;
+    this.result = result;
+    this._state = getState(this.element, true);
+    this._reqId = reqId;
     const processChunk = () => {
       if (this._reqId !== reqId) {
         return;
@@ -584,7 +597,7 @@ var AutoComplete = class {
         this.onLoad?.(result);
         return;
       }
-      let j = i + 39;
+      let j = i + 100;
       while (i < candidates.length) {
         if (i >= j) {
           setTimeout(processChunk, 0);

@@ -18,13 +18,14 @@ export declare class AutoComplete {
     tags: ITag[];
     index: Record<string, ITag[]>;
     result: CompareResult[];
-    parser: (el: HTMLTextAreaElement) => IParts;
+    parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
     filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
     onLoad: ((result: CompareResult[]) => void) | null;
     _reqId: number;
     _state: IState;
     constructor(el: HTMLTextAreaElement);
-    createIndex(size?: number): void;
+    findIndex(value: string): ITag[] | undefined;
+    createIndex(size: number): Promise<Record<string, ITag[]>>;
     reset(): void;
     set(result: CompareResult): void;
     exec(): void;

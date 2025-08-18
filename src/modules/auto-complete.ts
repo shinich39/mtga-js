@@ -17,61 +17,13 @@ type CompareResult = ReturnType<typeof compareString> & {
   parts: IParts,
 };
 
-const findIndex = function(
-  index: Record<string, ITag[]>,
-  value: string,
-) {
-  const keys = Object.keys(index)
-    .sort((a, b) => b.length - a.length);
-    
-  for (const k of keys) {
-    const { score } = compareString(k, value);
-    if (score === k.length) {
-      return index[k];
-    }
-  }
-}
-
-const createIndex = function(
-  tags: ITag[],
-  maxIndexSize: number,
-) {
-  const result: Record<string, ITag[]> = {};
-
-  if (maxIndexSize > 0) {
-    for (const tag of tags) {
-      const { key, value } = tag;
-      const acc: string[] = [];
-      const combos = getAllCombinations(key.split(""));
-      
-      for (const c of combos) {
-        if (c.length <= maxIndexSize) {
-          acc.push(c.join(""));
-        }
-      }
-
-      const uniqCombos = [...new Set(acc)];
-
-      for (const c of uniqCombos) {
-        if (!result[c]) {
-          result[c] = [tag];
-        } else {
-          result[c].push(tag);
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
 export class AutoComplete {
   element: HTMLTextAreaElement;
   tags: ITag[];
   index: Record<string, ITag[]>;
   result: CompareResult[];
 
-  parser: (el: HTMLTextAreaElement) => IParts;
+  parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
   filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
   onLoad: ((result: CompareResult[]) => void) | null;
 
@@ -117,8 +69,68 @@ export class AutoComplete {
     this._reqId = 0;
   }
 
-  createIndex(size = 1) {
-    this.index = createIndex(this.tags, size);
+  findIndex(value: string) {
+    const index = this.index;
+
+    const keys = Object.keys(index)
+      .sort((a, b) => b.length - a.length);
+      
+    for (const k of keys) {
+      const { score } = compareString(k, value);
+      if (score === k.length) {
+        return index[k];
+      }
+    }
+  }
+
+  createIndex(size: number) {
+    const tags = this.tags;
+    const result: Record<string, ITag[]> = {};
+    
+    this.index = result;
+
+    return new Promise<typeof result>((resolve) => {
+      let i = 0;
+
+      const processChunk = () => {
+        let j = i + 100;
+        while(i < tags.length) {
+          if (i >= j) {
+            setTimeout(processChunk, 0);
+            return;
+          }
+
+          const tag = tags[i];
+          const acc: string[] = [];
+          const combos = getAllCombinations(tag.key.split(""));
+          
+          for (const c of combos) {
+            if (c.length <= size) {
+              const v = c.join("");
+              if (v) {
+                acc.push(v);
+              }
+            }
+          }
+
+          const uniqCombos = [...new Set(acc)];
+
+          for (const c of uniqCombos) {
+            if (!result[c]) {
+              result[c] = [tag];
+            } else {
+              result[c].push(tag);
+            }
+          }
+
+          i++;
+        }
+
+        resolve(result);
+      }
+
+      processChunk();
+    });
   }
 
   reset() {
@@ -146,17 +158,6 @@ export class AutoComplete {
     const reqId = this._reqId + 1;
     const result: CompareResult[] = [];
 
-    const parts = this.parser(this.element);
-    const text = parts.body;
-
-    const candidates = !text
-      ? []
-      : findIndex(this.index, text) || this.tags;
-
-    this.result = result;
-    this._state = getState(this.element, true);
-    this._reqId = reqId;
-
     let isStopped = false,
         isKilled = false,
         i = 0;
@@ -165,6 +166,17 @@ export class AutoComplete {
       isStopped = true;
       isKilled = kill || false;
     };
+
+    const parts = this.parser(this.element, stop);
+    const text = parts.body;
+
+    const candidates = !text
+      ? []
+      : this.findIndex(text) || this.tags;
+
+    this.result = result;
+    this._state = getState(this.element, true);
+    this._reqId = reqId;
 
     const processChunk = () => {
       if (this._reqId !== reqId) {
@@ -180,7 +192,7 @@ export class AutoComplete {
         return;
       }
 
-      let j = i + 39;
+      let j = i + 100;
       while(i < candidates.length) {
         if (i >= j) {
           setTimeout(processChunk, 0);
