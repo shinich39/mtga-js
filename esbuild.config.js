@@ -20,7 +20,7 @@ const options = [];
 if (ESM) {
   options.push(
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: BROWSER ? "browser" : "node",
       format: 'esm',
       bundle: true,
@@ -29,7 +29,7 @@ if (ESM) {
       ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: BROWSER ? "browser" : "node",
       format: 'esm',
       bundle: true,
@@ -44,7 +44,7 @@ if (ESM) {
 if (CJS) {
   options.push(
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: BROWSER ? "browser" : "node",
       format: 'cjs',
       bundle: true,
@@ -53,7 +53,7 @@ if (CJS) {
       ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: BROWSER ? "browser" : "node",
       format: 'cjs',
       bundle: true,
@@ -68,7 +68,7 @@ if (CJS) {
 if (BROWSER) {
   options.push(
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,
@@ -77,7 +77,7 @@ if (BROWSER) {
       external: externalPackages,
     },
     {
-      entryPoints: ["./src/index.ts"],
+      entryPoints: ["./src/mtga.ts"],
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,

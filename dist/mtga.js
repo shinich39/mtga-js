@@ -18,9 +18,9 @@ var MtgaJs = (() => {
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // src/index.ts
-  var index_exports = {};
-  __export(index_exports, {
+  // src/mtga.ts
+  var mtga_exports = {};
+  __export(mtga_exports, {
     MTGA: () => MTGA
   });
 
@@ -660,7 +660,7 @@ var MtgaJs = (() => {
     }
   };
 
-  // src/index.ts
+  // src/mtga.ts
   var MTGA = class {
     element;
     _keydownState;
@@ -767,5 +767,5 @@ var MtgaJs = (() => {
       };
     }
   };
-  return __toCommonJS(index_exports);
+  return __toCommonJS(mtga_exports);
 })();

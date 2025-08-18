@@ -10,13 +10,13 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/types/mtga.d.ts",
       "import": "./dist/mtga.min.mjs",
       "require": "./dist/mtga.min.cjs"
     }
   },
   "main": "./dist/mtga.min.mjs",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/types/mtga.d.ts",
   "scripts": {
     "dev": "tsc-watch --noClear --onSuccess \"npm run build\"",
     "test": "tsx --test \"**/*.test.{js,jsx,ts,tsx}\"",

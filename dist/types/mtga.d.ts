@@ -24,4 +24,4 @@ export declare class MTGA {
     _setKeydownState(e: KeyboardEvent): void;
 }
 export {};
-//# sourceMappingURL=index.d.ts.map
+//# sourceMappingURL=mtga.d.ts.map

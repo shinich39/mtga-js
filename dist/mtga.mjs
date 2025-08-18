@@ -634,7 +634,7 @@ var AutoComplete = class {
   }
 };
 
-// src/index.ts
+// src/mtga.ts
 var MTGA = class {
   element;
   _keydownState;
