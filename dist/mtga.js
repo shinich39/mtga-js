@@ -532,19 +532,16 @@ var MtgaJs = (() => {
     element;
     tags;
     index;
-    candidates;
     result;
     parser;
     filter;
     onLoad;
     _reqId;
     _state;
-    _parts;
     constructor(el) {
       this.element = el;
       this.tags = [];
       this.index = {};
-      this.candidates = [];
       this.result = [];
       this.parser = (el2) => {
         const parts = el2.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
@@ -558,7 +555,7 @@ var MtgaJs = (() => {
           selectionStart = selectionEnd + 1;
         }
         const head = el2.value.substring(0, selectionStart);
-        const body = el2.value.substring(selectionStart, selectionEnd).trim().replace(/\s/g, "_");
+        const body = el2.value.substring(selectionStart, selectionEnd).trim();
         const tail = el2.value.substring(selectionEnd);
         return {
           head,
@@ -569,7 +566,6 @@ var MtgaJs = (() => {
       this.filter = () => true;
       this.onLoad = null;
       this._state = getState(el, true);
-      this._parts = { head: "", body: "", tail: "" };
       this._reqId = 0;
     }
     createIndex(size = 1) {
@@ -592,14 +588,10 @@ var MtgaJs = (() => {
     exec() {
       const reqId = this._reqId + 1;
       const result = [];
-      const prevText = this._parts.body;
-      const prevCandidates = this.candidates;
       const parts = this.parser(this.element);
       const text = parts.body;
-      const candidates = !text ? [] : prevText && text.indexOf(prevText) > -1 ? prevCandidates : findIndex(this.index, text) || this.tags;
+      const candidates = !text ? [] : findIndex(this.index, text) || this.tags;
       this.result = result;
-      this.candidates = candidates;
-      this._parts = parts;
       this._state = getState(this.element, true);
       this._reqId = reqId;
       let isStopped = false, isKilled = false, i = 0;
@@ -618,14 +610,9 @@ var MtgaJs = (() => {
           this.onLoad?.(result);
           return;
         }
-        let max = i + 39;
-        while (true) {
-          if (i >= candidates.length) {
-            isStopped = true;
-            setTimeout(processChunk, 0);
-            return;
-          }
-          if (i >= max) {
+        let j = i + 39;
+        while (i < candidates.length) {
+          if (i >= j) {
             setTimeout(processChunk, 0);
             return;
           }
@@ -633,9 +620,7 @@ var MtgaJs = (() => {
           const res = {
             ...compareString(text, tag.key),
             tag,
-            parts,
-            from: text,
-            to: tag.key
+            parts
           };
           const ok = this.filter(res, i, candidates, stop);
           if (ok) {
@@ -643,6 +628,8 @@ var MtgaJs = (() => {
           }
           i++;
         }
+        isStopped = true;
+        setTimeout(processChunk, 0);
       };
       processChunk();
     }

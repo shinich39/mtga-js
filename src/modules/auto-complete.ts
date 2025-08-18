@@ -15,16 +15,15 @@ interface IParts {
 type CompareResult = ReturnType<typeof compareString> & {
   tag: ITag,
   parts: IParts,
-  from: string,
-  to: string,
 };
 
 const findIndex = function(
   index: Record<string, ITag[]>,
   value: string,
 ) {
-  const keys = Object.keys(index).sort((a, b) => b.length - a.length);
-
+  const keys = Object.keys(index)
+    .sort((a, b) => b.length - a.length);
+    
   for (const k of keys) {
     const { score } = compareString(k, value);
     if (score === k.length) {
@@ -70,7 +69,6 @@ export class AutoComplete {
   element: HTMLTextAreaElement;
   tags: ITag[];
   index: Record<string, ITag[]>;
-  candidates: ITag[];
   result: CompareResult[];
 
   parser: (el: HTMLTextAreaElement) => IParts;
@@ -79,13 +77,11 @@ export class AutoComplete {
 
   _reqId: number;
   _state: IState;
-  _parts: IParts;
 
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
     this.tags = [];
     this.index = {};
-    this.candidates = [];
     this.result = [];
 
     this.parser = (el) => {
@@ -105,9 +101,7 @@ export class AutoComplete {
 
       const head = el.value.substring(0, selectionStart);
       // re-format selection value for seaching
-      const body = el.value.substring(selectionStart, selectionEnd)
-        .trim()
-        .replace(/\s/g, "_");
+      const body = el.value.substring(selectionStart, selectionEnd).trim();
       const tail = el.value.substring(selectionEnd);
 
       return {
@@ -120,7 +114,6 @@ export class AutoComplete {
     this.onLoad = null;
 
     this._state = getState(el, true);
-    this._parts = { head: "", body: "", tail: "" };
     this._reqId = 0;
   }
 
@@ -153,26 +146,14 @@ export class AutoComplete {
     const reqId = this._reqId + 1;
     const result: CompareResult[] = [];
 
-    const prevText = this._parts.body;
-    const prevCandidates = this.candidates;
-
     const parts = this.parser(this.element);
     const text = parts.body;
 
-    
     const candidates = !text
       ? []
-      : prevText && text.indexOf(prevText) > -1
-      ? prevCandidates
       : findIndex(this.index, text) || this.tags;
 
-    // if (prevText && text.indexOf(prevText) > -1) {
-    //   console.log("use prev candidates");
-    // }
-
     this.result = result;
-    this.candidates = candidates;
-    this._parts = parts;
     this._state = getState(this.element, true);
     this._reqId = reqId;
 
@@ -199,15 +180,9 @@ export class AutoComplete {
         return;
       }
 
-      let max = i + 39;
-      while(true) {
-        if (i >= candidates.length) {
-          isStopped = true;
-          setTimeout(processChunk, 0);
-          return;
-        }
-
-        if (i >= max) {
+      let j = i + 39;
+      while(i < candidates.length) {
+        if (i >= j) {
           setTimeout(processChunk, 0);
           return;
         }
@@ -218,8 +193,6 @@ export class AutoComplete {
           ...compareString(text, tag.key),
           tag,
           parts,
-          from: text,
-          to: tag.key,
         }
 
         const ok = this.filter(res, i, candidates, stop);
@@ -229,6 +202,9 @@ export class AutoComplete {
 
         i++;
       }
+
+      isStopped = true;
+      setTimeout(processChunk, 0);
     }
 
     processChunk();
