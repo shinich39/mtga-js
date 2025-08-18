@@ -71,11 +71,11 @@ Proin id leo nec nisi eleifend eleifend.
         ac.parser = (el) => {
           // console.log("parser", el);
           const r = origParser(el);
-          const text = r.body.toLowerCase();
+          r.body = r.body.toLowerCase().replace(/\s/g, "_");
 
           hide(true);
 
-          if (text.length < 1 || text.length > 16) {
+          if (r.body.length < 1 || r.body.length > 16) {
             ac.stop(true);
             return r;
           }

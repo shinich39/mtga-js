@@ -516,7 +516,7 @@ var MtgaJs = (() => {
       this.timeout = 0;
       this.result = [];
       this.parser = (el2) => {
-        const parts = el2.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
+        const parts = el2.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
         const index = el2.selectionStart;
         let selectionStart = 0, selectionEnd = 0;
         for (const part of parts) {

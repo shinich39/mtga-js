@@ -43,7 +43,7 @@ export class AutoComplete {
     this.result = [];
 
     this.parser = (el) => {
-      const parts = el.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
+      const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
 
       let selectionStart = 0,
