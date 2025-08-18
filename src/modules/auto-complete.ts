@@ -12,20 +12,23 @@ interface IParts {
   tail: string,
 }
 
-type CompareResult = ReturnType<typeof compareString> & {
+interface IRequest {
   tag: ITag,
   parts: IParts,
-};
+  [key: string]: any;
+}
 
 export class AutoComplete {
   element: HTMLTextAreaElement;
   tags: ITag[];
   index: Record<string, ITag[]>;
-  result: CompareResult[];
+  timeout: number;
+  result: IRequest[];
+
 
   parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
-  filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
-  onLoad: ((result: CompareResult[]) => void) | null;
+  filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
+  onLoad: (result: IRequest[]) => void;
 
   _reqId: number;
   _state: IState;
@@ -34,6 +37,7 @@ export class AutoComplete {
     this.element = el;
     this.tags = [];
     this.index = {};
+    this.timeout = 0;
     this.result = [];
 
     this.parser = (el) => {
@@ -63,7 +67,7 @@ export class AutoComplete {
       }
     }
     this.filter = () => true;
-    this.onLoad = null;
+    this.onLoad = () => undefined;
 
     this._state = getState(el, true);
     this._reqId = 0;
@@ -85,7 +89,7 @@ export class AutoComplete {
 
   createIndex(size: number) {
     const tags = this.tags;
-    const result: Record<string, ITag[]> = {};
+    const result = this.index;
     
     this.index = result;
 
@@ -105,11 +109,9 @@ export class AutoComplete {
           const combos = getAllCombinations(tag.key.split(""));
           
           for (const c of combos) {
-            if (c.length <= size) {
-              const v = c.join("");
-              if (v) {
-                acc.push(v);
-              }
+            const v = c.join("");
+            if (v.length === size) {
+              acc.push(v);
             }
           }
 
@@ -133,11 +135,15 @@ export class AutoComplete {
     });
   }
 
+  compare(a: string, b: string) {
+    return compareString(a, b);
+  }
+
   reset() {
     setState(this.element, this._state);
   }
 
-  set(result: CompareResult) {
+  set(result: IRequest) {
     // const short = res.parts.head.length;
     const short = result.parts.head.length + result.tag.value.length;
     const long = result.parts.head.length + result.tag.value.length;
@@ -156,7 +162,8 @@ export class AutoComplete {
 
   exec() {
     const reqId = this._reqId + 1;
-    const result: CompareResult[] = [];
+    const startedAt = Date.now();
+    const result: IRequest[] = [];
 
     let isStopped = false,
         isKilled = false,
@@ -178,16 +185,21 @@ export class AutoComplete {
     this._state = getState(this.element, true);
     this._reqId = reqId;
 
+    // console.time("" + reqId);
+
     const processChunk = () => {
-      if (this._reqId !== reqId) {
+      if (
+        this._reqId !== reqId || 
+        isKilled
+      ) {
         return;
       }
 
-      if (isKilled) {
-        return;
-      }
-
-      if (isStopped) {
+      if (
+        isStopped ||
+        (this.timeout && Date.now() - startedAt >= this.timeout)
+      ) {
+        // console.timeEnd("" + reqId);
         this.onLoad?.(result);
         return;
       }
@@ -201,15 +213,15 @@ export class AutoComplete {
 
         const tag = candidates[i];
 
-        const res: CompareResult = {
-          ...compareString(text, tag.key),
+        const req = {
           tag,
           parts,
         }
 
-        const ok = this.filter(res, i, candidates, stop);
+        const ok = this.filter(req, i, candidates, stop);
+
         if (ok) {
-          result.push(res);
+          result.push(req);
         }
 
         i++;

@@ -28,6 +28,7 @@ Proin id leo nec nisi eleifend eleifend.
       const { MTGA } = window.MtgaJs;
       const mtga = new MTGA(document.getElementById("textarea"));
       const ac = mtga.AutoComplete;
+      ac.timeout = 1000;
 
       const tags = [];
       for (let i = 0; i < 10000; i++) {
@@ -47,15 +48,15 @@ Proin id leo nec nisi eleifend eleifend.
 
       ac.tags = tags;
 
-      ;(() => {
-        console.log("start indexing");
-        console.time("indexing");
-        const size = 1;
-        ac.createIndex(size).then((result) => {
-          console.timeEnd("indexing");
-          console.log("indexing complete:", Object.keys(ac.index).length);
-        });
-      })();
+      // ;(() => {
+      //   console.log("start indexing");
+      //   console.time("indexing");
+      //   const size = 1;
+      //   ac.createIndex(size).then((result) => {
+      //     console.timeEnd("indexing");
+      //     console.log("indexing complete:", Object.keys(ac.index).length);
+      //   });
+      // })();
 
       console.log(mtga);
 
@@ -70,22 +71,34 @@ Proin id leo nec nisi eleifend eleifend.
         ac.parser = (el, stop) => {
           // console.log("parser", el);
           const r = origParser(el, stop);
-          r.body = r.body.toLowerCase();
+          const text = r.body.toLowerCase();
+
+          if (text.length < 1 || text.length > 16) {
+            stop();
+            return r;
+          }
+
           return r;
         }
 
         // filter after comparision text-tag.key
-        ac.filter = (res, i, candidates, stop) => {
+        ac.filter = (req, i, candidates, stop) => {
           // console.log("filter", res);
-          const { tag, parts, score, accurracy, match, } = res;
-          const text = parts.body;
+          const { tag, parts } = req;
+          const a = parts.body;
+          const b = tag.key;
 
           if (ac.result.length >= MAX_ITEM_COUNT) {
             stop();
             return false;
           }
 
-          return score >= text.length;
+          // 100000 items, 5332ms
+          const { score } = ac.compare(a, b);
+          return score >= a.length;
+
+          // 100000 items, 4529ms
+          // return b.indexOf(a) > -1;
         }
 
         const listEl = document.createElement("div");
@@ -193,20 +206,17 @@ Proin id leo nec nisi eleifend eleifend.
 
           listEl.innerHTML = "";
 
-          const sorted = result
-            .filter((item) => !item.match.some(([type, value]) => type === -1))
-            .sort((a, b) => b.score - a.score);
-
-          if (sorted.length < 1) {
+          if (result.length < 1) {
             hide();
             return;
           }
 
           // render items
-          for (let i = 0; i < sorted.length; i++) {
+          for (let i = 0; i < result.length; i++) {
             const idx = i;
-            const res = sorted[i];
-            const { tag, match } = res;
+            const res = result[i];
+            const { tag, parts } = res;
+            const { match } = ac.compare(parts.body, tag.key);
             const itemEl = document.createElement("div");
             itemEl.style.padding = "2px 4px";
             itemEl.style.cursor = "pointer";

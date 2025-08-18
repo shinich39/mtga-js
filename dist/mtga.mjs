@@ -473,6 +473,7 @@ var AutoComplete = class {
   element;
   tags;
   index;
+  timeout;
   result;
   parser;
   filter;
@@ -483,6 +484,7 @@ var AutoComplete = class {
     this.element = el;
     this.tags = [];
     this.index = {};
+    this.timeout = 0;
     this.result = [];
     this.parser = (el2) => {
       const parts = el2.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
@@ -505,7 +507,7 @@ var AutoComplete = class {
       };
     };
     this.filter = () => true;
-    this.onLoad = null;
+    this.onLoad = () => void 0;
     this._state = getState(el, true);
     this._reqId = 0;
   }
@@ -521,7 +523,7 @@ var AutoComplete = class {
   }
   createIndex(size) {
     const tags = this.tags;
-    const result = {};
+    const result = this.index;
     this.index = result;
     return new Promise((resolve) => {
       let i = 0;
@@ -536,11 +538,9 @@ var AutoComplete = class {
           const acc = [];
           const combos = getAllCombinations(tag.key.split(""));
           for (const c of combos) {
-            if (c.length <= size) {
-              const v = c.join("");
-              if (v) {
-                acc.push(v);
-              }
+            const v = c.join("");
+            if (v.length === size) {
+              acc.push(v);
             }
           }
           const uniqCombos = [...new Set(acc)];
@@ -558,6 +558,9 @@ var AutoComplete = class {
       processChunk();
     });
   }
+  compare(a, b) {
+    return compareString(a, b);
+  }
   reset() {
     setState(this.element, this._state);
   }
@@ -574,6 +577,7 @@ var AutoComplete = class {
   }
   exec() {
     const reqId = this._reqId + 1;
+    const startedAt = Date.now();
     const result = [];
     let isStopped = false, isKilled = false, i = 0;
     const stop = (kill) => {
@@ -587,13 +591,10 @@ var AutoComplete = class {
     this._state = getState(this.element, true);
     this._reqId = reqId;
     const processChunk = () => {
-      if (this._reqId !== reqId) {
+      if (this._reqId !== reqId || isKilled) {
         return;
       }
-      if (isKilled) {
-        return;
-      }
-      if (isStopped) {
+      if (isStopped || this.timeout && Date.now() - startedAt >= this.timeout) {
         this.onLoad?.(result);
         return;
       }
@@ -604,14 +605,13 @@ var AutoComplete = class {
           return;
         }
         const tag = candidates[i];
-        const res = {
-          ...compareString(text, tag.key),
+        const req = {
           tag,
           parts
         };
-        const ok = this.filter(res, i, candidates, stop);
+        const ok = this.filter(req, i, candidates, stop);
         if (ok) {
-          result.push(res);
+          result.push(req);
         }
         i++;
       }

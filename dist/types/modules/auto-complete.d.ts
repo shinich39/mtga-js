@@ -1,4 +1,4 @@
-import { compareString, IState } from "./utils.js";
+import { IState } from "./utils.js";
 interface ITag {
     key: string;
     value: string;
@@ -9,25 +9,32 @@ interface IParts {
     body: string;
     tail: string;
 }
-type CompareResult = ReturnType<typeof compareString> & {
+interface IRequest {
     tag: ITag;
     parts: IParts;
-};
+    [key: string]: any;
+}
 export declare class AutoComplete {
     element: HTMLTextAreaElement;
     tags: ITag[];
     index: Record<string, ITag[]>;
-    result: CompareResult[];
+    timeout: number;
+    result: IRequest[];
     parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
-    filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
-    onLoad: ((result: CompareResult[]) => void) | null;
+    filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
+    onLoad: (result: IRequest[]) => void;
     _reqId: number;
     _state: IState;
     constructor(el: HTMLTextAreaElement);
     findIndex(value: string): ITag[] | undefined;
     createIndex(size: number): Promise<Record<string, ITag[]>>;
+    compare(a: string, b: string): {
+        accuracy: number;
+        score: number;
+        match: [0 | 1 | -1, string][];
+    };
     reset(): void;
-    set(result: CompareResult): void;
+    set(result: IRequest): void;
     exec(): void;
 }
 export {};
