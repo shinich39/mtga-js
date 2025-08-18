@@ -12,9 +12,11 @@ interface IParts {
   tail: string,
 }
 
-type Result = ReturnType<typeof compareString> & {
+type CompareResult = ReturnType<typeof compareString> & {
   tag: ITag,
   parts: IParts,
+  from: string,
+  to: string,
 };
 
 const findIndex = function(
@@ -68,20 +70,22 @@ export class AutoComplete {
   element: HTMLTextAreaElement;
   tags: ITag[];
   index: Record<string, ITag[]>;
-  result: Result[];
+  candidates: ITag[];
+  result: CompareResult[];
 
   parser: (el: HTMLTextAreaElement) => IParts;
-  filter: (result: Result, index: number, candidates: ITag[], stop: () => void) => boolean;
-  onLoad: ((result: Result[]) => void) | null;
+  filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
+  onLoad: ((result: CompareResult[]) => void) | null;
 
+  _reqId: number;
   _state: IState;
-  _stop: ((preventCallback?: boolean) => void) | null;
+  _parts: IParts;
 
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
     this.tags = [];
     this.index = {};
-    this._state = getState(el, true);
+    this.candidates = [];
     this.result = [];
 
     this.parser = (el) => {
@@ -113,23 +117,11 @@ export class AutoComplete {
       }
     }
     this.filter = () => true;
-    this._stop = null;
     this.onLoad = null;
-  }
 
-  stop(preventCallback?: boolean) {
-    const stop = this._stop;
-    if (stop) {
-      stop(preventCallback);
-    }
-  }
-
-  clear() {
-    const stop = this._stop;
-    if (stop) {
-      stop(true);
-    }
-    this.result = [];
+    this._state = getState(el, true);
+    this._parts = { head: "", body: "", tail: "" };
+    this._reqId = 0;
   }
 
   createIndex(size = 1) {
@@ -140,7 +132,7 @@ export class AutoComplete {
     setState(this.element, this._state);
   }
 
-  set(result: Result) {
+  set(result: CompareResult) {
     // const short = res.parts.head.length;
     const short = result.parts.head.length + result.tag.value.length;
     const long = result.parts.head.length + result.tag.value.length;
@@ -157,54 +149,88 @@ export class AutoComplete {
     setState(this.element, state);
   }
 
-  async exec() {
-    this.clear();
+  exec() {
+    const reqId = this._reqId + 1;
+    const result: CompareResult[] = [];
 
-    this._state = getState(this.element, true);
+    const prevText = this._parts.body;
+    const prevCandidates = this.candidates;
 
-    let isStopped = false,
-        isKilled = false;
-
-    this._stop = (preventCallback) => {
-      isStopped = true;
-      isKilled = preventCallback || false;
-      this._stop = null;
-    };
-
-    const stop = this._stop;
-    const result = this.result;
     const parts = this.parser(this.element);
     const text = parts.body;
+
+    
     const candidates = !text
       ? []
+      : prevText && text.indexOf(prevText) > -1
+      ? prevCandidates
       : findIndex(this.index, text) || this.tags;
 
-    for (let i = 0; i < candidates.length; i++) {
-      const tag = candidates[i];
+    // if (prevText && text.indexOf(prevText) > -1) {
+    //   console.log("use prev candidates");
+    // }
 
-      const res: Result = {
-        ...compareString(text, tag.key),
-        tag,
-        parts,
+    this.result = result;
+    this.candidates = candidates;
+    this._parts = parts;
+    this._state = getState(this.element, true);
+    this._reqId = reqId;
+
+    let isStopped = false,
+        isKilled = false,
+        i = 0;
+
+    const stop = (kill?: boolean) => {
+      isStopped = true;
+      isKilled = kill || false;
+    };
+
+    const processChunk = () => {
+      if (this._reqId !== reqId) {
+        return;
       }
 
-      const ok = this.filter(res, i, candidates, stop);
-
-      if (ok) {
-        result.push(res);
+      if (isKilled) {
+        return;
       }
 
       if (isStopped) {
-        break;
+        this.onLoad?.(result);
+        return;
       }
 
-      if (i % 39 === 0) {
-        await new Promise((r) => setTimeout(r, 0));
+      let max = i + 39;
+      while(true) {
+        if (i >= candidates.length) {
+          isStopped = true;
+          setTimeout(processChunk, 0);
+          return;
+        }
+
+        if (i >= max) {
+          setTimeout(processChunk, 0);
+          return;
+        }
+
+        const tag = candidates[i];
+
+        const res: CompareResult = {
+          ...compareString(text, tag.key),
+          tag,
+          parts,
+          from: text,
+          to: tag.key,
+        }
+
+        const ok = this.filter(res, i, candidates, stop);
+        if (ok) {
+          result.push(res);
+        }
+
+        i++;
       }
     }
 
-    if (!isKilled) {
-      this.onLoad?.(result);
-    }
+    processChunk();
   }
 }

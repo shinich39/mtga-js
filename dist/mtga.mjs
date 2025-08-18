@@ -506,17 +506,19 @@ var AutoComplete = class {
   element;
   tags;
   index;
+  candidates;
   result;
   parser;
   filter;
   onLoad;
+  _reqId;
   _state;
-  _stop;
+  _parts;
   constructor(el) {
     this.element = el;
     this.tags = [];
     this.index = {};
-    this._state = getState(el, true);
+    this.candidates = [];
     this.result = [];
     this.parser = (el2) => {
       const parts = el2.value.split(/[,.\s․‧・｡。{}()<>[\]\\/|'"`!?]/);
@@ -539,21 +541,10 @@ var AutoComplete = class {
       };
     };
     this.filter = () => true;
-    this._stop = null;
     this.onLoad = null;
-  }
-  stop(preventCallback) {
-    const stop = this._stop;
-    if (stop) {
-      stop(preventCallback);
-    }
-  }
-  clear() {
-    const stop = this._stop;
-    if (stop) {
-      stop(true);
-    }
-    this.result = [];
+    this._state = getState(el, true);
+    this._parts = { head: "", body: "", tail: "" };
+    this._reqId = 0;
   }
   createIndex(size = 1) {
     this.index = createIndex(this.tags, size);
@@ -572,41 +563,62 @@ var AutoComplete = class {
     };
     setState(this.element, state);
   }
-  async exec() {
-    this.clear();
-    this._state = getState(this.element, true);
-    let isStopped = false, isKilled = false;
-    this._stop = (preventCallback) => {
-      isStopped = true;
-      isKilled = preventCallback || false;
-      this._stop = null;
-    };
-    const stop = this._stop;
-    const result = this.result;
+  exec() {
+    const reqId = this._reqId + 1;
+    const result = [];
+    const prevText = this._parts.body;
+    const prevCandidates = this.candidates;
     const parts = this.parser(this.element);
     const text = parts.body;
-    const candidates = !text ? [] : findIndex(this.index, text) || this.tags;
-    for (let i = 0; i < candidates.length; i++) {
-      const tag = candidates[i];
-      const res = {
-        ...compareString(text, tag.key),
-        tag,
-        parts
-      };
-      const ok = this.filter(res, i, candidates, stop);
-      if (ok) {
-        result.push(res);
+    const candidates = !text ? [] : prevText && text.indexOf(prevText) > -1 ? prevCandidates : findIndex(this.index, text) || this.tags;
+    this.result = result;
+    this.candidates = candidates;
+    this._parts = parts;
+    this._state = getState(this.element, true);
+    this._reqId = reqId;
+    let isStopped = false, isKilled = false, i = 0;
+    const stop = (kill) => {
+      isStopped = true;
+      isKilled = kill || false;
+    };
+    const processChunk = () => {
+      if (this._reqId !== reqId) {
+        return;
+      }
+      if (isKilled) {
+        return;
       }
       if (isStopped) {
-        break;
+        this.onLoad?.(result);
+        return;
       }
-      if (i % 39 === 0) {
-        await new Promise((r) => setTimeout(r, 0));
+      let max = i + 39;
+      while (true) {
+        if (i >= candidates.length) {
+          isStopped = true;
+          setTimeout(processChunk, 0);
+          return;
+        }
+        if (i >= max) {
+          setTimeout(processChunk, 0);
+          return;
+        }
+        const tag = candidates[i];
+        const res = {
+          ...compareString(text, tag.key),
+          tag,
+          parts,
+          from: text,
+          to: tag.key
+        };
+        const ok = this.filter(res, i, candidates, stop);
+        if (ok) {
+          result.push(res);
+        }
+        i++;
       }
-    }
-    if (!isKilled) {
-      this.onLoad?.(result);
-    }
+    };
+    processChunk();
   }
 };
 
@@ -673,7 +685,7 @@ var MTGA = class {
       ].includes(e.key)) {
         this._setKeydownState(e);
       }
-    });
+    }, true);
     el.addEventListener("keyup", (e) => {
       const keydownState = this._keydownState;
       this._clearKeydownState();
@@ -683,7 +695,6 @@ var MTGA = class {
       const prevValue = keydownState.value;
       if (prevValue !== el.value) {
         this.History.add();
-        this.AutoComplete.exec();
       } else {
         const prevState = keydownState.state;
         const currState = getState(el);
@@ -691,10 +702,15 @@ var MTGA = class {
           this.History.add(false);
         }
       }
-    });
+    }, true);
+    el.addEventListener("keyup", (e) => {
+      if (e.key.length === 1 || e.key === "Backspace") {
+        this.AutoComplete.exec();
+      }
+    }, true);
     this.element.addEventListener("mouseup", (e) => {
       this.History.add(false);
-    });
+    }, true);
   }
   getState(withValue) {
     return getState(this.element, withValue);

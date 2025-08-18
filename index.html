@@ -204,6 +204,7 @@ Proin id leo nec nisi eleifend eleifend.
             const { tag, match } = res;
             const itemEl = document.createElement("div");
             itemEl.style.padding = "2px 4px";
+            itemEl.style.cursor = "pointer";
             itemEl.style.borderRight = "1px solid black";
             itemEl.style.borderBottom = "1px solid black";
 
@@ -219,7 +220,7 @@ Proin id leo nec nisi eleifend eleifend.
             }
 
             itemEl.innerHTML = html;
-            itemEl.addEventListener("click", (e) => {
+            itemEl.addEventListener("mousedown", (e) => {
               e.preventDefault();
               index = idx;
               load();
@@ -238,8 +239,8 @@ Proin id leo nec nisi eleifend eleifend.
         }
 
         AC.element.addEventListener("keydown", keydownHandler, true);
-        AC.element.addEventListener("click", hide, true);
-        AC.element.addEventListener("blur", hide, true);
+        AC.element.addEventListener("click", hide);
+        AC.element.addEventListener("blur", hide);
         AC.onLoad = onLoad;
       })();
 

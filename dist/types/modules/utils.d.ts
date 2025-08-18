@@ -14,6 +14,11 @@ export interface IRow {
     selectionEnd: number;
     selectionValue: string;
 }
+/**
+ * @example
+ * input.addEventListener("input", debounce((e) => ..., 100));
+ */
+export declare function debounce(func: (...args: any[]) => any, delay: number): (...args: any[]) => void;
 export declare const getState: (el: HTMLTextAreaElement, withValue?: boolean) => IState;
 export declare const setState: (el: HTMLTextAreaElement, state: IState) => void;
 export declare const parseKeyboardEvent: (e: KeyboardEvent) => {

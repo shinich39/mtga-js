@@ -1,5 +1,5 @@
 import { AutoPairing } from "./modules/auto-pairing.js";
-import { getState, IState, setState } from "./modules/utils.js";
+import { debounce, getState, IState, setState } from "./modules/utils.js";
 import { History, isRedo, isUndo } from "./modules/history.js";
 import { Commentify } from "./modules/commentify.js";
 import { Indentify } from "./modules/indentify.js";
@@ -86,7 +86,7 @@ export class MTGA {
         // console.log("keydown", e.key);
         this._setKeydownState(e);
       }
-    });
+    }, true);
 
     el.addEventListener("keyup", (e) => {
       const keydownState = this._keydownState;
@@ -102,9 +102,6 @@ export class MTGA {
       // insert
       if (prevValue !== el.value) {
         this.History.add();
-
-        // auto-complete
-        this.AutoComplete.exec();
       } // move
       else {
         const prevState = keydownState.state;
@@ -116,11 +113,22 @@ export class MTGA {
           this.History.add(false);
         }
       }
-    });
+    }, true);
+
+    // auto-complete
+    el.addEventListener("keyup", (e) => {
+      if (
+        e.key.length === 1 || 
+        e.key === "Backspace"
+      ) {
+        // console.log("keyup", e.key);
+        this.AutoComplete.exec();
+      }
+    }, true);
 
     this.element.addEventListener("mouseup", (e) => {
       this.History.add(false);
-    });
+    }, true);
   }
 
   getState(withValue?: boolean) {

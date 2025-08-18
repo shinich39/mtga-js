@@ -9,27 +9,29 @@ interface IParts {
     body: string;
     tail: string;
 }
-type Result = ReturnType<typeof compareString> & {
+type CompareResult = ReturnType<typeof compareString> & {
     tag: ITag;
     parts: IParts;
+    from: string;
+    to: string;
 };
 export declare class AutoComplete {
     element: HTMLTextAreaElement;
     tags: ITag[];
     index: Record<string, ITag[]>;
-    result: Result[];
+    candidates: ITag[];
+    result: CompareResult[];
     parser: (el: HTMLTextAreaElement) => IParts;
-    filter: (result: Result, index: number, candidates: ITag[], stop: () => void) => boolean;
-    onLoad: ((result: Result[]) => void) | null;
+    filter: (result: CompareResult, index: number, candidates: ITag[], stop: () => void) => boolean;
+    onLoad: ((result: CompareResult[]) => void) | null;
+    _reqId: number;
     _state: IState;
-    _stop: ((preventCallback?: boolean) => void) | null;
+    _parts: IParts;
     constructor(el: HTMLTextAreaElement);
-    stop(preventCallback?: boolean): void;
-    clear(): void;
     createIndex(size?: number): void;
     reset(): void;
-    set(result: Result): void;
-    exec(): Promise<void>;
+    set(result: CompareResult): void;
+    exec(): void;
 }
 export {};
 //# sourceMappingURL=auto-complete.d.ts.map

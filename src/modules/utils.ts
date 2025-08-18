@@ -15,6 +15,20 @@ export interface IRow {
   selectionEnd: number,
   selectionValue: string,
 }
+/**
+ * @example
+ * input.addEventListener("input", debounce((e) => ..., 100));
+ */
+export function debounce(
+  func: (...args: any[]) => any,
+  delay: number
+) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func(...args), delay);
+  };
+}
 
 export const getState = function(
   el: HTMLTextAreaElement,
