@@ -503,8 +503,10 @@ var MtgaJs = (() => {
     result;
     parser;
     filter;
-    onLoad;
+    onData;
+    onEnd;
     _reqId;
+    _chunkSize;
     _state;
     constructor(el) {
       this.element = el;
@@ -533,9 +535,11 @@ var MtgaJs = (() => {
         };
       };
       this.filter = () => true;
-      this.onLoad = () => void 0;
-      this._state = getState(el, true);
+      this.onData = () => void 0;
+      this.onEnd = () => void 0;
       this._reqId = 0;
+      this._chunkSize = 100;
+      this._state = getState(el, true);
     }
     findIndex(value) {
       const index = this.index;
@@ -603,6 +607,7 @@ var MtgaJs = (() => {
     }
     exec() {
       const reqId = this._reqId + 1;
+      const chunkSize = this._chunkSize;
       const startedAt = Date.now();
       const result = [];
       let isStopped = false, isKilled = false, i = 0;
@@ -621,12 +626,14 @@ var MtgaJs = (() => {
           return;
         }
         if (isStopped || this.timeout && Date.now() - startedAt >= this.timeout) {
-          this.onLoad?.(result);
+          this.onEnd?.(result);
           return;
         }
-        let j = i + 100;
+        const chunks = [];
+        let j = i + chunkSize;
         while (i < candidates.length) {
           if (i >= j) {
+            this.onData?.(chunks);
             setTimeout(processChunk, 0);
             return;
           }
@@ -637,11 +644,13 @@ var MtgaJs = (() => {
           };
           const ok = this.filter(req, i, candidates, stop);
           if (ok) {
+            chunks.push(req);
             result.push(req);
           }
           i++;
         }
         isStopped = true;
+        this.onData?.(chunks);
         setTimeout(processChunk, 0);
       };
       processChunk();

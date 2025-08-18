@@ -22,8 +22,10 @@ export declare class AutoComplete {
     result: IRequest[];
     parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
     filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
-    onLoad: (result: IRequest[]) => void;
+    onData: (chunks: IRequest[]) => void;
+    onEnd: (result: IRequest[]) => void;
     _reqId: number;
+    _chunkSize: number;
     _state: IState;
     constructor(el: HTMLTextAreaElement);
     findIndex(value: string): ITag[] | undefined;

@@ -73,6 +73,8 @@ Proin id leo nec nisi eleifend eleifend.
           const r = origParser(el, stop);
           const text = r.body.toLowerCase();
 
+          hide();
+
           if (text.length < 1 || text.length > 16) {
             stop();
             return r;
@@ -163,6 +165,9 @@ Proin id leo nec nisi eleifend eleifend.
         }
 
         const hide = () => {
+          items = [];
+          index = -1;
+          listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
         }
 
@@ -197,23 +202,13 @@ Proin id leo nec nisi eleifend eleifend.
           }
         }
 
-        const onLoad = (result) => {
-          console.log("onLoad", result);
-
-          items = [];
-          index = -1;
-
-          listEl.innerHTML = "";
-
-          if (result.length < 1) {
-            hide();
-            return;
-          }
+        const onData = (chunks) => {
+          console.log("onData", chunks);
 
           // render items
-          for (let i = 0; i < result.length; i++) {
+          for (let i = 0; i < chunks.length; i++) {
             const idx = i;
-            const res = result[i];
+            const res = chunks[i];
             const { tag, parts } = res;
             const { match } = ac.compare(parts.body, tag.key);
             const itemEl = document.createElement("div");
@@ -222,7 +217,7 @@ Proin id leo nec nisi eleifend eleifend.
             itemEl.style.borderRight = "1px solid black";
             itemEl.style.borderBottom = "1px solid black";
 
-            let html = "";
+            let html = `(${items.length}) `;
             for (const [type, value] of match) {
               if (type === -1) {
                 continue;
@@ -248,14 +243,71 @@ Proin id leo nec nisi eleifend eleifend.
             listEl.appendChild(itemEl);
           }
 
-          show();
+          if (items.length > 0 && !isShown()) {
+            show();
+          }
+
           render();
         }
+
+        // const onEnd = (result) => {
+        //   console.log("onEnd", result);
+
+        //   if (result.length < 1) {
+        //     hide();
+        //     return;
+        //   }
+
+        //   // render items
+        //   for (let i = 0; i < result.length; i++) {
+        //     const idx = i;
+        //     const res = result[i];
+        //     const { tag, parts } = res;
+        //     const { match } = ac.compare(parts.body, tag.key);
+        //     const itemEl = document.createElement("div");
+        //     itemEl.style.padding = "2px 4px";
+        //     itemEl.style.cursor = "pointer";
+        //     itemEl.style.borderRight = "1px solid black";
+        //     itemEl.style.borderBottom = "1px solid black";
+
+        //     let html = "";
+        //     for (const [type, value] of match) {
+        //       if (type === -1) {
+        //         continue;
+        //       }
+
+        //       html += type === 0
+        //         ? `<span style="background-color: yellow; color: black;">${value}</span>` 
+        //         : `<span>${value}</span>`;
+        //     }
+
+        //     itemEl.innerHTML = html;
+        //     itemEl.addEventListener("mousedown", (e) => {
+        //       e.preventDefault();
+        //       index = idx;
+        //       load();
+        //     });
+
+        //     items.push({
+        //       result: res,
+        //       element: itemEl,
+        //     });
+
+        //     listEl.appendChild(itemEl);
+        //   }
+
+        //   if (items.length > 0 && !isShown()) {
+        //     show();
+        //   }
+
+        //   render();
+        // }
 
         ac.element.addEventListener("keydown", keydownHandler, true);
         ac.element.addEventListener("click", hide);
         ac.element.addEventListener("blur", hide);
-        ac.onLoad = onLoad;
+        ac.onData = onData;
+        // ac.onEnd = onEnd;
       })();
 
     </script>

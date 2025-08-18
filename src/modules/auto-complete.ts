@@ -25,12 +25,13 @@ export class AutoComplete {
   timeout: number;
   result: IRequest[];
 
-
   parser: (el: HTMLTextAreaElement, stop: () => void) => IParts;
   filter: (req: IRequest, index: number, candidates: ITag[], stop: () => void) => boolean;
-  onLoad: (result: IRequest[]) => void;
+  onData: (chunks: IRequest[]) => void;
+  onEnd: (result: IRequest[]) => void;
 
   _reqId: number;
+  _chunkSize: number;
   _state: IState;
 
   constructor(el: HTMLTextAreaElement) {
@@ -67,10 +68,12 @@ export class AutoComplete {
       }
     }
     this.filter = () => true;
-    this.onLoad = () => undefined;
+    this.onData = () => undefined;
+    this.onEnd = () => undefined;
 
-    this._state = getState(el, true);
     this._reqId = 0;
+    this._chunkSize = 100;
+    this._state = getState(el, true);
   }
 
   findIndex(value: string) {
@@ -162,6 +165,7 @@ export class AutoComplete {
 
   exec() {
     const reqId = this._reqId + 1;
+    const chunkSize = this._chunkSize;
     const startedAt = Date.now();
     const result: IRequest[] = [];
 
@@ -200,13 +204,16 @@ export class AutoComplete {
         (this.timeout && Date.now() - startedAt >= this.timeout)
       ) {
         // console.timeEnd("" + reqId);
-        this.onLoad?.(result);
+        this.onEnd?.(result);
         return;
       }
 
-      let j = i + 100;
+      const chunks: IRequest[] = [];
+
+      let j = i + chunkSize;
       while(i < candidates.length) {
         if (i >= j) {
+          this.onData?.(chunks);
           setTimeout(processChunk, 0);
           return;
         }
@@ -221,6 +228,7 @@ export class AutoComplete {
         const ok = this.filter(req, i, candidates, stop);
 
         if (ok) {
+          chunks.push(req);
           result.push(req);
         }
 
@@ -228,6 +236,7 @@ export class AutoComplete {
       }
 
       isStopped = true;
+      this.onData?.(chunks);
       setTimeout(processChunk, 0);
     }
 
