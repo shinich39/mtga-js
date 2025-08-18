@@ -631,12 +631,7 @@ var AutoComplete = class {
       }
       const chunks = [];
       let j = i + chunkSize;
-      while (i < candidates.length) {
-        if (i >= j) {
-          this.onData?.(chunks);
-          setTimeout(processChunk, 0);
-          return;
-        }
+      while (i < j && i < candidates.length) {
         const tag = candidates[i];
         const req = {
           tag,
@@ -649,7 +644,7 @@ var AutoComplete = class {
         }
         i++;
       }
-      isStopped = true;
+      isStopped = i >= candidates.length;
       this.onData?.(chunks);
       setTimeout(processChunk, 0);
     };
