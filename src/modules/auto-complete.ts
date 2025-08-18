@@ -187,17 +187,17 @@ export class AutoComplete {
       isKilled = kill || false;
     };
 
+    this.result = result;
+    this._state = getState(this.element, true);
+    this._reqId = reqId;
+    this._stop = stop;
+
     const parts = this.parser(this.element);
     const text = parts.body;
 
     const candidates = !text
       ? []
       : this.findIndex(text) || this.tags;
-
-    this.result = result;
-    this._state = getState(this.element, true);
-    this._reqId = reqId;
-    this._stop = stop;
 
     // console.time("" + reqId);
 

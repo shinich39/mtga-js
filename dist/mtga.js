@@ -622,13 +622,13 @@ var MtgaJs = (() => {
         isStopped = true;
         isKilled = kill || false;
       };
-      const parts = this.parser(this.element);
-      const text = parts.body;
-      const candidates = !text ? [] : this.findIndex(text) || this.tags;
       this.result = result;
       this._state = getState(this.element, true);
       this._reqId = reqId;
       this._stop = stop;
+      const parts = this.parser(this.element);
+      const text = parts.body;
+      const candidates = !text ? [] : this.findIndex(text) || this.tags;
       const processChunk = () => {
         const chunks = [];
         let j = i + chunkSize;

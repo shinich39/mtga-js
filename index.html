@@ -73,10 +73,10 @@ Proin id leo nec nisi eleifend eleifend.
           const r = origParser(el);
           const text = r.body.toLowerCase();
 
-          hide();
+          hide(true);
 
           if (text.length < 1 || text.length > 16) {
-            ac.stop();
+            ac.stop(true);
             return r;
           }
 
@@ -90,7 +90,7 @@ Proin id leo nec nisi eleifend eleifend.
           const b = tag.key;
 
           if (ac.result.length >= MAX_ITEM_COUNT) {
-            ac.stop();
+            ac.stop(true);
             return false;
           }
 
@@ -162,12 +162,15 @@ Proin id leo nec nisi eleifend eleifend.
           index = -1;
         }
 
-        const hide = () => {
+        const hide = (keep) => {
           items = [];
           index = -1;
           listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
-          ac.stop(true);
+
+          if (!keep) {
+            ac.stop(true);
+          }
         }
 
         const keydownHandler = (e) => {
