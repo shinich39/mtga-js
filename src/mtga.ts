@@ -9,6 +9,7 @@ import { History } from "./modules/history.js";
 import { Breakify } from "./modules/breakify.js";
 
 export { Pairify } from "./modules/pairify.js";
+export { Breakify } from "./modules/breakify.js";
 export { Commentify } from "./modules/commentify.js";
 export { Indentify } from "./modules/indentify.js";
 export { Tagify } from "./modules/tagify.js";

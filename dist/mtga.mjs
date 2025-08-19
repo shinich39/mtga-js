@@ -777,8 +777,6 @@ var onKeydown4 = function(e) {
 };
 var Breakify = class {
   parent;
-  // pattern: RegExp;
-  // value: string;
   constructor(parent) {
     this.parent = parent;
     parent.modules.push(
@@ -875,6 +873,7 @@ var MTGA = class {
   }
 };
 export {
+  Breakify,
   Commentify,
   History,
   Indentify,

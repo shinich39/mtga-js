@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/mtga.ts
 var mtga_exports = {};
 __export(mtga_exports, {
+  Breakify: () => Breakify,
   Commentify: () => Commentify,
   History: () => History,
   Indentify: () => Indentify,
@@ -808,8 +809,6 @@ var onKeydown4 = function(e) {
 };
 var Breakify = class {
   parent;
-  // pattern: RegExp;
-  // value: string;
   constructor(parent) {
     this.parent = parent;
     parent.modules.push(

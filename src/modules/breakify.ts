@@ -62,8 +62,6 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
 
 export class Breakify {
   parent: MTGA;
-  // pattern: RegExp;
-  // value: string;
 
   constructor(parent: MTGA) {
     this.parent = parent;

@@ -7,6 +7,7 @@ import { IKeydownState, IState } from "./types/state.js";
 import "./modules/history.js";
 import "./modules/breakify.js";
 export { Pairify } from "./modules/pairify.js";
+export { Breakify } from "./modules/breakify.js";
 export { Commentify } from "./modules/commentify.js";
 export { Indentify } from "./modules/indentify.js";
 export { Tagify } from "./modules/tagify.js";

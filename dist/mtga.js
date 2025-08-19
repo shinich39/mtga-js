@@ -21,6 +21,7 @@ var MtgaJs = (() => {
   // src/mtga.ts
   var mtga_exports = {};
   __export(mtga_exports, {
+    Breakify: () => Breakify,
     Commentify: () => Commentify,
     History: () => History,
     Indentify: () => Indentify,
@@ -808,8 +809,6 @@ var MtgaJs = (() => {
   };
   var Breakify = class {
     parent;
-    // pattern: RegExp;
-    // value: string;
     constructor(parent) {
       this.parent = parent;
       parent.modules.push(
