@@ -4,7 +4,7 @@ declare module "../mtga.js" {
         pairify: Pairify;
     }
 }
-export interface IPairs {
+interface IPairs {
     [key: string]: string;
 }
 export declare class Pairify {
@@ -12,15 +12,8 @@ export declare class Pairify {
     pairs: IPairs;
     constructor(parent: MTGA);
     static defaults: {
-        pairs: {
-            "(": string;
-            "[": string;
-            "{": string;
-            "<": string;
-            "'": string;
-            "\"": string;
-            "`": string;
-        };
+        pairs: IPairs;
     };
 }
+export {};
 //# sourceMappingURL=pairify.d.ts.map

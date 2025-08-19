@@ -7,7 +7,7 @@ declare module "../mtga.js" {
   }
 }
 
-export interface IPairs {
+interface IPairs {
   [key: string]: string,
 }
 
@@ -148,7 +148,9 @@ export class Pairify {
     );
   }
 
-  static defaults = {
+  static defaults: {
+    pairs: IPairs,
+  } = {
     pairs: {
       "(": ")",
       "[": "]",
