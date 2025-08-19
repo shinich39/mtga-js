@@ -32,5 +32,5 @@ export declare const getRows: (el: HTMLTextAreaElement) => {
     rows: IRow[];
     selectedRows: IRow[];
 };
-export declare const updateRows: (el: HTMLTextAreaElement, rows: IRow[], callback: (row: IRow) => string) => IState;
+export declare const updateRows: (el: HTMLTextAreaElement, rows: IRow[], callback: (row: IRow, index: number, rows: IRow[]) => string) => IState;
 //# sourceMappingURL=utils.d.ts.map

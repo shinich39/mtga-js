@@ -39,7 +39,7 @@ const findIndex = function(indexes: ITagifyIndex[], value: string) {
   }
 }
 
-const tagifyHandler = function(this: MTGA, e: KeyboardEvent) {
+const onKeydown = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -162,7 +162,7 @@ export class Tagify {
     parent.modules.push(
       {
         name: "Tagify",
-        onKeyup: tagifyHandler,
+        onKeyup: onKeydown,
       }
     );
   }

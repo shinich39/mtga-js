@@ -8,6 +8,7 @@ Make Textarea Garbage Again
 - Indentify: Tab, Shift+Tab
 - Auto-Complete
 - Auto-Pairing: All brackets with ", ', `
+- Linbreak: Ctrl+Enter, Ctrl+Shift+Enter
 - Undo, Redo: Ctrl+Z, Ctrl+Shift+Z
 
 ## Getting Started

@@ -1,5 +1,5 @@
 import { MTGA } from "../mtga.js";
-import { setState, getRows, updateRows, parseKeyboardEvent } from "./utils.js";
+import { setState, getRows, parseKeyboardEvent, getState } from "./utils.js";
 
 declare module "../mtga.js" {
   interface MTGA {
@@ -7,7 +7,7 @@ declare module "../mtga.js" {
   }
 }
 
-const indentifyHandler = function (this: MTGA, e: KeyboardEvent) {
+const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -24,33 +24,74 @@ const indentifyHandler = function (this: MTGA, e: KeyboardEvent) {
   const { pattern, value } = this.indentify;
 
   const { rows, selectedRows } = getRows(el);
+  const { short, long, dir, isReversed } = getState(el);
   const isMultiple = selectedRows.length > 1;
   const shouldRemove = e.shiftKey;
-  const state = updateRows(el, rows, (row) => {
+
+  let newShort = short,
+      newLong = long;
+
+  const newValues: string[] = [];
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const { startIndex, endIndex } = row;
+
+    const origValue = row.value;
+
     const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
     if (!isSelected) {
-      return row.value;
+      newValues.push(row.value);
+      continue;
     }
 
+    let newValue;
     if (isMultiple) {
       const isEmpty = !row.value.trim();
       if (shouldRemove) {
-        return row.value.replace(pattern, "");
+        newValue = row.value.replace(pattern, "");
       } else if (isEmpty) {
-        return row.value;
+        newValue = row.value;
       } else {
-        return value + row.value;
+        newValue = value + row.value;
       }
     } else {
       if (shouldRemove) {
-        return row.value.replace(pattern, "");
+        newValue = row.value.replace(pattern, "");
       } else {
-        return value + row.value;
+        newValue = value + row.value;
       }
     }
-  });
 
-  setState(el, state);
+    const diff = newValue.length - origValue.length;
+
+    if (short >= startIndex && short < endIndex) {
+      if (diff >= 0) {
+        newShort += diff;
+        newLong += diff;
+      } else {
+        newShort += Math.max(diff, startIndex - short);
+        newLong += Math.max(diff, startIndex - long);
+      }
+    } else if (long >= startIndex && short < endIndex) {
+      if (diff >= 0) {
+        newLong += diff;
+      } else {
+        newLong += Math.max(diff, startIndex - long);
+      }
+    } else {
+      newLong += diff;
+    }
+
+    newValues.push(newValue);
+  }
+
+  setState(el, {
+    isReversed,
+    short: newShort,
+    long: newLong,
+    dir,
+    value: newValues.join(""),
+  });
 
   this.history.add();
 }
@@ -68,7 +109,7 @@ export class Indentify {
     parent.modules.push(
       {
         name: "Indentify",
-        onKeydown: indentifyHandler,
+        onKeydown: onKeydown,
       }
     );
   }

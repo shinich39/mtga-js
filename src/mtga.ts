@@ -6,6 +6,7 @@ import { Tagify } from "./modules/tagify.js";
 import { IModule } from "./types/module.js";
 import { IKeydownState, IState } from "./types/state.js";
 import { History } from "./modules/history.js";
+import { Breakify } from "./modules/breakify.js";
 
 export { Pairify } from "./modules/pairify.js";
 export { Commentify } from "./modules/commentify.js";
@@ -30,6 +31,7 @@ export class MTGA {
     this.history = new History(this);
     this.commentify = new Commentify(this);
     this.indentify = new Indentify(this);
+    this.breakify = new Breakify(this);
     this.pairify = new Pairify(this);
     this.tagify = new Tagify(this);
 

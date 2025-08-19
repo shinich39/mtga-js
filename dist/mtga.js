@@ -188,42 +188,6 @@ var MtgaJs = (() => {
       selectedRows
     };
   };
-  var updateRows = function(el, rows, callback) {
-    const { short, long, dir, isReversed } = getState(el);
-    let newShort = short, newLong = long;
-    const rowValues = [];
-    for (const r of rows) {
-      const { startIndex, endIndex } = r;
-      const origValue = r.value;
-      const newValue = callback(r);
-      const diff = newValue.length - origValue.length;
-      if (short >= startIndex && short < endIndex) {
-        if (diff >= 0) {
-          newShort += diff;
-          newLong += diff;
-        } else {
-          newShort += Math.max(diff, startIndex - short);
-          newLong += Math.max(diff, startIndex - long);
-        }
-      } else if (long >= startIndex && short < endIndex) {
-        if (diff >= 0) {
-          newLong += diff;
-        } else {
-          newLong += Math.max(diff, startIndex - long);
-        }
-      } else {
-        newLong += diff;
-      }
-      rowValues.push(newValue);
-    }
-    return {
-      isReversed,
-      short: newShort,
-      long: newLong,
-      dir,
-      value: rowValues.join("")
-    };
-  };
 
   // src/modules/pairify.ts
   var isOpening = function(pairs, value) {
@@ -348,7 +312,7 @@ var MtgaJs = (() => {
     }
     return false;
   };
-  var commentifyHandler = function(e) {
+  var onKeydown = function(e) {
     if (e.defaultPrevented) {
       return;
     }
@@ -361,31 +325,64 @@ var MtgaJs = (() => {
     const el = this.element;
     const { pattern, value } = this.commentify;
     const { rows, selectedRows } = getRows(el);
+    const { short, long, dir, isReversed } = getState(el);
     const isMultiple = selectedRows.length > 1;
     const shouldRemove = hasComment(selectedRows);
-    const state = updateRows(el, rows, (row) => {
+    let newShort = short, newLong = long;
+    const newValues = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const { startIndex, endIndex } = row;
+      const origValue = row.value;
       const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
       if (!isSelected) {
-        return row.value;
+        newValues.push(row.value);
+        continue;
       }
+      let newValue;
       if (isMultiple) {
         const isEmpty = !row.value.trim();
         if (shouldRemove) {
-          return row.value.replace(pattern, "");
+          newValue = row.value.replace(pattern, "");
         } else if (isEmpty) {
-          return row.value;
+          newValue = row.value;
         } else {
-          return value + row.value;
+          newValue = value + row.value;
         }
       } else {
         if (shouldRemove) {
-          return row.value.replace(pattern, "");
+          newValue = row.value.replace(pattern, "");
         } else {
-          return value + row.value;
+          newValue = value + row.value;
         }
       }
+      const diff = newValue.length - origValue.length;
+      if (short >= startIndex && short < endIndex) {
+        if (diff >= 0) {
+          newShort += diff;
+          newLong += diff;
+        } else {
+          newShort += Math.max(diff, startIndex - short);
+          newLong += Math.max(diff, startIndex - long);
+        }
+      } else if (long >= startIndex && short < endIndex) {
+        if (diff >= 0) {
+          newLong += diff;
+        } else {
+          newLong += Math.max(diff, startIndex - long);
+        }
+      } else {
+        newLong += diff;
+      }
+      newValues.push(newValue);
+    }
+    setState(el, {
+      isReversed,
+      short: newShort,
+      long: newLong,
+      dir,
+      value: newValues.join("")
     });
-    setState(el, state);
     this.history.add();
   };
   var Commentify = class _Commentify {
@@ -399,7 +396,7 @@ var MtgaJs = (() => {
       parent.modules.push(
         {
           name: "Commentify",
-          onKeydown: commentifyHandler
+          onKeydown
         }
       );
     }
@@ -410,7 +407,7 @@ var MtgaJs = (() => {
   };
 
   // src/modules/indentify.ts
-  var indentifyHandler = function(e) {
+  var onKeydown2 = function(e) {
     if (e.defaultPrevented) {
       return;
     }
@@ -423,31 +420,64 @@ var MtgaJs = (() => {
     const el = this.element;
     const { pattern, value } = this.indentify;
     const { rows, selectedRows } = getRows(el);
+    const { short, long, dir, isReversed } = getState(el);
     const isMultiple = selectedRows.length > 1;
     const shouldRemove = e.shiftKey;
-    const state = updateRows(el, rows, (row) => {
+    let newShort = short, newLong = long;
+    const newValues = [];
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const { startIndex, endIndex } = row;
+      const origValue = row.value;
       const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
       if (!isSelected) {
-        return row.value;
+        newValues.push(row.value);
+        continue;
       }
+      let newValue;
       if (isMultiple) {
         const isEmpty = !row.value.trim();
         if (shouldRemove) {
-          return row.value.replace(pattern, "");
+          newValue = row.value.replace(pattern, "");
         } else if (isEmpty) {
-          return row.value;
+          newValue = row.value;
         } else {
-          return value + row.value;
+          newValue = value + row.value;
         }
       } else {
         if (shouldRemove) {
-          return row.value.replace(pattern, "");
+          newValue = row.value.replace(pattern, "");
         } else {
-          return value + row.value;
+          newValue = value + row.value;
         }
       }
+      const diff = newValue.length - origValue.length;
+      if (short >= startIndex && short < endIndex) {
+        if (diff >= 0) {
+          newShort += diff;
+          newLong += diff;
+        } else {
+          newShort += Math.max(diff, startIndex - short);
+          newLong += Math.max(diff, startIndex - long);
+        }
+      } else if (long >= startIndex && short < endIndex) {
+        if (diff >= 0) {
+          newLong += diff;
+        } else {
+          newLong += Math.max(diff, startIndex - long);
+        }
+      } else {
+        newLong += diff;
+      }
+      newValues.push(newValue);
+    }
+    setState(el, {
+      isReversed,
+      short: newShort,
+      long: newLong,
+      dir,
+      value: newValues.join("")
     });
-    setState(el, state);
     this.history.add();
   };
   var Indentify = class _Indentify {
@@ -461,7 +491,7 @@ var MtgaJs = (() => {
       parent.modules.push(
         {
           name: "Indentify",
-          onKeydown: indentifyHandler
+          onKeydown: onKeydown2
         }
       );
     }
@@ -480,7 +510,7 @@ var MtgaJs = (() => {
       }
     }
   };
-  var tagifyHandler = function(e) {
+  var onKeydown3 = function(e) {
     if (e.defaultPrevented) {
       return;
     }
@@ -566,7 +596,7 @@ var MtgaJs = (() => {
       parent.modules.push(
         {
           name: "Tagify",
-          onKeyup: tagifyHandler
+          onKeyup: onKeydown3
         }
       );
     }
@@ -735,6 +765,63 @@ var MtgaJs = (() => {
     }
   };
 
+  // src/modules/breakify.ts
+  var onKeydown4 = function(e) {
+    if (e.defaultPrevented) {
+      return;
+    }
+    const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+    const isValid = ctrlKey && !altKey && key === "Enter";
+    if (!isValid) {
+      return;
+    }
+    e.preventDefault();
+    const el = this.element;
+    const { short, long, dir, isReversed } = getState(el);
+    const { rows, selectedRows } = getRows(el);
+    const targetRow = !e.shiftKey ? selectedRows[selectedRows.length - 1] : selectedRows[0];
+    let newValues = [], newShort = short, newLong = long;
+    for (const row of rows) {
+      const isTarget = targetRow.rowIndex === row.rowIndex;
+      if (!isTarget) {
+        newValues.push(row.value);
+        continue;
+      }
+      if (!e.shiftKey) {
+        newValues.push(row.value + "\n");
+        newShort = row.endIndex;
+        newLong = row.endIndex;
+      } else {
+        newValues.push("\n" + row.value);
+        newShort = row.startIndex;
+        newLong = row.startIndex;
+      }
+    }
+    setState(el, {
+      isReversed: false,
+      short: newShort,
+      long: newLong,
+      dir: "none",
+      value: newValues.join("")
+    });
+    this.history.add();
+  };
+  var Breakify = class {
+    parent;
+    // pattern: RegExp;
+    // value: string;
+    constructor(parent) {
+      this.parent = parent;
+      parent.modules.push(
+        {
+          name: "Breakify",
+          onKeydown: onKeydown4
+        }
+      );
+    }
+    static defaults = {};
+  };
+
   // src/mtga.ts
   var MTGA = class {
     element;
@@ -749,6 +836,7 @@ var MtgaJs = (() => {
       this.history = new History(this);
       this.commentify = new Commentify(this);
       this.indentify = new Indentify(this);
+      this.breakify = new Breakify(this);
       this.pairify = new Pairify(this);
       this.tagify = new Tagify(this);
       this._keydownState = null;

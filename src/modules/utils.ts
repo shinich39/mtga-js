@@ -247,19 +247,19 @@ export const getRows = function(el: HTMLTextAreaElement) {
 export const updateRows = function(
   el: HTMLTextAreaElement,
   rows: IRow[],
-  callback: (row: IRow) => string,
+  callback: (row: IRow, index: number, rows: IRow[]) => string,
 ) {
   const { short, long, dir, isReversed } = getState(el);
 
   let newShort = short,
       newLong = long;
 
-  const rowValues: string[] = [];
-  for (const r of rows) {
-    const { startIndex, endIndex } = r;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const { startIndex, endIndex } = row;
 
-    const origValue = r.value;
-    const newValue = callback(r);
+    const origValue = row.value;
+    const newValue = callback(row, i, rows);
 
     const diff = newValue.length - origValue.length;
 
@@ -281,14 +281,16 @@ export const updateRows = function(
       newLong += diff;
     }
 
-    rowValues.push(newValue);
+    row.value = newValue;
   }
+
+  const values = rows.map((r) => r.value);
 
   return {
     isReversed,
     short: newShort,
     long: newLong,
     dir,
-    value: rowValues.join(""),
+    value: values.join(""),
   } as IState;
 }
