@@ -1,18 +1,23 @@
-import { IState } from "./utils.js";
-export declare const isUndo: (e: KeyboardEvent) => boolean;
-export declare const isRedo: (e: KeyboardEvent) => boolean;
+import { MTGA } from "../mtga.js";
+import { IState } from "../types/state.js";
+declare module "../mtga.js" {
+    interface MTGA {
+        history: History;
+    }
+}
 export declare class History {
-    element: HTMLTextAreaElement;
-    histories: IState[];
+    parent: MTGA;
+    items: IState[];
     index: number;
     maxCount: number;
-    constructor(el: HTMLTextAreaElement);
+    constructor(parent: MTGA);
+    static defaults: {
+        maxCount: number;
+    };
     prune(): void;
-    add(prune?: boolean): void;
-    prev(): void;
-    next(): void;
+    add(withPrune?: boolean): void;
+    prev(): IState;
+    next(): IState;
     curr(): IState;
-    undo(e: KeyboardEvent): void;
-    redo(e: KeyboardEvent): void;
 }
 //# sourceMappingURL=history.d.ts.map

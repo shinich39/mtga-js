@@ -1,20 +1,6 @@
-export interface IState {
-  short: number,
-  long: number,
-  isReversed?: boolean,
-  dir?: "forward" | "backward" | "none",
-  value?: string,
-}
+import { IRow } from "../types/row.js";
+import { IState } from "../types/state.js";
 
-export interface IRow {
-  rowIndex: number,
-  startIndex: number,
-  endIndex: number,
-  value: string,
-  selectionStart: number,
-  selectionEnd: number,
-  selectionValue: string,
-}
 /**
  * @example
  * input.addEventListener("input", debounce((e) => ..., 100));

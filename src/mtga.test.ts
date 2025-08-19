@@ -2,6 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert";
 import path from "node:path";
 import fs from "node:fs";
+import { MTGA } from "./mtga";
 
 describe(path.basename(import.meta.filename), () => {
 

@@ -26,15 +26,24 @@ Proin id leo nec nisi eleifend eleifend.
     <script src="dist/mtga.js"></script>
     <script>
       const MAX_ITEM_COUNT = 100;
-      const VISIBLE_COUNT = 10;
+      const VISIBLE_COUNT = 11;
 
-      const { MTGA } = window.MtgaJs;
+      console.log("MTGA", window.MtgaJs);
+      
+      const {
+        MTGA,
+        Pairify,
+        Commentify,
+        Indentify,
+        Tagify,
+        History,
+      } = window.MtgaJs;
+
       const mtga = new MTGA(document.getElementById("textarea"));
-      const ac = mtga.AutoComplete;
-      ac.timeout = 0;
+      console.log("init", mtga);
 
       const tags = [];
-      for (let i = 0; i < 10000; i++) {
+      for (let i = 0; i < 100000; i++) {
         tags.push(
           { key: "john_doe", value: "John Doe" },
           { key: "jane_smith", value: "Jane Smith" },
@@ -49,73 +58,83 @@ Proin id leo nec nisi eleifend eleifend.
         );
       }
 
-      ac.tags = tags;
+      const tagify = mtga.tagify;
+      tagify.tags = tags;
 
-      // ;(() => {
-      //   console.log("start indexing");
-      //   console.time("indexing");
-      //   const size = 1;
-      //   ac.createIndex(size).then((result) => {
-      //     console.timeEnd("indexing");
-      //     console.log("indexing complete:", Object.keys(ac.index).length);
-      //   });
-      // })();
+      console.log("tagify", tagify);
 
-      console.log(mtga);
+      // indexing
+      console.time("indexing");
 
-      ;(() => {        
-        let items = [],
-            index = -1;
+      for (const tag of tags) {
+        const found = tagify.indexes.find(({ pattern }) => 
+          pattern.test(tag.key));
 
-        const origParser = ac.parser;
-        ac.parser = (el) => {
-          // console.log("parser", el);
-          const r = origParser(el);
-          r.body = r.body.toLowerCase().replace(/\s/g, "_");
-
-          hide(true);
-
-          if (r.body.length < 1 || r.body.length > 16) {
-            ac.stop(true);
-            return r;
-          }
-
-          return r;
+        if (found) {
+          found.tags.push(tag);
+        } else {
+          tagify.indexes.push({
+            pattern: new RegExp("^"+tag.key[0]),
+            tags: [tag],
+          });
         }
+      }
 
-        ac.filter = (req, i, candidates) => {
-          // console.log("filter", res);
-          const { tag, parts } = req;
-          const a = parts.body;
-          const b = tag.key;
+      console.timeEnd("indexing");
+      console.log("indexes:", tagify.indexes);
 
-          if (ac.result.length >= MAX_ITEM_COUNT) {
-            ac.stop(true);
-            return false;
-          }
-
-          // 100000 items, 5332ms
-          const { score } = ac.compare(a, b);
-          return score >= a.length;
-
-          // 100000 items, 4529ms
-          // return b.indexOf(a) > -1;
-        }
-
+      ;(() => {
         const listEl = document.createElement("div");
         listEl.style.position = "absolute";
         listEl.style.visibility = "hidden";
         listEl.style.backgroundColor = "#FFF";
         listEl.style.borderTop = "1px solid";
         listEl.style.borderLeft = "1px solid";
-
         document.body.appendChild(listEl);
 
+        let items = [],
+            index = -1;
+
+        const origParser = tagify.parser;
+        tagify.parser = (el) => {
+          // console.log("parser", el);
+          const r = origParser(el);
+          r.body = r.body.toLowerCase().replace(/\s/g, "_");
+
+          hide(false);
+
+          if (r.body.length < 1 || r.body.length > 16) {
+            hide();
+            return r;
+          }
+
+          return r;
+        }
+
+        tagify.filter = (req, i, candidates, result) => {
+          // console.log("filter", res);
+          const { tag, query } = req;
+          const a = query.body;
+          const b = tag.key;
+
+          if (result.length >= MAX_ITEM_COUNT) {
+            tagify.stop(true);
+            return false;
+          }
+
+          // 100000 items, 5332ms
+          // const { score } = tagify.compare(a, b);
+          // const ok = score >= a.length;
+
+          // 100000 items, 4529ms
+          const ok = b.indexOf(a) > -1;
+
+          return ok;
+        }
+
         const load = () => {
-          if (index === -1) {
-            ac.reset();
-          } else if (items[index]?.result) {
-            ac.set(items[index].result);
+          if (items[index]?.chunk) {
+            tagify.set(items[index].chunk);
           }
         }
 
@@ -162,14 +181,13 @@ Proin id leo nec nisi eleifend eleifend.
           index = -1;
         }
 
-        const hide = (keep) => {
+        const hide = (kill = true) => {
           items = [];
           index = -1;
           listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
-
-          if (!keep) {
-            ac.stop(true);
+          if (kill) {
+            tagify.stop(true);
           }
         }
 
@@ -187,33 +205,34 @@ Proin id leo nec nisi eleifend eleifend.
                 index = Math.min(items.length - 1, index + 1);
                 render();
                 break;
-              case "Escape":
-                e.preventDefault();
-                hide();
-                break;
               case "ArrowLeft":
               case "ArrowRight":
+                hide();
+                break;
+              case "Escape":
+                e.preventDefault();
                 hide();
                 break;
               case "Enter":
                 e.preventDefault();
                 load();
-                mtga.History.add();
                 hide();
                 break;
             }
           }
         }
 
-        const onData = (chunks) => {
-          console.log("onData", chunks);
+        const onData = (chunks, result) => {
+          if (chunks.length) {
+            console.log("onData", chunks, result);
+          }
 
           // render items
           for (let i = 0; i < chunks.length; i++) {
             const idx = i;
-            const res = chunks[i];
-            const { tag, parts } = res;
-            const { match } = ac.compare(parts.body, tag.key);
+            const chunk = chunks[i];
+            const { tag, query } = chunk;
+            const { match } = tagify.compare(query.body, tag.key);
             const itemEl = document.createElement("div");
             itemEl.style.padding = "2px 4px";
             itemEl.style.cursor = "pointer";
@@ -239,7 +258,7 @@ Proin id leo nec nisi eleifend eleifend.
             });
 
             items.push({
-              result: res,
+              chunk,
               element: itemEl,
             });
 
@@ -253,64 +272,10 @@ Proin id leo nec nisi eleifend eleifend.
           render();
         }
 
-        // const onEnd = (result) => {
-        //   console.log("onEnd", result);
-
-        //   if (result.length < 1) {
-        //     hide();
-        //     return;
-        //   }
-
-        //   // render items
-        //   for (let i = 0; i < result.length; i++) {
-        //     const idx = i;
-        //     const res = result[i];
-        //     const { tag, parts } = res;
-        //     const { match } = ac.compare(parts.body, tag.key);
-        //     const itemEl = document.createElement("div");
-        //     itemEl.style.padding = "2px 4px";
-        //     itemEl.style.cursor = "pointer";
-        //     itemEl.style.borderRight = "1px solid black";
-        //     itemEl.style.borderBottom = "1px solid black";
-
-        //     let html = "";
-        //     for (const [type, value] of match) {
-        //       if (type === -1) {
-        //         continue;
-        //       }
-
-        //       html += type === 0
-        //         ? `<span style="background-color: yellow; color: black;">${value}</span>` 
-        //         : `<span>${value}</span>`;
-        //     }
-
-        //     itemEl.innerHTML = html;
-        //     itemEl.addEventListener("mousedown", (e) => {
-        //       e.preventDefault();
-        //       index = idx;
-        //       load();
-        //     });
-
-        //     items.push({
-        //       result: res,
-        //       element: itemEl,
-        //     });
-
-        //     listEl.appendChild(itemEl);
-        //   }
-
-        //   if (items.length > 0 && !isShown()) {
-        //     show();
-        //   }
-
-        //   render();
-        // }
-
-        ac.element.addEventListener("keydown", keydownHandler, true);
-        ac.element.addEventListener("click", hide);
-        ac.element.addEventListener("blur", hide);
-        ac.onData = onData;
-        // ac.onEnd = onEnd;
+        mtga.element.addEventListener("keydown", keydownHandler, true);
+        mtga.element.addEventListener("click", hide);
+        mtga.element.addEventListener("blur", hide);
+        mtga.tagify.onData = onData;
       })();
 
     </script>

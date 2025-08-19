@@ -1,27 +1,26 @@
-import { AutoPairing } from "./modules/auto-pairing.js";
-import { IState } from "./modules/utils.js";
-import { History } from "./modules/history.js";
-import { Commentify } from "./modules/commentify.js";
-import { Indentify } from "./modules/indentify.js";
-import { AutoComplete } from "./modules/auto-complete.js";
-interface KeydownState {
-    state: IState;
-    value: string;
-    key: string;
-}
+import "./modules/pairify.js";
+import "./modules/commentify.js";
+import "./modules/indentify.js";
+import "./modules/tagify.js";
+import { IModule } from "./types/module.js";
+import { IKeydownState, IState } from "./types/state.js";
+import "./modules/history.js";
+export { Pairify } from "./modules/pairify.js";
+export { Commentify } from "./modules/commentify.js";
+export { Indentify } from "./modules/indentify.js";
+export { Tagify } from "./modules/tagify.js";
+export { History } from "./modules/history.js";
 export declare class MTGA {
     element: HTMLTextAreaElement;
-    _keydownState: KeydownState | null;
-    History: History;
-    Commentify: Commentify;
-    Indentify: Indentify;
-    AutoPairing: AutoPairing;
-    AutoComplete: AutoComplete;
+    modules: IModule[];
+    _keydownState: IKeydownState | null;
+    _keydownEvent: (e: KeyboardEvent) => void;
+    _keyupEvent: (e: KeyboardEvent) => void;
+    _mouseupEvent: (e: MouseEvent) => void;
     constructor(el: HTMLTextAreaElement);
     getState(withValue?: boolean): IState;
     setState(state: IState): void;
     _clearKeydownState(): void;
     _setKeydownState(e: KeyboardEvent): void;
 }
-export {};
 //# sourceMappingURL=mtga.d.ts.map

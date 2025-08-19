@@ -1,39 +1,132 @@
-import { getState, IState, setState, parseKeyboardEvent } from "./utils.js";
+import { MTGA } from "../mtga.js";
+import { IState } from "../types/state.js";
+import { getState, parseKeyboardEvent, setState } from "./utils.js";
 
-export const isUndo = function(e: KeyboardEvent) {
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  return ctrlKey && !shiftKey && key.toLowerCase() === "z";
+declare module "../mtga.js" {
+  interface MTGA {
+    history: History;
+  }
 }
 
-export const isRedo = function(e: KeyboardEvent) {
+const undoHandler = function(this: MTGA, e: KeyboardEvent) {
+  if (e.defaultPrevented) {
+    return;
+  }
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  return ctrlKey && shiftKey && key.toLowerCase() === "z";
+
+  const isValid = ctrlKey && !altKey && !shiftKey && key.toLowerCase() === "z";
+  if (!isValid) {
+    return;
+  }
+
+  e.preventDefault();
+  
+  const el = this.element;
+
+  const h = this.history.prev();
+  if (!h) {
+    return;
+  }
+
+  setState(el, h);
+}
+
+const redoHandler = function(this: MTGA, e: KeyboardEvent) {
+  if (e.defaultPrevented) {
+    return;
+  }
+
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  
+  const isValid = ctrlKey && !altKey && shiftKey && key.toLowerCase() === "z";
+  if (!isValid) {
+    return;
+  }
+
+  e.preventDefault();
+  
+  const el = this.element;
+
+  const h = this.history.next();
+  if (!h) {
+    return;
+  }
+
+  setState(el, h);
+}
+
+const historyHandler = function(this: MTGA, e: KeyboardEvent) {
+  const keydownState = this._keydownState;
+  
+  this._clearKeydownState();
+
+  if (!keydownState) {
+    return;
+  }
+
+  const el = this.element;
+  const prevValue = keydownState.value;
+
+  // insert
+  if (prevValue !== el.value) {
+    this.history.add();
+  } // move
+  else {
+    const prevState = keydownState.state;
+    const currState = getState(el);
+    if (
+      prevState.short !== currState.short ||
+      prevState.long !== currState.long
+    ) {
+      this.history.add(false);
+    }
+  }
 }
 
 export class History {
-  element: HTMLTextAreaElement;
-  histories: IState[];
+  parent: MTGA;
+  items: IState[];
   index: number;
   maxCount: number;
 
-  constructor(el: HTMLTextAreaElement) {
-    this.element = el;
-    this.histories = [];
+  constructor(parent: MTGA) {
+    this.parent = parent;
+    this.items = [];
     this.index = 1;
-    this.maxCount = 390;
+    this.maxCount = History.defaults.maxCount;
+
+    parent.modules.push(
+      {
+        name: "Undo",
+        onKeydown: undoHandler,
+      },
+      {
+        name: "Redo",
+        onKeydown: redoHandler,
+      },
+      {
+        name: "History",
+        onKeyup: historyHandler,
+      },
+    );
   }
+
+  static defaults = {
+    maxCount: 390,
+  };
 
   prune() {
     if (this.index > 1) {
-      this.histories = this.histories.slice(0, this.histories.length - (this.index - 1));
+      this.items = this.items.slice(0, this.items.length - (this.index - 1));
       this.index = 1;
     }
   }
 
-  add(prune = true) {
-    const el = this.element;
+  add(withPrune = true) {
+    const el = this.parent.element;
     
-    if (prune) {
+    if (withPrune) {
       this.prune();
     } else if (this.index !== 1) {
       return;
@@ -41,53 +134,28 @@ export class History {
 
     const state = getState(el, true);
 
-    this.histories.push(state);
+    this.items.push(state);
 
-    if (this.histories.length > this.maxCount) {
-      this.histories.shift();
+    if (this.items.length > this.maxCount) {
+      this.items.shift();
     }
   }
 
   prev() {
-    if (this.index < this.histories.length) {
+    if (this.index < this.items.length) {
       this.index += 1;
     }
+    return this.curr();
   }
 
   next() {
     if (this.index > 1) {
       this.index -= 1;
     }
+    return this.curr();
   }
 
   curr() {
-    return this.histories[this.histories.length - this.index];
+    return this.items[this.items.length - this.index];
   }
-
-  undo(e: KeyboardEvent) {
-    const el = this.element;
-
-    this.prev();
-
-    const h = this.curr();
-    if (!h) {
-      return;
-    }
-
-    setState(el, h);
-  }
-
-  redo(e: KeyboardEvent) {
-    const el = this.element;
-
-    this.next();
-
-    const h = this.curr();
-    if (!h) {
-      return;
-    }
-
-    setState(el, h);
-  }
-
 }

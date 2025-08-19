@@ -1,94 +1,73 @@
-import { AutoPairing } from "./modules/auto-pairing.js";
-import { debounce, getState, IState, setState } from "./modules/utils.js";
-import { History, isRedo, isUndo } from "./modules/history.js";
+import { Pairify } from "./modules/pairify.js";
+import { debounce, getState, setState } from "./modules/utils.js";
 import { Commentify } from "./modules/commentify.js";
 import { Indentify } from "./modules/indentify.js";
-import { AutoComplete } from "./modules/auto-complete.js";
+import { Tagify } from "./modules/tagify.js";
+import { IModule } from "./types/module.js";
+import { IKeydownState, IState } from "./types/state.js";
+import { History } from "./modules/history.js";
 
-interface KeydownState {
-  state: IState,
-  value: string,
-  key: string,
-}
+export { Pairify } from "./modules/pairify.js";
+export { Commentify } from "./modules/commentify.js";
+export { Indentify } from "./modules/indentify.js";
+export { Tagify } from "./modules/tagify.js";
+export { History } from "./modules/history.js";
 
 export class MTGA {
   element: HTMLTextAreaElement;
-  _keydownState: KeydownState | null;
+  modules: IModule[];
 
-  History: History;
-  Commentify: Commentify;
-  Indentify: Indentify;
-  AutoPairing: AutoPairing;
-  AutoComplete: AutoComplete;
+  _keydownState: IKeydownState | null;
+  _keydownEvent: (e: KeyboardEvent) => void;
+  _keyupEvent: (e: KeyboardEvent) => void;
+  _mouseupEvent: (e: MouseEvent) => void;
   
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
+    this.modules = [];
+
+    // setup default modules
+    this.history = new History(this);
+    this.commentify = new Commentify(this);
+    this.indentify = new Indentify(this);
+    this.pairify = new Pairify(this);
+    this.tagify = new Tagify(this);
+
+    // private properties
     this._keydownState = null;
+    this._keydownEvent = (e) => {
+      for (const m of this.modules) {
+        m.onKeydown?.call(this, e);
 
-    this.History = new History(el);
-    this.Commentify = new Commentify(el);
-    this.Indentify = new Indentify(el);
-    this.AutoPairing = new AutoPairing(el, {
-      "(": ")",
-      "[": "]",
-      "{": "}",
-      "<": ">",
-      "'": "'",
-      "\"": "\"",
-      "`": "`",
-    });
-    this.AutoComplete = new AutoComplete(el);
+        if (e.defaultPrevented) {
+          this._clearKeydownState();
+          return;
+        }
+      }
 
-    el.addEventListener("keydown", (e) => {
-      if (isUndo(e)) {
-        // console.log("undo");
-        e.preventDefault();
-        this.History.undo(e);
-        this._clearKeydownState();
-      } else if (isRedo(e)) {
-        // console.log("redo");
-        e.preventDefault();
-        this.History.redo(e);
-        this._clearKeydownState();
-      } else if (this.AutoPairing.isInsert(e)) {
-        // console.log("insertPair");
-        e.preventDefault();
-        this.AutoPairing.insert(e);
-        this.History.add();
-        this._clearKeydownState();
-      } else if (this.AutoPairing.isDelete(e)) {
-        // console.log("deletePair");
-        e.preventDefault();
-        this.AutoPairing.delete(e);
-        this.History.add();
-        this._clearKeydownState();
-      } else if (this.Commentify.isValid(e)) {
-        // console.log("commentify");
-        e.preventDefault();
-        this.Commentify.exec(e);
-        this.History.add();
-        this._clearKeydownState();
-      } else if (this.Indentify.isValid(e)) {
-        // console.log("indentify");
-        e.preventDefault();
-        this.Indentify.exec(e);
-        this.History.add();
-        this._clearKeydownState();
-      } else if (
+      if (
         ![
-          // "Backspace",
           "Meta",
           "Control",
           "Alt",
           "Shift",
         ].includes(e.key)
       ) {
-        // console.log("keydown", e.key);
         this._setKeydownState(e);
       }
-    }, true);
+    }
 
-    el.addEventListener("keyup", (e) => {
+    this._keyupEvent = (e) => {
+      const el = this.element;
+      
+      for (const m of this.modules) {
+        m.onKeyup?.call(this, e);
+
+        if (e.defaultPrevented) {
+          break;
+        }
+      }
+
       const keydownState = this._keydownState;
       
       this._clearKeydownState();
@@ -96,12 +75,12 @@ export class MTGA {
       if (!keydownState) {
         return;
       }
-
+    
       const prevValue = keydownState.value;
 
       // insert
       if (prevValue !== el.value) {
-        this.History.add();
+        this.history.add();
       } // move
       else {
         const prevState = keydownState.state;
@@ -110,27 +89,18 @@ export class MTGA {
           prevState.short !== currState.short ||
           prevState.long !== currState.long
         ) {
-          this.History.add(false);
+          this.history.add(false);
         }
       }
-    }, true);
+    }
 
-    // auto-complete
-    el.addEventListener("keyup", (e) => {
-      const { metaKey, ctrlKey, key } = e;
-      if (
-        !metaKey &&
-        !ctrlKey &&
-        (key.length === 1 || key === "Backspace")
-      ) {
-        // console.log("keyup", key);
-        this.AutoComplete.exec();
-      }
-    }, true);
+    this._mouseupEvent = (e) => {
+      this.history.add(false);
+    }
 
-    this.element.addEventListener("mouseup", (e) => {
-      this.History.add(false);
-    }, true);
+    this.element.addEventListener("keydown", this._keydownEvent, true);
+    this.element.addEventListener("keyup", this._keyupEvent, true);
+    this.element.addEventListener("mouseup", this._mouseupEvent, true);
   }
 
   getState(withValue?: boolean) {
@@ -152,5 +122,4 @@ export class MTGA {
       key: e.key,
     }
   }
-
 }
