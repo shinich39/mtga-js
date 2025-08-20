@@ -69,7 +69,7 @@ export class Breakify {
 
     parent.modules.push(
       {
-        name: "Breakify",
+        name: "breakify",
         onKeydown: onKeydown,
       }
     );

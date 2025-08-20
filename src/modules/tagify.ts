@@ -161,7 +161,7 @@ export class Tagify {
 
     parent.modules.push(
       {
-        name: "Tagify",
+        name: "tagify",
         onKeyup: onKeydown,
       }
     );

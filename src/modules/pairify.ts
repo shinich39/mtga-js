@@ -138,11 +138,11 @@ export class Pairify {
 
     parent.modules.push(
       {
-        name: "ClosePair",
+        name: "pairifyClose",
         onKeydown: closePairHandler,
       },
       {
-        name: "ClearPair",
+        name: "pairifyClear",
         onKeydown: clearPairHandler,
       }
     );

@@ -56,7 +56,7 @@ const redoHandler = function(this: MTGA, e: KeyboardEvent) {
   setState(el, h);
 }
 
-const historyHandler = function(this: MTGA, e: KeyboardEvent) {
+const pushHandler = function(this: MTGA, e: KeyboardEvent) {
   const keydownState = this._keydownState;
   
   this._clearKeydownState();
@@ -98,16 +98,16 @@ export class History {
 
     parent.modules.push(
       {
-        name: "Undo",
+        name: "historyUndo",
         onKeydown: undoHandler,
       },
       {
-        name: "Redo",
+        name: "historyRedo",
         onKeydown: redoHandler,
       },
       {
-        name: "History",
-        onKeyup: historyHandler,
+        name: "historyPush",
+        onKeyup: pushHandler,
       },
     );
   }
@@ -132,9 +132,19 @@ export class History {
       return;
     }
 
-    const state = getState(el, true);
+    const prevState = this.items[this.items.length - 1];
+    const currState = getState(el, true);
 
-    this.items.push(state);
+    const isChanged = !prevState ||
+      prevState.short !== currState.short ||
+      prevState.long !== currState.long ||
+      prevState.value !== currState.value;
+
+    if (!isChanged) {
+      return;
+    }
+
+    this.items.push(currState);
 
     if (this.items.length > this.maxCount) {
       this.items.shift();

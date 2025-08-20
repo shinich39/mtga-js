@@ -20,7 +20,8 @@ export declare class MTGA {
     _keydownState: IKeydownState | null;
     _keydownEvent: (e: KeyboardEvent) => void;
     _keyupEvent: (e: KeyboardEvent) => void;
-    _mouseupEvent: (e: MouseEvent) => void;
+    _focusEvent: (e: FocusEvent) => void;
+    _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
     getState(withValue?: boolean): IState;
     setState(state: IState): void;

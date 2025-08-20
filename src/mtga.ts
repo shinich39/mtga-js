@@ -24,7 +24,8 @@ export class MTGA {
   _keydownState: IKeydownState | null;
   _keydownEvent: (e: KeyboardEvent) => void;
   _keyupEvent: (e: KeyboardEvent) => void;
-  _mouseupEvent: (e: MouseEvent) => void;
+  _focusEvent: (e: FocusEvent) => void;
+  _blurEvent: (e: FocusEvent) => void;
   
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
@@ -42,7 +43,6 @@ export class MTGA {
     // private properties
     this._keydownState = null;
     this._keydownEvent = (e) => {
-      
       for (const m of this.modules) {
         m.onKeydown?.call(this, e);
       }
@@ -62,45 +62,30 @@ export class MTGA {
     }
 
     this._keyupEvent = (e) => {
-      
       for (const m of this.modules) {
         m.onKeyup?.call(this, e);
       }
-
-      const el = this.element;
-      const keydownState = this._keydownState;
-      
-      this._clearKeydownState();
-
-      if (!keydownState) {
-        return;
-      }
-    
-      const prevValue = keydownState.value;
-
-      // insert
-      if (prevValue !== el.value) {
-        this.history.add();
-      } // move
-      else {
-        const prevState = keydownState.state;
-        const currState = getState(el);
-        if (
-          prevState.short !== currState.short ||
-          prevState.long !== currState.long
-        ) {
-          this.history.add(false);
-        }
-      }
     }
 
-    this._mouseupEvent = (e) => {
+    const _selectionEvent = (e: MouseEvent) => {
       this.history.add(false);
+    }
+
+    this._focusEvent = (e) => {
+      setTimeout(() => {
+        this.history.add(false);
+        this.element.addEventListener("pointerup", _selectionEvent, true);
+      }, 0);
+    }
+
+    this._blurEvent = (e) => {
+      this.element.removeEventListener("pointerup", _selectionEvent, true);
     }
 
     this.element.addEventListener("keydown", this._keydownEvent, true);
     this.element.addEventListener("keyup", this._keyupEvent, true);
-    this.element.addEventListener("mouseup", this._mouseupEvent, true);
+    this.element.addEventListener("focus", this._focusEvent, true);
+    this.element.addEventListener("blur", this._blurEvent, true);
   }
 
   getState(withValue?: boolean) {

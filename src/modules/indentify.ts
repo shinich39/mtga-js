@@ -110,7 +110,7 @@ export class Indentify {
 
     parent.modules.push(
       {
-        name: "Indentify",
+        name: "indentify",
         onKeydown: onKeydown,
       }
     );

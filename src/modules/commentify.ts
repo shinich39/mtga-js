@@ -10,13 +10,24 @@ declare module "../mtga.js" {
 
 const hasComment = function(selectedRows: IRow[]) {
   for (const r of selectedRows) {
-    const _hasComment = r.value.startsWith("//");
-    if (_hasComment) {
+    const ok = r.value.startsWith("//");
+    if (ok) {
       return true;
     }
   }
 
   return false;
+}
+
+const isCommentified = function(selectedRows: IRow[]) {
+  for (const r of selectedRows) {
+    const ok = r.value.startsWith("//");
+    if (!ok) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 const onKeydown = function (this: MTGA, e: KeyboardEvent) {
@@ -39,7 +50,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   const { short, long, dir, isReversed } = getState(el);
   const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
-  const shouldRemove = hasComment(selectedRows);
+  const shouldRemove = isCommentified(selectedRows);
 
   let newShort = short,
       newLong = long;
@@ -122,7 +133,7 @@ export class Commentify {
 
     parent.modules.push(
       {
-        name: "Commentify",
+        name: "commentify",
         onKeydown: onKeydown,
       }
     );

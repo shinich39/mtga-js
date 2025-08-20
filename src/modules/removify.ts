@@ -76,7 +76,7 @@ export class Removify {
 
     parent.modules.push(
       {
-        name: "Removify",
+        name: "removify",
         onKeydown: onKeydown,
       }
     );
