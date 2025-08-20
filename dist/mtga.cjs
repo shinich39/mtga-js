@@ -898,12 +898,10 @@ var MTGA = class {
     this._keydownEvent = (e) => {
       for (const m of this.modules) {
         m.onKeydown?.call(this, e);
-        if (e.defaultPrevented) {
-          this._clearKeydownState();
-          return;
-        }
       }
-      if (![
+      if (e.defaultPrevented) {
+        this._clearKeydownState();
+      } else if (![
         "Meta",
         "Control",
         "Alt",
@@ -913,13 +911,10 @@ var MTGA = class {
       }
     };
     this._keyupEvent = (e) => {
-      const el2 = this.element;
       for (const m of this.modules) {
         m.onKeyup?.call(this, e);
-        if (e.defaultPrevented) {
-          break;
-        }
       }
+      const el2 = this.element;
       const keydownState = this._keydownState;
       this._clearKeydownState();
       if (!keydownState) {
