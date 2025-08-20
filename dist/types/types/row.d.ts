@@ -1,5 +1,6 @@
 export interface IRow {
-    rowIndex: number;
+    isSelected: boolean;
+    index: number;
     startIndex: number;
     endIndex: number;
     value: string;

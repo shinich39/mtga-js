@@ -3,7 +3,7 @@ import { setState, getRows, parseKeyboardEvent, getState } from "./utils.js";
 
 declare module "../mtga.js" {
   interface MTGA {
-    breakify: Breakify;
+    removify: Removify;
   }
 }
 
@@ -11,9 +11,9 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
-  
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValid = ctrlKey && !altKey && key === "Enter";
+  const isValid = ctrlKey && !altKey && shiftKey && key.toLowerCase() === "k";
   if (!isValid) {
     return;
   }
@@ -21,33 +21,40 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   e.preventDefault();
 
   const el = this.element;
-  const { short, long, dir, isReversed } = getState(el);
+  // const { short, long, dir, isReversed } = getState(el);
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
-  const targetRow = e.shiftKey
-    ? selectedRows[0]
-    : selectedRows[selectedRows.length - 1];
+  const firstSelectedRow = selectedRows[0];
 
   let newValues: string[] = [], 
-      newShort = short, 
-      newLong = long;
+      newShort = 0, 
+      newLong = 0;
 
   for (const row of rows) {
-    const isTarget = targetRow.index === row.index;
-    if (!isTarget) {
-      newValues.push(row.value);
+    const isSelected = row.isSelected;
+    if (isSelected) {
       continue;
     }
 
-    if (!e.shiftKey) {
-      newValues.push(row.value + "\n");
-      newShort = row.endIndex;
-      newLong = row.endIndex;
-    } else {
-      newValues.push("\n" + row.value);
+    // the row before the first selected row
+    if (row.index === firstSelectedRow.index - 1) {
       newShort = row.startIndex;
       newLong = row.startIndex;
     }
+    
+    newValues.push(row.value);
+  }
+
+  let value = newValues.join("");
+
+  // if last char is empty 
+  // previous char is \n
+  const removeLastLinebreak = selectedRows.length === 1
+    && selectedRows[0].value === ""
+    && rows[rows.length - 1].index === selectedRows[0].index;
+
+  if (removeLastLinebreak) {
+    value = value.substring(0, value.length - 1);
   }
 
   setState(el, {
@@ -55,13 +62,13 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     short: newShort,
     long: newLong,
     dir: "none",
-    value: newValues.join(""),
+    value,
   });
 
   this.history.add();
 }
 
-export class Breakify {
+export class Removify {
   parent: MTGA;
 
   constructor(parent: MTGA) {
@@ -69,7 +76,7 @@ export class Breakify {
 
     parent.modules.push(
       {
-        name: "Breakify",
+        name: "Removify",
         onKeydown: onKeydown,
       }
     );

@@ -26,6 +26,7 @@ __export(mtga_exports, {
   Indentify: () => Indentify,
   MTGA: () => MTGA,
   Pairify: () => Pairify,
+  Removify: () => Removify,
   Tagify: () => Tagify
 });
 module.exports = __toCommonJS(mtga_exports);
@@ -53,7 +54,7 @@ var getState = function(el, withValue) {
   };
 };
 var setState = function(el, state) {
-  if (state.value) {
+  if (typeof state.value === "string") {
     el.value = state.value;
   }
   if (!state.isReversed) {
@@ -140,19 +141,18 @@ var getRows = function(el) {
   const { short, long } = getState(el);
   const arr = el.value.split(/\n/);
   const rows = [];
-  const selectedRows = [];
   let offset = 0;
   for (let i = 0; i < arr.length; i++) {
     const item = arr[i];
     const isLastRow = i === arr.length - 1;
     const value = isLastRow ? item : item + "\n";
     const startIndex = offset;
-    const endIndex = offset + item.length + 1;
+    const endIndex = startIndex + value.length;
     let selectionStart = -1, selectionEnd = -1, selectionValue = "";
     if (short >= startIndex && short < endIndex) {
       selectionStart = short - startIndex;
     }
-    if (long > startIndex && long < endIndex) {
+    if (long > startIndex && (!isLastRow ? long < endIndex : long <= endIndex)) {
       selectionEnd = long - startIndex;
     }
     if (short <= startIndex && long >= endIndex) {
@@ -170,7 +170,8 @@ var getRows = function(el) {
       selectionValue = value.substring(selectionStart, selectionEnd);
     }
     const newRow = {
-      rowIndex: i,
+      isSelected,
+      index: i,
       startIndex,
       endIndex,
       value,
@@ -179,15 +180,9 @@ var getRows = function(el) {
       selectionValue
     };
     rows.push(newRow);
-    if (isSelected) {
-      selectedRows.push(newRow);
-    }
     offset = endIndex;
   }
-  return {
-    rows,
-    selectedRows
-  };
+  return rows;
 };
 
 // src/modules/pairify.ts
@@ -325,8 +320,9 @@ var onKeydown = function(e) {
   e.preventDefault();
   const el = this.element;
   const { pattern, value } = this.commentify;
-  const { rows, selectedRows } = getRows(el);
+  const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
+  const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
   const shouldRemove = hasComment(selectedRows);
   let newShort = short, newLong = long;
@@ -335,7 +331,7 @@ var onKeydown = function(e) {
     const row = rows[i];
     const { startIndex, endIndex } = row;
     const origValue = row.value;
-    const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
+    const isSelected = row.isSelected;
     if (!isSelected) {
       newValues.push(row.value);
       continue;
@@ -373,6 +369,7 @@ var onKeydown = function(e) {
         newLong += Math.max(diff, startIndex - long);
       }
     } else {
+      newShort += diff;
       newLong += diff;
     }
     newValues.push(newValue);
@@ -420,8 +417,9 @@ var onKeydown2 = function(e) {
   e.preventDefault();
   const el = this.element;
   const { pattern, value } = this.indentify;
-  const { rows, selectedRows } = getRows(el);
+  const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
+  const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
   const shouldRemove = e.shiftKey;
   let newShort = short, newLong = long;
@@ -430,7 +428,7 @@ var onKeydown2 = function(e) {
     const row = rows[i];
     const { startIndex, endIndex } = row;
     const origValue = row.value;
-    const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
+    const isSelected = row.isSelected;
     if (!isSelected) {
       newValues.push(row.value);
       continue;
@@ -468,6 +466,7 @@ var onKeydown2 = function(e) {
         newLong += Math.max(diff, startIndex - long);
       }
     } else {
+      newShort += diff;
       newLong += diff;
     }
     newValues.push(newValue);
@@ -779,11 +778,12 @@ var onKeydown4 = function(e) {
   e.preventDefault();
   const el = this.element;
   const { short, long, dir, isReversed } = getState(el);
-  const { rows, selectedRows } = getRows(el);
-  const targetRow = !e.shiftKey ? selectedRows[selectedRows.length - 1] : selectedRows[0];
+  const rows = getRows(el);
+  const selectedRows = rows.filter((r) => r.isSelected);
+  const targetRow = e.shiftKey ? selectedRows[0] : selectedRows[selectedRows.length - 1];
   let newValues = [], newShort = short, newLong = long;
   for (const row of rows) {
-    const isTarget = targetRow.rowIndex === row.rowIndex;
+    const isTarget = targetRow.index === row.index;
     if (!isTarget) {
       newValues.push(row.value);
       continue;
@@ -821,6 +821,61 @@ var Breakify = class {
   static defaults = {};
 };
 
+// src/modules/removify.ts
+var onKeydown5 = function(e) {
+  if (e.defaultPrevented) {
+    return;
+  }
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  const isValid = ctrlKey && !altKey && shiftKey && key.toLowerCase() === "k";
+  if (!isValid) {
+    return;
+  }
+  e.preventDefault();
+  const el = this.element;
+  const rows = getRows(el);
+  const selectedRows = rows.filter((r) => r.isSelected);
+  const firstSelectedRow = selectedRows[0];
+  let newValues = [], newShort = 0, newLong = 0;
+  for (const row of rows) {
+    const isSelected = row.isSelected;
+    if (isSelected) {
+      continue;
+    }
+    if (row.index === firstSelectedRow.index - 1) {
+      newShort = row.startIndex;
+      newLong = row.startIndex;
+    }
+    newValues.push(row.value);
+  }
+  let value = newValues.join("");
+  const removeLastLinebreak = selectedRows.length === 1 && selectedRows[0].value === "" && rows[rows.length - 1].index === selectedRows[0].index;
+  if (removeLastLinebreak) {
+    value = value.substring(0, value.length - 1);
+  }
+  setState(el, {
+    isReversed: false,
+    short: newShort,
+    long: newLong,
+    dir: "none",
+    value
+  });
+  this.history.add();
+};
+var Removify = class {
+  parent;
+  constructor(parent) {
+    this.parent = parent;
+    parent.modules.push(
+      {
+        name: "Removify",
+        onKeydown: onKeydown5
+      }
+    );
+  }
+  static defaults = {};
+};
+
 // src/mtga.ts
 var MTGA = class {
   element;
@@ -836,6 +891,7 @@ var MTGA = class {
     this.commentify = new Commentify(this);
     this.indentify = new Indentify(this);
     this.breakify = new Breakify(this);
+    this.removify = new Removify(this);
     this.pairify = new Pairify(this);
     this.tagify = new Tagify(this);
     this._keydownState = null;

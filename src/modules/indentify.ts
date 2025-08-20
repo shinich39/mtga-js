@@ -23,8 +23,9 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   const el = this.element;
   const { pattern, value } = this.indentify;
 
-  const { rows, selectedRows } = getRows(el);
+  const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
+  const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
   const shouldRemove = e.shiftKey;
 
@@ -38,7 +39,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
 
     const origValue = row.value;
 
-    const isSelected = row.selectionStart > -1 || row.selectionEnd > -1;
+    const isSelected = row.isSelected;
     if (!isSelected) {
       newValues.push(row.value);
       continue;
@@ -79,6 +80,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
         newLong += Math.max(diff, startIndex - long);
       }
     } else {
+      newShort += diff;
       newLong += diff;
     }
 

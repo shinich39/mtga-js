@@ -28,9 +28,5 @@ export declare function compareString(from: string, to: string): {
     match: [0 | 1 | -1, string][];
 };
 export declare function getAllCombinations<T>(arr: T[]): T[][];
-export declare const getRows: (el: HTMLTextAreaElement) => {
-    rows: IRow[];
-    selectedRows: IRow[];
-};
-export declare const updateRows: (el: HTMLTextAreaElement, rows: IRow[], callback: (row: IRow, index: number, rows: IRow[]) => string) => IState;
+export declare const getRows: (el: HTMLTextAreaElement) => IRow[];
 //# sourceMappingURL=utils.d.ts.map

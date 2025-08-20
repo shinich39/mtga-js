@@ -7,9 +7,11 @@ import { IModule } from "./types/module.js";
 import { IKeydownState, IState } from "./types/state.js";
 import { History } from "./modules/history.js";
 import { Breakify } from "./modules/breakify.js";
+import { Removify } from "./modules/removify.js";
 
 export { Pairify } from "./modules/pairify.js";
 export { Breakify } from "./modules/breakify.js";
+export { Removify } from "./modules/removify.js";
 export { Commentify } from "./modules/commentify.js";
 export { Indentify } from "./modules/indentify.js";
 export { Tagify } from "./modules/tagify.js";
@@ -33,6 +35,7 @@ export class MTGA {
     this.commentify = new Commentify(this);
     this.indentify = new Indentify(this);
     this.breakify = new Breakify(this);
+    this.removify = new Removify(this);
     this.pairify = new Pairify(this);
     this.tagify = new Tagify(this);
 

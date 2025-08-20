@@ -47,7 +47,7 @@ export const setState = function(
   el: HTMLTextAreaElement,
   state: IState,
 ) {
-  if (state.value) {
+  if (typeof state.value === "string") {
     el.value = state.value;
   }
   if (!state.isReversed) {
@@ -177,7 +177,6 @@ export const getRows = function(el: HTMLTextAreaElement) {
   const arr = el.value.split(/\n/);
 
   const rows: IRow[] = [];
-  const selectedRows: IRow[] = [];
 
   let offset = 0;
   for (let i = 0; i < arr.length; i++) {
@@ -187,7 +186,7 @@ export const getRows = function(el: HTMLTextAreaElement) {
     const value = isLastRow ? item : item + "\n";
 
     const startIndex = offset;
-    const endIndex = offset + item.length + 1;
+    const endIndex = startIndex + value.length;
 
     let selectionStart = -1,
         selectionEnd = -1,
@@ -197,7 +196,10 @@ export const getRows = function(el: HTMLTextAreaElement) {
       selectionStart = short - startIndex;
     }
     
-    if (long > startIndex && long < endIndex) {
+    if (
+      long > startIndex && 
+      (!isLastRow ? long < endIndex : long <= endIndex)
+    ) {
       selectionEnd = long - startIndex;
     }
 
@@ -220,7 +222,8 @@ export const getRows = function(el: HTMLTextAreaElement) {
     }
 
     const newRow = {
-      rowIndex: i,
+      isSelected,
+      index: i,
       startIndex,
       endIndex,
       value,
@@ -231,66 +234,8 @@ export const getRows = function(el: HTMLTextAreaElement) {
 
     rows.push(newRow);
 
-    if (isSelected) {
-      selectedRows.push(newRow);
-    }
-
     offset = endIndex;
   }
 
-  return {
-    rows,
-    selectedRows,
-  };
-}
-
-export const updateRows = function(
-  el: HTMLTextAreaElement,
-  rows: IRow[],
-  callback: (row: IRow, index: number, rows: IRow[]) => string,
-) {
-  const { short, long, dir, isReversed } = getState(el);
-
-  let newShort = short,
-      newLong = long;
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    const { startIndex, endIndex } = row;
-
-    const origValue = row.value;
-    const newValue = callback(row, i, rows);
-
-    const diff = newValue.length - origValue.length;
-
-    if (short >= startIndex && short < endIndex) {
-      if (diff >= 0) {
-        newShort += diff;
-        newLong += diff;
-      } else {
-        newShort += Math.max(diff, startIndex - short);
-        newLong += Math.max(diff, startIndex - long);
-      }
-    } else if (long >= startIndex && short < endIndex) {
-      if (diff >= 0) {
-        newLong += diff;
-      } else {
-        newLong += Math.max(diff, startIndex - long);
-      }
-    } else {
-      newLong += diff;
-    }
-
-    row.value = newValue;
-  }
-
-  const values = rows.map((r) => r.value);
-
-  return {
-    isReversed,
-    short: newShort,
-    long: newLong,
-    dir,
-    value: values.join(""),
-  } as IState;
+  return rows;
 }
