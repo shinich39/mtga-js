@@ -189,6 +189,9 @@ var MtgaJs = (() => {
   var isOpening = function(pairs, value) {
     return Object.keys(pairs).includes(value);
   };
+  var isPair = function(pairs, opening, closing) {
+    return pairs[opening] && pairs[opening] === closing;
+  };
   var getClosing = function(pairs, value) {
     return pairs[value];
   };
@@ -247,10 +250,10 @@ var MtgaJs = (() => {
     if (isRange) {
       return;
     }
-    const opening = el.value.charAt(long - 1);
-    const closing = getClosing(pairs, opening);
-    const isValidChars = isOpening(pairs, opening) && getClosing(pairs, opening) === closing;
-    if (!isValidChars) {
+    const prevChar = el.value.charAt(long - 1);
+    const currChar = el.value.charAt(long);
+    const isValid = isPair(pairs, prevChar, currChar);
+    if (!isValid) {
       return;
     }
     e.preventDefault();

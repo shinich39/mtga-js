@@ -19,6 +19,10 @@ const isClosing = function(pairs: IPairs, value: string) {
   return Object.values(pairs).includes(value);
 }
 
+const isPair = function(pairs: IPairs, opening: string, closing: string) {
+  return pairs[opening] && pairs[opening] === closing;
+}
+
 const getOpening = function(pairs: IPairs, value: string) {
   return Object.entries(pairs).find((entry) => entry[1] === value)?.[0];
 }
@@ -100,11 +104,11 @@ const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
     return;
   }
 
-  const opening = el.value.charAt(long - 1);
-  const closing = getClosing(pairs, opening);
+  const prevChar = el.value.charAt(long - 1);
+  const currChar = el.value.charAt(long);
 
-  const isValidChars = isOpening(pairs, opening) && getClosing(pairs, opening) === closing;
-  if (!isValidChars) {
+  const isValid = isPair(pairs, prevChar, currChar);
+  if (!isValid) {
     return;
   }
   
