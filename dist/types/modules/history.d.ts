@@ -1,19 +1,17 @@
 import { MTGA } from "../mtga.js";
+import { IModule } from "../types/module.js";
 import { IState } from "../types/state.js";
-declare module "../mtga.js" {
-    interface MTGA {
-        history: History;
-    }
-}
-export declare class History {
-    parent: MTGA;
+export declare class HistoryModule extends IModule {
     items: IState[];
-    index: number;
     maxCount: number;
+    _i: number;
     constructor(parent: MTGA);
+    static name: string;
     static defaults: {
         maxCount: number;
     };
+    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
+    onKeyup: (this: MTGA, e: KeyboardEvent) => void;
     prune(): void;
     add(withPrune?: boolean): void;
     prev(): IState;

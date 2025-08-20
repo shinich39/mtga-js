@@ -1,34 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IRow } from "../types/row.js";
-import { setState, getRows, parseKeyboardEvent, getState } from "./utils.js";
-
-declare module "../mtga.js" {
-  interface MTGA {
-    commentify: Commentify,
-  }
-}
-
-const hasComment = function(selectedRows: IRow[]) {
-  for (const r of selectedRows) {
-    const ok = r.value.startsWith("//");
-    if (ok) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const isCommentified = function(selectedRows: IRow[]) {
-  for (const r of selectedRows) {
-    const ok = r.value.startsWith("//");
-    if (!ok) {
-      return false;
-    }
-  }
-
-  return true;
-}
+import { IModule } from "../types/module.js";
+import { getRows, parseKeyboardEvent, getState } from "./utils.js";
 
 const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
@@ -36,21 +8,28 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   }
   
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValid = ctrlKey && !altKey && !shiftKey && key === "/";
+
+  const isValid = !ctrlKey && !altKey && key === "Tab";
   if (!isValid) {
     return;
   }
 
   e.preventDefault();
 
+  const module = this.getModule<IndentModule>(IndentModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${IndentModule.name}`);
+    return;
+  }
+  
   const el = this.element;
-  const { pattern, value } = this.commentify;
+  const { pattern, value } = module;
 
   const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
   const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
-  const shouldRemove = isCommentified(selectedRows);
+  const shouldRemove = e.shiftKey;
 
   let newShort = short,
       newLong = long;
@@ -110,7 +89,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     newValues.push(newValue);
   }
 
-  setState(el, {
+  this.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -118,29 +97,24 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     value: newValues.join(""),
   });
 
-  this.history.add();
+  this.addHistory();
 }
 
-export class Commentify {
-  parent: MTGA;
+export class IndentModule extends IModule {
   pattern: RegExp;
   value: string;
 
   constructor(parent: MTGA) {
-    this.parent = parent;
-    this.pattern = Commentify.defaults.pattern;
-    this.value = Commentify.defaults.value;
-
-    parent.modules.push(
-      {
-        name: "commentify",
-        onKeydown: onKeydown,
-      }
-    );
+    super(parent, IndentModule.name);
+    this.pattern = IndentModule.defaults.pattern;
+    this.value = IndentModule.defaults.value;
   }
 
+  onKeydown = onKeydown;
+
+  static name = "Indent";
   static defaults = {
-    pattern: /^\/\/\s?/,
-    value:  "// ",
+    pattern: /^[^\S\n\r][^\S\n\r]?/,
+    value: "  ",
   }
 }

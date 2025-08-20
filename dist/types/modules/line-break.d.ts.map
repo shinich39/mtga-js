@@ -1,0 +1,1 @@
+{"version":3,"file":"line-break.d.ts","sourceRoot":"","sources":["../../../src/modules/line-break.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAC;AAClC,OAAO,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAC;AAyD7C,qBAAa,eAAgB,SAAQ,OAAO;gBAC9B,MAAM,EAAE,IAAI;IAIxB,SAAS,SA3DuB,IAAI,KAAK,aAAa,UA2DhC;IAEtB,MAAM,CAAC,IAAI,SAAe;IAC1B,MAAM,CAAC,QAAQ,KAAM;CACtB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"line-remove.d.ts","sourceRoot":"","sources":["../../../src/modules/line-remove.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAC;AAClC,OAAO,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAC;AAgE7C,qBAAa,gBAAiB,SAAQ,OAAO;gBAC/B,MAAM,EAAE,IAAI;IAIxB,SAAS,SAlEuB,IAAI,KAAK,aAAa,UAkEhC;IAEtB,MAAM,CAAC,IAAI,SAAgB;IAC3B,MAAM,CAAC,QAAQ,KAAM;CACtB"}

@@ -29,14 +29,15 @@ Proin id leo nec nisi eleifend eleifend.
       const VISIBLE_COUNT = 11;
 
       console.log("MTGA", window.MtgaJs);
-      
+
       const {
         MTGA,
-        Pairify,
-        Commentify,
-        Indentify,
-        Tagify,
-        History,
+        AutoCompleteModule,
+        CommentModule,
+        HistoryModule,
+        IndentModule,
+        LineBreakModule,
+        LineRemoveModule,
       } = window.MtgaJs;
 
       const mtga = new MTGA(document.getElementById("textarea"));
@@ -58,22 +59,22 @@ Proin id leo nec nisi eleifend eleifend.
         );
       }
 
-      const tagify = mtga.tagify;
-      tagify.tags = tags;
+      const ac = mtga.getModule(AutoCompleteModule.name);
+      ac.tags = tags;
 
-      console.log("tagify", tagify);
+      console.log("AutoCompleteModule", ac);
 
       // indexing
       console.time("indexing");
 
       for (const tag of tags) {
-        const found = tagify.indexes.find(({ pattern }) => 
+        const found = ac.indexes.find(({ pattern }) => 
           pattern.test(tag.key));
 
         if (found) {
           found.tags.push(tag);
         } else {
-          tagify.indexes.push({
+          ac.indexes.push({
             pattern: new RegExp("^"+tag.key[0]),
             tags: [tag],
           });
@@ -81,7 +82,7 @@ Proin id leo nec nisi eleifend eleifend.
       }
 
       console.timeEnd("indexing");
-      console.log("indexes:", tagify.indexes);
+      console.log("indexes:", ac.indexes);
 
       ;(() => {
         const listEl = document.createElement("div");
@@ -95,11 +96,13 @@ Proin id leo nec nisi eleifend eleifend.
         let items = [],
             index = -1;
 
-        const origParser = tagify.parser;
-        tagify.parser = (el) => {
+        const origParser = ac.parser;
+        ac.parser = (el) => {
           // console.log("parser", el);
           const r = origParser(el);
           r.body = r.body.toLowerCase().replace(/\s/g, "_");
+
+          console.log(r);
 
           hide(false);
 
@@ -111,19 +114,19 @@ Proin id leo nec nisi eleifend eleifend.
           return r;
         }
 
-        tagify.filter = (req, i, candidates, result) => {
+        ac.filter = (req, i, candidates, result) => {
           // console.log("filter", res);
           const { tag, query } = req;
           const a = query.body;
           const b = tag.key;
 
           if (result.length >= MAX_ITEM_COUNT) {
-            tagify.stop(true);
+            ac.stop(true);
             return false;
           }
 
           // 100000 items, 5332ms
-          // const { score } = tagify.compare(a, b);
+          // const { score } = ac.compare(a, b);
           // const ok = score >= a.length;
 
           // 100000 items, 4529ms
@@ -134,7 +137,7 @@ Proin id leo nec nisi eleifend eleifend.
 
         const load = () => {
           if (items[index]?.chunk) {
-            tagify.set(items[index].chunk);
+            ac.set(items[index].chunk);
           }
         }
 
@@ -187,7 +190,7 @@ Proin id leo nec nisi eleifend eleifend.
           listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
           if (kill) {
-            tagify.stop(true);
+            ac.stop(true);
           }
         }
 
@@ -232,7 +235,7 @@ Proin id leo nec nisi eleifend eleifend.
             const idx = i;
             const chunk = chunks[i];
             const { tag, query } = chunk;
-            const { match } = tagify.compare(query.body, tag.key);
+            const { match } = ac.compare(query.body, tag.key);
             const itemEl = document.createElement("div");
             itemEl.style.padding = "2px 4px";
             itemEl.style.cursor = "pointer";
@@ -275,7 +278,7 @@ Proin id leo nec nisi eleifend eleifend.
         mtga.element.addEventListener("keydown", keydownHandler, true);
         mtga.element.addEventListener("click", hide);
         mtga.element.addEventListener("blur", hide);
-        mtga.tagify.onData = onData;
+        mtga.getModule(AutoCompleteModule.name).onData = onData;
       })();
 
     </script>

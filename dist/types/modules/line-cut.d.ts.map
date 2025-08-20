@@ -1,0 +1,1 @@
+{"version":3,"file":"line-cut.d.ts","sourceRoot":"","sources":["../../../src/modules/line-cut.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAC;AAClC,OAAO,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAC;AAiE7C,qBAAa,aAAc,SAAQ,OAAO;gBAC5B,MAAM,EAAE,IAAI;IAIxB,SAAS,SAjEuB,IAAI,KAAK,aAAa,UAiEhC;IAEtB,MAAM,CAAC,IAAI,SAAa;IACxB,MAAM,CAAC,QAAQ,KAAM;CACtB"}

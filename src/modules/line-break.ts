@@ -1,11 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { setState, getRows, parseKeyboardEvent, getState } from "./utils.js";
-
-declare module "../mtga.js" {
-  interface MTGA {
-    breakify: Breakify;
-  }
-}
+import { IModule } from "../types/module.js";
+import { getRows, parseKeyboardEvent, getState } from "./utils.js";
 
 const onKeydown = function (this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
@@ -50,7 +45,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     }
   }
 
-  setState(el, {
+  this.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
@@ -58,22 +53,16 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     value: newValues.join(""),
   });
 
-  this.history.add();
+  this.addHistory();
 }
 
-export class Breakify {
-  parent: MTGA;
-
+export class LineBreakModule extends IModule {
   constructor(parent: MTGA) {
-    this.parent = parent;
-
-    parent.modules.push(
-      {
-        name: "breakify",
-        onKeydown: onKeydown,
-      }
-    );
+    super(parent, LineBreakModule.name);
   }
 
-  static defaults = {}
+  onKeydown = onKeydown;
+
+  static name = "LineBreak";
+  static defaults = {};
 }

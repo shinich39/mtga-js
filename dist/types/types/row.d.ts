@@ -6,6 +6,5 @@ export interface IRow {
     value: string;
     selectionStart: number;
     selectionEnd: number;
-    selectionValue: string;
 }
 //# sourceMappingURL=row.d.ts.map

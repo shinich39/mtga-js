@@ -4,13 +4,15 @@ Make Textarea Garbage Again
 
 ## Features
 
-- Commentify: Ctrl+/
-- Indentify: Tab, Shift+Tab
-- Auto-Complete
-- Auto-Pairing: All brackets with ", ', `
-- Line-Break: Ctrl+Enter, Ctrl+Shift+Enter
-- Remove Current Line: Ctrl+Shift+K
 - Undo, Redo: Ctrl+Z, Ctrl+Shift+Z
+- Comment: Ctrl+/
+- Indent: Tab, Shift+Tab
+- AutoComplete: ...
+- AutoPair: All brackets with commas
+- LineBreak: Ctrl+Enter, Ctrl+Shift+Enter
+- LineCopy: Ctrl+C with cursor on a character
+- LineCut: Ctrl+X with cursor on a character
+- LineRemove: Ctrl+Shift+K
 
 ## Getting Started
 

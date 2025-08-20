@@ -1,36 +1,31 @@
 import { MTGA } from "../mtga.js";
-import { compareString, parseKeyboardEvent, setState } from "./utils.js";
+import { IModule } from "../types/module.js";
+import { compareString, parseKeyboardEvent } from "./utils.js";
 
-declare module "../mtga.js" {
-  interface MTGA {
-    tagify: Tagify,
-  }
-}
-
-interface ITagifyTag {
+interface IAutoCompleteTag {
   key: string;
   value: string;
   [key: string]: any;
 }
 
-interface ITagifyQuery {
+interface IAutoCompleteQuery {
   head: string,
   body: string,
   tail: string,
 }
 
-interface ITagifyChunk {
-  tag: ITagifyTag,
-  query: ITagifyQuery,
+interface IAutoCompleteChunk {
+  tag: IAutoCompleteTag,
+  query: IAutoCompleteQuery,
   [key: string]: any;
 }
 
-interface ITagifyIndex {
+interface IAutoCompleteIndex {
   pattern: RegExp,
-  tags: ITagifyTag[],
+  tags: IAutoCompleteTag[],
 }
 
-const findIndex = function(indexes: ITagifyIndex[], value: string) {
+const findIndex = function(indexes: IAutoCompleteIndex[], value: string) {
   for (const index of indexes) {
     const pattern = index.pattern;
     if (pattern.test(value)) {
@@ -39,7 +34,7 @@ const findIndex = function(indexes: ITagifyIndex[], value: string) {
   }
 }
 
-const onKeydown = function(this: MTGA, e: KeyboardEvent) {
+const onKeyup = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -51,13 +46,17 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
     return;
   }
 
-  const tagify = this.tagify;
+  const module = this.getModule<AutoCompleteModule>(AutoCompleteModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoCompleteModule.name}`);
+    return;
+  }
 
-  tagify.stop(true);
+  module.stop(true);
   
-  const requestId = tagify._requestId + 1;
-  const chunkSize = tagify._chunkSize;
-  const result: ITagifyChunk[] = [];
+  const requestId = module._requestId + 1;
+  const chunkSize = module._chunkSize;
+  const result: IAutoCompleteChunk[] = [];
 
   let isStopped = false,
       isKilled = false,
@@ -68,23 +67,23 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
     isKilled = kill || false;
   };
 
-  tagify._requestId = requestId;
-  tagify._stop = stop;
+  module._requestId = requestId;
+  module._stop = stop;
 
-  const query = tagify.parser.call(this, this.element);
+  const query = module.parser.call(this, this.element);
   const text = query.body;
   
-  let candidates: ITagifyTag[] = [];
+  let candidates: IAutoCompleteTag[] = [];
 
   if (text) {
-    const index = findIndex(tagify.indexes, text);
+    const index = findIndex(module.indexes, text);
     if (index) {
       candidates = index.tags;
 
       // debug
       // console.log(`Use Index:`, index);
     } else {
-      candidates = tagify.tags;
+      candidates = module.tags;
     }
   }
 
@@ -92,7 +91,7 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
   // console.time("" + requestId);
 
   const processChunk = () => {
-    const chunks: ITagifyChunk[] = [];
+    const chunks: IAutoCompleteChunk[] = [];
 
     let j = i + chunkSize;
     while(i < j && i < candidates.length) {
@@ -103,7 +102,7 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
         query,
       }
 
-      const ok = tagify.filter?.call(this, chunk, i, candidates, result);
+      const ok = module.filter?.call(this, chunk, i, candidates, result);
       if (ok) {
         chunks.push(chunk);
         result.push(chunk);
@@ -112,65 +111,60 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
       i++;
     }
 
-    if (isKilled || tagify._requestId !== requestId) {
+    if (isKilled || module._requestId !== requestId) {
       return;
     }
 
     if (isStopped || i >= candidates.length) {
       // debug
       // console.timeEnd("" + requestId);
-      tagify.onData?.call(this, chunks, result);
-      tagify.onEnd?.call(this, result);
+      module.onData?.call(this, chunks, result);
+      module.onEnd?.call(this, result);
       return;
     }
     
-    tagify.onData?.call(this, chunks, result);
+    module.onData?.call(this, chunks, result);
     setTimeout(processChunk, 0);
   }
 
   processChunk();
 }
 
-export class Tagify {
-  parent: MTGA;
-  tags: ITagifyTag[];
-  indexes: ITagifyIndex[];
+export class AutoCompleteModule extends IModule {
+  tags: IAutoCompleteTag[];
+  indexes: IAutoCompleteIndex[];
 
-  parser: (this: MTGA, el: HTMLTextAreaElement) => ITagifyQuery;
-  filter: (this: MTGA, chunk: ITagifyChunk, index: number, candidates: ITagifyTag[], result: ITagifyChunk[]) => boolean;
-  onData: (this: MTGA, chunks: ITagifyChunk[], result: ITagifyChunk[]) => void;
-  onEnd: (this: MTGA, result: ITagifyChunk[]) => void;
+  parser: (this: MTGA, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+  filter: (this: MTGA, chunk: IAutoCompleteChunk, index: number, candidates: IAutoCompleteTag[], result: IAutoCompleteChunk[]) => boolean;
+  onData: (this: MTGA, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
+  onEnd: (this: MTGA, result: IAutoCompleteChunk[]) => void;
 
   _requestId: number;
   _chunkSize: number;
   _stop: (kill?: boolean) => void;
 
   constructor(parent: MTGA) {
-    this.parent = parent;
+    super(parent, AutoCompleteModule.name, 1);
     this.tags = [];
     this.indexes = [];
 
-    this.parser = Tagify.defaults.parser;
-    this.filter = Tagify.defaults.filter;
+    this.parser = AutoCompleteModule.defaults.parser;
+    this.filter = AutoCompleteModule.defaults.filter;
     this.onData = () => undefined;
     this.onEnd = () => undefined;
 
     this._requestId = 0;
-    this._chunkSize = Tagify.defaults.chunkSize;
+    this._chunkSize = AutoCompleteModule.defaults.chunkSize;
     this._stop = () => undefined;
-
-    parent.modules.push(
-      {
-        name: "tagify",
-        onKeyup: onKeydown,
-      }
-    );
   }
 
+  onKeyup = onKeyup;
+
+  static name = "AutoComplete";
   static defaults: {
     chunkSize: number,
-    filter: Tagify["filter"],
-    parser: Tagify["parser"],
+    filter: AutoCompleteModule["filter"],
+    parser: AutoCompleteModule["parser"],
   } = {
     chunkSize: 100,
 
@@ -221,7 +215,7 @@ export class Tagify {
     stop?.(kill);
   }
 
-  set(chunk: ITagifyChunk) {
+  set(chunk: IAutoCompleteChunk) {
     // const short = chunk.query.head.length;
     const short = chunk.query.head.length 
       + chunk.tag.value.length;
@@ -239,6 +233,6 @@ export class Tagify {
       value,
     }
 
-    setState(this.parent.element, state);
+    this.parent.setState(state);
   }
 }

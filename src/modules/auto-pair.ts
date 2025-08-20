@@ -1,11 +1,6 @@
 import { MTGA } from "../mtga.js";
+import { IModule } from "../types/module.js";
 import { getState, setState, parseKeyboardEvent } from "./utils.js";
-
-declare module "../mtga.js" {
-  interface MTGA {
-    pairify: Pairify;
-  }
-}
 
 interface IPairs {
   [key: string]: string,
@@ -35,18 +30,26 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
-  
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const el = this.element;
-  const pairs = this.pairify.pairs;
 
+  const module = this.getModule<AutoPairModule>(AutoPairModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoPairModule.name}`);
+    return;
+  }
+
+  const pairs = module.pairs;
+
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+
+  // check close pair
   const isValid = !ctrlKey && !altKey && isOpening(pairs, key);
   if (!isValid) {
     return;
   }
-  
+
   e.preventDefault();
 
+  const el = this.element;
   const { short, long, dir, isReversed } = getState(el);
 
   const isRange = short !== long;
@@ -72,7 +75,7 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
     newLong = (left + opening + center).length;
   }
 
-  setState(el, {
+  this.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -80,48 +83,54 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.history.add();
+  this.addHistory();
 }
 
 const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
-  
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValidKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
-  if (!isValidKey) {
+
+  const module = this.getModule<AutoPairModule>(AutoPairModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoPairModule.name}`);
     return;
   }
 
-  const el = this.element;
-  const pairs = this.pairify.pairs;
+  const pairs = module.pairs;
 
-  const { short, long, dir, isReversed } = getState(el);
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  const el = this.element;
+
+  const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
+  if (!isRemoveKey) {
+    return;
+  }
+
+  const { short, long } = getState(el);
 
   const isRange = short !== long;
   if (isRange) {
     return;
   }
 
-  const prevChar = el.value.charAt(long - 1);
-  const currChar = el.value.charAt(long);
+  const prevChar = el.value.charAt(short - 1);
+  const currChar = el.value.charAt(short);
 
-  const isValid = isPair(pairs, prevChar, currChar);
-  if (!isValid) {
+  if (!isPair(pairs, prevChar, currChar)) {
     return;
   }
-  
+
   e.preventDefault();
 
-  const left = el.value.substring(0, long - 1);
-  const right = el.value.substring(long + 1);
+  const left = el.value.substring(0, short - 1);
+  const right = el.value.substring(short + 1);
 
   const newValue = left + right;
   const newShort = left.length;
   const newLong = left.length;
 
-  setState(el, {
+  this.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
@@ -129,29 +138,25 @@ const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.history.add();
+  this.addHistory();
 }
 
-export class Pairify {
-  parent: MTGA;
+const onKeydown = function(this: MTGA, e: KeyboardEvent) {
+  closePairHandler.call(this, e);
+  clearPairHandler.call(this, e);
+}
+
+export class AutoPairModule extends IModule {
   pairs: IPairs;
 
   constructor(parent: MTGA) {
-    this.parent = parent;
-    this.pairs = { ...Pairify.defaults.pairs };
-
-    parent.modules.push(
-      {
-        name: "pairifyClose",
-        onKeydown: closePairHandler,
-      },
-      {
-        name: "pairifyClear",
-        onKeydown: clearPairHandler,
-      }
-    );
+    super(parent, AutoPairModule.name);
+    this.pairs = { ...AutoPairModule.defaults.pairs };
   }
 
+  onKeydown = onKeydown;
+
+  static name = "AutoPair";
   static defaults: {
     pairs: IPairs,
   } = {

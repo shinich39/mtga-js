@@ -1,25 +1,32 @@
-import { Pairify } from "./modules/pairify.js";
-import { debounce, getState, setState } from "./modules/utils.js";
-import { Commentify } from "./modules/commentify.js";
-import { Indentify } from "./modules/indentify.js";
-import { Tagify } from "./modules/tagify.js";
 import { IModule } from "./types/module.js";
 import { IKeydownState, IState } from "./types/state.js";
-import { History } from "./modules/history.js";
-import { Breakify } from "./modules/breakify.js";
-import { Removify } from "./modules/removify.js";
+import { debounce, getState, setState } from "./modules/utils.js";
 
-export { Pairify } from "./modules/pairify.js";
-export { Breakify } from "./modules/breakify.js";
-export { Removify } from "./modules/removify.js";
-export { Commentify } from "./modules/commentify.js";
-export { Indentify } from "./modules/indentify.js";
-export { Tagify } from "./modules/tagify.js";
-export { History } from "./modules/history.js";
+import { HistoryModule } from "./modules/history.js";
+import { CommentModule } from "./modules/comment.js";
+import { IndentModule } from "./modules/indent.js";
+import { AutoCompleteModule } from "./modules/auto-complete.js";
+import { AutoPairModule } from "./modules/auto-pair.js";
+import { LineBreakModule } from "./modules/line-break.js";
+import { LineRemoveModule } from "./modules/line-remove.js";
+import { LineCutModule } from "./modules/line-cut.js";
+import { LineCopyModule } from "./modules/line-copy.js";
+
+export { HistoryModule } from "./modules/history.js";
+export { CommentModule } from "./modules/comment.js";
+export { IndentModule } from "./modules/indent.js";
+export { AutoCompleteModule } from "./modules/auto-complete.js";
+export { AutoPairModule } from "./modules/auto-pair.js";
+export { LineBreakModule } from "./modules/line-break.js";
+export { LineRemoveModule } from "./modules/line-remove.js";
+export { LineCutModule } from "./modules/line-cut.js";
+export { LineCopyModule } from "./modules/line-copy.js";
 
 export class MTGA {
   element: HTMLTextAreaElement;
-  modules: IModule[];
+
+  modules: Record<string, IModule>;
+  moduleOrder: IModule[];
 
   _keydownState: IKeydownState | null;
   _keydownEvent: (e: KeyboardEvent) => void;
@@ -29,21 +36,25 @@ export class MTGA {
   
   constructor(el: HTMLTextAreaElement) {
     this.element = el;
-    this.modules = [];
 
     // setup default modules
-    this.history = new History(this);
-    this.commentify = new Commentify(this);
-    this.indentify = new Indentify(this);
-    this.breakify = new Breakify(this);
-    this.removify = new Removify(this);
-    this.pairify = new Pairify(this);
-    this.tagify = new Tagify(this);
+    this.modules = {};
+    this.modules[HistoryModule.name] = new HistoryModule(this);
+    this.modules[CommentModule.name] = new CommentModule(this);
+    this.modules[IndentModule.name] = new IndentModule(this);
+    this.modules[LineBreakModule.name] = new LineBreakModule(this);
+    this.modules[LineRemoveModule.name] = new LineRemoveModule(this);
+    this.modules[LineCutModule.name] = new LineCutModule(this);
+    this.modules[LineCopyModule.name] = new LineCopyModule(this);
+    this.modules[AutoPairModule.name] = new AutoPairModule(this);
+    this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
+
+    this.moduleOrder = [];
 
     // private properties
     this._keydownState = null;
     this._keydownEvent = (e) => {
-      for (const m of this.modules) {
+      for (const m of this.moduleOrder) {
         m.onKeydown?.call(this, e);
       }
 
@@ -62,18 +73,18 @@ export class MTGA {
     }
 
     this._keyupEvent = (e) => {
-      for (const m of this.modules) {
+      for (const m of this.moduleOrder) {
         m.onKeyup?.call(this, e);
       }
     }
 
     const _selectionEvent = (e: MouseEvent) => {
-      this.history.add(false);
+      this.addHistory(false);
     }
 
     this._focusEvent = (e) => {
       setTimeout(() => {
-        this.history.add(false);
+        this.addHistory(false);
         this.element.addEventListener("pointerup", _selectionEvent, true);
       }, 0);
     }
@@ -86,6 +97,16 @@ export class MTGA {
     this.element.addEventListener("keyup", this._keyupEvent, true);
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
+
+    this.initOrder();
+  }
+
+  initOrder() {
+    this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
+  }
+
+  getModule<T>(name: string) {
+    return this.modules[name] as T | undefined;
   }
 
   getState(withValue?: boolean) {
@@ -94,6 +115,10 @@ export class MTGA {
 
   setState(state: IState) {
     setState(this.element, state);
+  }
+
+  addHistory(withPrune = true) {
+    this.getModule<HistoryModule>(HistoryModule.name)?.add(withPrune);
   }
 
   _clearKeydownState() {

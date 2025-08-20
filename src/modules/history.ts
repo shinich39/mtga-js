@@ -1,62 +1,44 @@
 import { MTGA } from "../mtga.js";
+import { IModule } from "../types/module.js";
 import { IState } from "../types/state.js";
-import { getState, parseKeyboardEvent, setState } from "./utils.js";
+import { getState, parseKeyboardEvent } from "./utils.js";
 
-declare module "../mtga.js" {
-  interface MTGA {
-    history: History;
-  }
-}
-
-const undoHandler = function(this: MTGA, e: KeyboardEvent) {
-  if (e.defaultPrevented) {
-    return;
-  }
-
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-
-  const isValid = ctrlKey && !altKey && !shiftKey && key.toLowerCase() === "z";
-  if (!isValid) {
-    return;
-  }
-
-  e.preventDefault();
-  
-  const el = this.element;
-
-  const h = this.history.prev();
-  if (!h) {
-    return;
-  }
-
-  setState(el, h);
-}
-
-const redoHandler = function(this: MTGA, e: KeyboardEvent) {
+const onKeydown = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   
-  const isValid = ctrlKey && !altKey && shiftKey && key.toLowerCase() === "z";
+  const isValid = ctrlKey && !altKey && key.toLowerCase() === "z";
   if (!isValid) {
     return;
   }
 
   e.preventDefault();
-  
-  const el = this.element;
 
-  const h = this.history.next();
-  if (!h) {
+  const module = this.getModule<HistoryModule>(HistoryModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${HistoryModule.name}`);
     return;
   }
 
-  setState(el, h);
+  let h;
+
+  // undo
+  if (!shiftKey) {
+    h = module.prev();
+  } // redo
+  else {
+    h = module.next();
+  }
+
+  if (h) {
+    this.setState(h);
+  }
 }
 
-const pushHandler = function(this: MTGA, e: KeyboardEvent) {
+const onKeyup = function(this: MTGA, e: KeyboardEvent) {
   const keydownState = this._keydownState;
   
   this._clearKeydownState();
@@ -67,10 +49,11 @@ const pushHandler = function(this: MTGA, e: KeyboardEvent) {
 
   const el = this.element;
   const prevValue = keydownState.value;
+  const currValue = el.value;
 
   // insert
-  if (prevValue !== el.value) {
-    this.history.add();
+  if (prevValue !== currValue) {
+    this.addHistory();
   } // move
   else {
     const prevState = keydownState.state;
@@ -79,47 +62,35 @@ const pushHandler = function(this: MTGA, e: KeyboardEvent) {
       prevState.short !== currState.short ||
       prevState.long !== currState.long
     ) {
-      this.history.add(false);
+      this.addHistory(false);
     }
   }
 }
 
-export class History {
-  parent: MTGA;
+export class HistoryModule extends IModule {
   items: IState[];
-  index: number;
   maxCount: number;
+  _i: number;
 
   constructor(parent: MTGA) {
-    this.parent = parent;
+    super(parent, HistoryModule.name, 0);
     this.items = [];
-    this.index = 1;
-    this.maxCount = History.defaults.maxCount;
-
-    parent.modules.push(
-      {
-        name: "historyUndo",
-        onKeydown: undoHandler,
-      },
-      {
-        name: "historyRedo",
-        onKeydown: redoHandler,
-      },
-      {
-        name: "historyPush",
-        onKeyup: pushHandler,
-      },
-    );
+    this.maxCount = HistoryModule.defaults.maxCount;
+    this._i = 1; // history index
   }
 
+  static name = "History";
   static defaults = {
     maxCount: 390,
   };
 
+  onKeydown = onKeydown;
+  onKeyup = onKeyup;
+
   prune() {
-    if (this.index > 1) {
-      this.items = this.items.slice(0, this.items.length - (this.index - 1));
-      this.index = 1;
+    if (this._i > 1) {
+      this.items = this.items.slice(0, this.items.length - (this._i - 1));
+      this._i = 1;
     }
   }
 
@@ -128,7 +99,7 @@ export class History {
     
     if (withPrune) {
       this.prune();
-    } else if (this.index !== 1) {
+    } else if (this._i !== 1) {
       return;
     }
 
@@ -152,20 +123,20 @@ export class History {
   }
 
   prev() {
-    if (this.index < this.items.length) {
-      this.index += 1;
+    if (this._i < this.items.length) {
+      this._i += 1;
     }
     return this.curr();
   }
 
   next() {
-    if (this.index > 1) {
-      this.index -= 1;
+    if (this._i > 1) {
+      this._i -= 1;
     }
     return this.curr();
   }
 
   curr() {
-    return this.items[this.items.length - this.index];
+    return this.items[this.items.length - this._i];
   }
 }

@@ -217,9 +217,9 @@ export const getRows = function(el: HTMLTextAreaElement) {
     }
 
     const isSelected = selectionStart > -1 && selectionEnd > -1;
-    if (isSelected) {
-      selectionValue = value.substring(selectionStart, selectionEnd);
-    }
+    // if (isSelected) {
+    //   selectionValue = value.substring(selectionStart, selectionEnd);
+    // }
 
     const newRow = {
       isSelected,
@@ -229,7 +229,7 @@ export const getRows = function(el: HTMLTextAreaElement) {
       value,
       selectionStart,
       selectionEnd,
-      selectionValue,
+      // selectionValue,
     }
 
     rows.push(newRow);

@@ -6,5 +6,5 @@ export interface IRow {
   value: string,
   selectionStart: number,
   selectionEnd: number,
-  selectionValue: string,
+  // selectionValue: string,
 }

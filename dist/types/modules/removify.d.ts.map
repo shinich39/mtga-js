@@ -1,1 +1,0 @@
-{"version":3,"file":"removify.d.ts","sourceRoot":"","sources":["../../../src/modules/removify.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAC;AAGlC,OAAO,QAAQ,YAAY,CAAC;IAC1B,UAAU,IAAI;QACZ,QAAQ,EAAE,QAAQ,CAAC;KACpB;CACF;AA+DD,qBAAa,QAAQ;IACnB,MAAM,EAAE,IAAI,CAAC;gBAED,MAAM,EAAE,IAAI;IAWxB,MAAM,CAAC,QAAQ,KAAK;CACrB"}
