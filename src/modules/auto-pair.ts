@@ -1,10 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { getState, setState, parseKeyboardEvent } from "./utils.js";
-
-interface IPairs {
-  [key: string]: string,
-}
+import { IPairs } from "../types/pair.js";
+import { getState, parseKeyboardEvent } from "./utils.js";
 
 const isOpening = function(pairs: IPairs, value: string) {
   return Object.keys(pairs).includes(value);

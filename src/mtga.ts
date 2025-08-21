@@ -5,8 +5,9 @@ import { debounce, getState, setState } from "./modules/utils.js";
 import { HistoryModule } from "./modules/history.js";
 import { CommentModule } from "./modules/comment.js";
 import { IndentModule } from "./modules/indent.js";
-import { AutoCompleteModule } from "./modules/auto-complete.js";
+import { AutoIndentModule } from "./modules/auto-indent.js";
 import { AutoPairModule } from "./modules/auto-pair.js";
+import { AutoCompleteModule } from "./modules/auto-complete.js";
 import { LineBreakModule } from "./modules/line-break.js";
 import { LineRemoveModule } from "./modules/line-remove.js";
 import { LineCutModule } from "./modules/line-cut.js";
@@ -15,6 +16,7 @@ import { LineCopyModule } from "./modules/line-copy.js";
 export { HistoryModule } from "./modules/history.js";
 export { CommentModule } from "./modules/comment.js";
 export { IndentModule } from "./modules/indent.js";
+export { AutoIndentModule } from "./modules/auto-indent.js";
 export { AutoCompleteModule } from "./modules/auto-complete.js";
 export { AutoPairModule } from "./modules/auto-pair.js";
 export { LineBreakModule } from "./modules/line-break.js";
@@ -46,6 +48,7 @@ export class MTGA {
     this.modules[LineRemoveModule.name] = new LineRemoveModule(this);
     this.modules[LineCutModule.name] = new LineCutModule(this);
     this.modules[LineCopyModule.name] = new LineCopyModule(this);
+    this.modules[AutoIndentModule.name] = new AutoIndentModule(this);
     this.modules[AutoPairModule.name] = new AutoPairModule(this);
     this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
 

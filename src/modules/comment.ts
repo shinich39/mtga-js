@@ -144,11 +144,11 @@ const multiLineHandler = function (this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
   
-  const newShort = short + 2,
-        newLong = long + 2;
+  const newShort = short + 1,
+        newLong = long + 1;
 
   const newValue = el.value.substring(0, short) 
-    + "*  */" 
+    + "**/" 
     + el.value.substring(long); 
 
   this.setState({

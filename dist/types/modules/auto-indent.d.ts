@@ -1,13 +1,15 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
 import { IPairs } from "../types/pair.js";
-export declare class AutoPairModule extends IModule {
+export declare class AutoIndentModule extends IModule {
     pairs: IPairs;
+    indentUnit: string;
     constructor(parent: MTGA);
     onKeydown: (this: MTGA, e: KeyboardEvent) => void;
     static name: string;
     static defaults: {
         pairs: IPairs;
+        indentUnit: string;
     };
 }
-//# sourceMappingURL=auto-pair.d.ts.map
+//# sourceMappingURL=auto-indent.d.ts.map

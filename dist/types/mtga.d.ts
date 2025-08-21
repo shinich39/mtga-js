@@ -3,6 +3,7 @@ import { IKeydownState, IState } from "./types/state.js";
 export { HistoryModule } from "./modules/history.js";
 export { CommentModule } from "./modules/comment.js";
 export { IndentModule } from "./modules/indent.js";
+export { AutoIndentModule } from "./modules/auto-indent.js";
 export { AutoCompleteModule } from "./modules/auto-complete.js";
 export { AutoPairModule } from "./modules/auto-pair.js";
 export { LineBreakModule } from "./modules/line-break.js";

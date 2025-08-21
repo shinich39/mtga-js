@@ -381,8 +381,8 @@ var multiLineHandler = function(e) {
     return;
   }
   e.preventDefault();
-  const newShort = short + 2, newLong = long + 2;
-  const newValue = el.value.substring(0, short) + "*  */" + el.value.substring(long);
+  const newShort = short + 1, newLong = long + 1;
+  const newValue = el.value.substring(0, short) + "**/" + el.value.substring(long);
   this.setState({
     isReversed,
     short: newShort,
@@ -506,6 +506,201 @@ var IndentModule = class _IndentModule extends IModule {
   static defaults = {
     pattern: /^[^\S\n\r][^\S\n\r]?/,
     value: "  "
+  };
+};
+
+// src/modules/auto-indent.ts
+var isPair = function(pairs, opening, closing) {
+  return pairs[opening] && pairs[opening] === closing;
+};
+var getIndent = function(str) {
+  const rows = str.split(/\r\n|\r|\n/);
+  const currRow = rows[rows.length - 1];
+  const currIndent = currRow.match(/^(\s*)/)?.[1] || "";
+  return currIndent;
+};
+var onKeydown4 = function(e) {
+  if (e.defaultPrevented) {
+    return;
+  }
+  const module = this.getModule(AutoIndentModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoIndentModule.name}`);
+    return;
+  }
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  const isValid = !ctrlKey && !altKey && !shiftKey && key === "Enter";
+  if (!isValid) {
+    return;
+  }
+  e.preventDefault();
+  const { pairs, indentUnit } = module;
+  const el = this.element;
+  const { short, long, dir, isReversed } = getState(el);
+  const prevChar = el.value.charAt(short - 1);
+  const currChar = el.value.charAt(short);
+  const left = el.value.substring(0, short);
+  let center = "\n";
+  const right = el.value.substring(long);
+  const rows = left.split(/\r\n|\r|\n/);
+  const currRow = rows[rows.length - 1];
+  const currIndent = getIndent(currRow);
+  let newShort = short + 1;
+  if (isPair(pairs, prevChar, currChar)) {
+    center += currIndent + indentUnit + "\n" + currIndent;
+    newShort += currIndent.length + indentUnit.length;
+  } else {
+    center += currIndent;
+    newShort += currIndent.length;
+  }
+  const newValue = left + center + right;
+  const newLong = newShort;
+  this.setState({
+    isReversed: false,
+    short: newShort,
+    long: newLong,
+    dir: "none",
+    value: newValue
+  });
+  this.addHistory();
+};
+var AutoIndentModule = class _AutoIndentModule extends IModule {
+  pairs;
+  indentUnit;
+  constructor(parent) {
+    super(parent, _AutoIndentModule.name);
+    this.pairs = _AutoIndentModule.defaults.pairs;
+    this.indentUnit = _AutoIndentModule.defaults.indentUnit;
+  }
+  onKeydown = onKeydown4;
+  static name = "AutoIndent";
+  static defaults = {
+    pairs: {
+      "(": ")",
+      "[": "]",
+      "{": "}"
+    },
+    indentUnit: "  "
+  };
+};
+
+// src/modules/auto-pair.ts
+var isOpening = function(pairs, value) {
+  return Object.keys(pairs).includes(value);
+};
+var isPair2 = function(pairs, opening, closing) {
+  return pairs[opening] && pairs[opening] === closing;
+};
+var getClosing = function(pairs, value) {
+  return pairs[value];
+};
+var closePairHandler = function(e) {
+  if (e.defaultPrevented) {
+    return;
+  }
+  const module = this.getModule(AutoPairModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoPairModule.name}`);
+    return;
+  }
+  const pairs = module.pairs;
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  const isValid = !ctrlKey && !altKey && isOpening(pairs, key);
+  if (!isValid) {
+    return;
+  }
+  e.preventDefault();
+  const el = this.element;
+  const { short, long, dir, isReversed } = getState(el);
+  const isRange = short !== long;
+  const opening = key;
+  const closing = getClosing(pairs, opening);
+  const left = el.value.substring(0, short);
+  const center = el.value.substring(short, long);
+  const right = el.value.substring(long);
+  let newShort, newLong, newValue;
+  if (!isRange) {
+    const start = (left + opening).length;
+    newValue = left + opening + closing + right;
+    newShort = start;
+    newLong = start;
+  } else {
+    newValue = left + opening + center + closing + right;
+    newShort = (left + opening).length;
+    newLong = (left + opening + center).length;
+  }
+  this.setState({
+    isReversed,
+    short: newShort,
+    long: newLong,
+    dir,
+    value: newValue
+  });
+  this.addHistory();
+};
+var clearPairHandler = function(e) {
+  if (e.defaultPrevented) {
+    return;
+  }
+  const module = this.getModule(AutoPairModule.name);
+  if (!module) {
+    console.warn(`Module not found: ${AutoPairModule.name}`);
+    return;
+  }
+  const pairs = module.pairs;
+  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
+  const el = this.element;
+  const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
+  if (!isRemoveKey) {
+    return;
+  }
+  const { short, long } = getState(el);
+  const isRange = short !== long;
+  if (isRange) {
+    return;
+  }
+  const prevChar = el.value.charAt(short - 1);
+  const currChar = el.value.charAt(short);
+  if (!isPair2(pairs, prevChar, currChar)) {
+    return;
+  }
+  e.preventDefault();
+  const left = el.value.substring(0, short - 1);
+  const right = el.value.substring(short + 1);
+  const newValue = left + right;
+  const newShort = left.length;
+  const newLong = left.length;
+  this.setState({
+    isReversed: false,
+    short: newShort,
+    long: newLong,
+    dir: "forward",
+    value: newValue
+  });
+  this.addHistory();
+};
+var onKeydown5 = function(e) {
+  closePairHandler.call(this, e);
+  clearPairHandler.call(this, e);
+};
+var AutoPairModule = class _AutoPairModule extends IModule {
+  pairs;
+  constructor(parent) {
+    super(parent, _AutoPairModule.name);
+    this.pairs = { ..._AutoPairModule.defaults.pairs };
+  }
+  onKeydown = onKeydown5;
+  static name = "AutoPair";
+  static defaults = {
+    pairs: {
+      "(": ")",
+      "[": "]",
+      "{": "}",
+      "<": ">",
+      "'": "'",
+      '"': '"',
+      "`": "`"
+    }
   };
 };
 
@@ -655,128 +850,8 @@ var AutoCompleteModule = class _AutoCompleteModule extends IModule {
   }
 };
 
-// src/modules/auto-pair.ts
-var isOpening = function(pairs, value) {
-  return Object.keys(pairs).includes(value);
-};
-var isPair = function(pairs, opening, closing) {
-  return pairs[opening] && pairs[opening] === closing;
-};
-var getClosing = function(pairs, value) {
-  return pairs[value];
-};
-var closePairHandler = function(e) {
-  if (e.defaultPrevented) {
-    return;
-  }
-  const module = this.getModule(AutoPairModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoPairModule.name}`);
-    return;
-  }
-  const pairs = module.pairs;
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValid = !ctrlKey && !altKey && isOpening(pairs, key);
-  if (!isValid) {
-    return;
-  }
-  e.preventDefault();
-  const el = this.element;
-  const { short, long, dir, isReversed } = getState(el);
-  const isRange = short !== long;
-  const opening = key;
-  const closing = getClosing(pairs, opening);
-  const left = el.value.substring(0, short);
-  const center = el.value.substring(short, long);
-  const right = el.value.substring(long);
-  let newShort, newLong, newValue;
-  if (!isRange) {
-    const start = (left + opening).length;
-    newValue = left + opening + closing + right;
-    newShort = start;
-    newLong = start;
-  } else {
-    newValue = left + opening + center + closing + right;
-    newShort = (left + opening).length;
-    newLong = (left + opening + center).length;
-  }
-  this.setState({
-    isReversed,
-    short: newShort,
-    long: newLong,
-    dir,
-    value: newValue
-  });
-  this.addHistory();
-};
-var clearPairHandler = function(e) {
-  if (e.defaultPrevented) {
-    return;
-  }
-  const module = this.getModule(AutoPairModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoPairModule.name}`);
-    return;
-  }
-  const pairs = module.pairs;
-  const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const el = this.element;
-  const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
-  if (!isRemoveKey) {
-    return;
-  }
-  const { short, long } = getState(el);
-  const isRange = short !== long;
-  if (isRange) {
-    return;
-  }
-  const prevChar = el.value.charAt(short - 1);
-  const currChar = el.value.charAt(short);
-  if (!isPair(pairs, prevChar, currChar)) {
-    return;
-  }
-  e.preventDefault();
-  const left = el.value.substring(0, short - 1);
-  const right = el.value.substring(short + 1);
-  const newValue = left + right;
-  const newShort = left.length;
-  const newLong = left.length;
-  this.setState({
-    isReversed: false,
-    short: newShort,
-    long: newLong,
-    dir: "forward",
-    value: newValue
-  });
-  this.addHistory();
-};
-var onKeydown4 = function(e) {
-  closePairHandler.call(this, e);
-  clearPairHandler.call(this, e);
-};
-var AutoPairModule = class _AutoPairModule extends IModule {
-  pairs;
-  constructor(parent) {
-    super(parent, _AutoPairModule.name);
-    this.pairs = { ..._AutoPairModule.defaults.pairs };
-  }
-  onKeydown = onKeydown4;
-  static name = "AutoPair";
-  static defaults = {
-    pairs: {
-      "(": ")",
-      "[": "]",
-      "{": "}",
-      "<": ">",
-      "'": "'",
-      '"': '"',
-      "`": "`"
-    }
-  };
-};
-
 // src/modules/line-break.ts
-var onKeydown5 = function(e) {
+var onKeydown6 = function(e) {
   if (e.defaultPrevented) {
     return;
   }
@@ -791,6 +866,7 @@ var onKeydown5 = function(e) {
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
   const targetRow = e.shiftKey ? selectedRows[0] : selectedRows[selectedRows.length - 1];
+  const isLastRowSelected = rows[rows.length - 1].index === selectedRows[selectedRows.length - 1].index;
   let newValues = [], newShort = short, newLong = long;
   for (const row of rows) {
     const isTarget = targetRow.index === row.index;
@@ -798,7 +874,7 @@ var onKeydown5 = function(e) {
       newValues.push(row.value);
       continue;
     }
-    if (!e.shiftKey) {
+    if (!shiftKey) {
       newValues.push(row.value + "\n");
       newShort = row.endIndex;
       newLong = row.endIndex;
@@ -807,6 +883,10 @@ var onKeydown5 = function(e) {
       newShort = row.startIndex;
       newLong = row.startIndex;
     }
+  }
+  if (!shiftKey && isLastRowSelected) {
+    newShort += 1;
+    newLong += 1;
   }
   this.setState({
     isReversed: false,
@@ -821,13 +901,13 @@ var LineBreakModule = class _LineBreakModule extends IModule {
   constructor(parent) {
     super(parent, _LineBreakModule.name);
   }
-  onKeydown = onKeydown5;
+  onKeydown = onKeydown6;
   static name = "LineBreak";
   static defaults = {};
 };
 
 // src/modules/line-remove.ts
-var onKeydown6 = function(e) {
+var onKeydown7 = function(e) {
   if (e.defaultPrevented) {
     return;
   }
@@ -871,14 +951,14 @@ var LineRemoveModule = class _LineRemoveModule extends IModule {
   constructor(parent) {
     super(parent, _LineRemoveModule.name);
   }
-  onKeydown = onKeydown6;
+  onKeydown = onKeydown7;
   static name = "LineRemove";
   static defaults = {};
 };
 
 // src/modules/line-cut.ts
 var IS_SUPPORTED = !!navigator.clipboard?.writeText;
-var onKeydown7 = function(e) {
+var onKeydown8 = function(e) {
   if (e.defaultPrevented) {
     return;
   }
@@ -926,14 +1006,14 @@ var LineCutModule = class _LineCutModule extends IModule {
   constructor(parent) {
     super(parent, _LineCutModule.name);
   }
-  onKeydown = onKeydown7;
+  onKeydown = onKeydown8;
   static name = "LineCut";
   static defaults = {};
 };
 
 // src/modules/line-copy.ts
 var IS_SUPPORTED2 = !!navigator.clipboard?.writeText;
-var onKeydown8 = function(e) {
+var onKeydown9 = function(e) {
   if (e.defaultPrevented) {
     return;
   }
@@ -962,7 +1042,7 @@ var LineCopyModule = class _LineCopyModule extends IModule {
   constructor(parent) {
     super(parent, _LineCopyModule.name);
   }
-  onKeydown = onKeydown8;
+  onKeydown = onKeydown9;
   static name = "LineCopy";
   static defaults = {};
 };
@@ -987,6 +1067,7 @@ var MTGA = class {
     this.modules[LineRemoveModule.name] = new LineRemoveModule(this);
     this.modules[LineCutModule.name] = new LineCutModule(this);
     this.modules[LineCopyModule.name] = new LineCopyModule(this);
+    this.modules[AutoIndentModule.name] = new AutoIndentModule(this);
     this.modules[AutoPairModule.name] = new AutoPairModule(this);
     this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
     this.moduleOrder = [];
@@ -1057,6 +1138,7 @@ var MTGA = class {
 };
 export {
   AutoCompleteModule,
+  AutoIndentModule,
   AutoPairModule,
   CommentModule,
   HistoryModule,

@@ -23,6 +23,8 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     ? selectedRows[0]
     : selectedRows[selectedRows.length - 1];
 
+  const isLastRowSelected = rows[rows.length - 1].index === selectedRows[selectedRows.length - 1].index;
+
   let newValues: string[] = [], 
       newShort = short, 
       newLong = long;
@@ -34,7 +36,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
       continue;
     }
 
-    if (!e.shiftKey) {
+    if (!shiftKey) {
       newValues.push(row.value + "\n");
       newShort = row.endIndex;
       newLong = row.endIndex;
@@ -43,6 +45,12 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
       newShort = row.startIndex;
       newLong = row.startIndex;
     }
+  }
+
+  // if last row selected, move caret to new line
+  if (!shiftKey && isLastRowSelected) {
+    newShort += 1;
+    newLong += 1;
   }
 
   this.setState({
