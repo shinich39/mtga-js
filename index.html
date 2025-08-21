@@ -282,8 +282,8 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
         }
 
         mtga.element.addEventListener("keydown", keydownHandler);
-        mtga.element.addEventListener("click", hide);
-        mtga.element.addEventListener("blur", hide);
+        mtga.element.addEventListener("click", () => hide(true));
+        mtga.element.addEventListener("blur", () => hide(true));
         ac.onData = onData;
       })();
     </script>
