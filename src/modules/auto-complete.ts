@@ -86,7 +86,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
       candidates = module.tags;
     }
   }
-
+  
   // debug
   // console.time("" + requestId);
 
