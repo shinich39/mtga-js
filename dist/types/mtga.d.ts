@@ -21,7 +21,7 @@ export declare class MTGA {
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
     initModuleOrder(): void;
-    getModule<T>(name: string): T | undefined;
+    getModule<T extends IModule>(name: string): T | undefined;
     setModule<T extends IModule>(module: T): void;
     removeModule(name: string): void;
     getState(withValue?: boolean): IState;

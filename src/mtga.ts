@@ -107,7 +107,7 @@ export class MTGA {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
 
-  getModule<T>(name: string) {
+  getModule<T extends IModule>(name: string) {
     return this.modules[name] as T | undefined;
   }
 
