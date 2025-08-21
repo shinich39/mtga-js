@@ -100,7 +100,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           const r = origParser(el);
           r.body = r.body.toLowerCase().replace(/\s/g, "_");
 
-          hide(false);
+          hide();
 
           if (r.body.length < 1 || r.body.length > 16) {
             this.stop(true);
@@ -180,7 +180,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           index = -1;
         }
 
-        const hide = (kill = true) => {
+        const hide = (kill) => {
           items = [];
           index = -1;
           listEl.innerHTML = "";
@@ -206,18 +206,22 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
                 break;
               case "ArrowLeft":
               case "ArrowRight":
-                hide();
+                hide(true);
                 break;
-              case "Tab":
               case "Escape":
                 e.preventDefault();
-                hide();
+                hide(true);
                 break;
               case "Enter":
                 e.preventDefault();
                 load();
-                hide();
+                hide(true);
                 break;
+              default:
+                if (e.defaultPrevented) {
+                  hide(true);
+                  return;
+                }
             }
           }
         }
@@ -258,7 +262,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
                 render();
               } else {
                 load();
-                hide();
+                hide(true);
               }
             });
 
