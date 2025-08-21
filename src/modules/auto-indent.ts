@@ -65,7 +65,7 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
   const currIndent = getIndent(pairs, indentUnit, rows);
 
   let newShort = short + 1;
-  if (isPair(pairs, prevChar, currChar)) {
+  if (isClosing(pairs, currChar)) {
     const nextIndent = currIndent.substring(0, currIndent.length - indentUnit.length);
     center += currIndent + "\n" + nextIndent;
     newShort += currIndent.length;
