@@ -1,10 +1,12 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { getRows, parseKeyboardEvent, getState } from "./utils.js";
+import { getRows } from "../types/row.js";
+import { getState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydown = function (this: MTGA, e: KeyboardEvent) {
+const onKeydown = function (this: LineCutModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -14,7 +16,9 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     return;
   }
 
-  const el = this.element;
+  const mtga = this.parent;
+  const el = this.parent.element;
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   const { short, long, dir, isReversed } = getState(el);
 
@@ -52,7 +56,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
 
   navigator.clipboard.writeText(data)
     .then(() => {
-      this.setState({
+      mtga.setState({
         isReversed: false,
         short: newShort,
         long: newLong,
@@ -60,7 +64,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
         value: newValues.join(""),
       });
 
-      this.addHistory();
+      mtga.addHistory();
     });
 }
 
@@ -72,5 +76,6 @@ export class LineCutModule extends IModule {
   onKeydown = onKeydown;
 
   static name = "LineCut";
+
   static defaults = {};
 }

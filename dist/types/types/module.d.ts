@@ -3,8 +3,8 @@ export declare class IModule {
     parent: MTGA;
     name: string;
     index: number;
-    onKeydown?: (this: MTGA, event: KeyboardEvent) => void;
-    onKeyup?: (this: MTGA, event: KeyboardEvent) => void;
+    onKeydown?: (event: KeyboardEvent) => void;
+    onKeyup?: (event: KeyboardEvent) => void;
     constructor(parent: MTGA, name: string, index?: number);
     static defaults: {};
 }

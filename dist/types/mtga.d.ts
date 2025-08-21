@@ -20,12 +20,15 @@ export declare class MTGA {
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
-    initOrder(): void;
+    initModuleOrder(): void;
     getModule<T>(name: string): T | undefined;
+    setModule<T extends IModule>(module: T): void;
+    removeModule(name: string): void;
     getState(withValue?: boolean): IState;
     setState(state: IState): void;
     addHistory(withPrune?: boolean): void;
     _clearKeydownState(): void;
     _setKeydownState(e: KeyboardEvent): void;
+    destroy(): void;
 }
 //# sourceMappingURL=mtga.d.ts.map

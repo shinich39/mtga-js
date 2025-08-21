@@ -1,11 +1,16 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { getRows, parseKeyboardEvent, getState } from "./utils.js";
+import { getRows } from "../types/row.js";
+import { getState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function (this: MTGA, e: KeyboardEvent) {
+const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
+
+  const mtga = this.parent;
+  const el = this.parent.element;
   
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
@@ -16,14 +21,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const module = this.getModule<IndentModule>(IndentModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${IndentModule.name}`);
-    return;
-  }
-  
-  const el = this.element;
-  const { pattern, value } = module;
+  const { pattern, value } = this;
 
   const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
@@ -89,7 +87,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     newValues.push(newValue);
   }
 
-  this.setState({
+  mtga.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -97,7 +95,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     value: newValues.join(""),
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
 export class IndentModule extends IModule {
@@ -113,6 +111,7 @@ export class IndentModule extends IModule {
   onKeydown = onKeydown;
 
   static name = "Indent";
+
   static defaults = {
     pattern: /^[^\S\n\r][^\S\n\r]?/,
     value: "  ",

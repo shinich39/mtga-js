@@ -1,12 +1,8 @@
-import { IRow } from "../types/row.js";
-import { IState } from "../types/state.js";
 /**
  * @example
  * input.addEventListener("input", debounce((e) => ..., 100));
  */
 export declare function debounce(func: (...args: any[]) => any, delay: number): (...args: any[]) => void;
-export declare const getState: (el: HTMLTextAreaElement, withValue?: boolean) => IState;
-export declare const setState: (el: HTMLTextAreaElement, state: IState) => void;
 export declare const parseKeyboardEvent: (e: KeyboardEvent) => {
     key: string;
     altKey: boolean;
@@ -28,5 +24,4 @@ export declare function compareString(from: string, to: string): {
     match: [0 | 1 | -1, string][];
 };
 export declare function getAllCombinations<T>(arr: T[]): T[][];
-export declare const getRows: (el: HTMLTextAreaElement) => IRow[];
 //# sourceMappingURL=utils.d.ts.map

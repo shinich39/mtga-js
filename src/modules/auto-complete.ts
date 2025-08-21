@@ -34,7 +34,7 @@ const findIndex = function(indexes: IAutoCompleteIndex[], value: string) {
   }
 }
 
-const onKeyup = function(this: MTGA, e: KeyboardEvent) {
+const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -46,16 +46,12 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
     return;
   }
 
-  const module = this.getModule<AutoCompleteModule>(AutoCompleteModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoCompleteModule.name}`);
-    return;
-  }
 
-  module.stop(true);
+  this.stop(true);
   
-  const requestId = module._requestId + 1;
-  const chunkSize = module._chunkSize;
+  const mtga = this.parent;
+  const requestId = this._requestId + 1;
+  const chunkSize = this._chunkSize;
   const result: IAutoCompleteChunk[] = [];
 
   let isStopped = false,
@@ -67,23 +63,23 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
     isKilled = kill || false;
   };
 
-  module._requestId = requestId;
-  module._stop = stop;
+  this._requestId = requestId;
+  this._stop = stop;
 
-  const query = module.parser.call(module, this.element);
+  const query = this.parser.call(this, mtga.element);
   const text = query.body;
   
   let candidates: IAutoCompleteTag[] = [];
 
   if (text) {
-    const index = findIndex(module.indexes, text);
+    const index = findIndex(this.indexes, text);
     if (index) {
       candidates = index.tags;
 
       // debug
       // console.log(`Use Index:`, index);
     } else {
-      candidates = module.tags;
+      candidates = this.tags;
     }
   }
   
@@ -102,7 +98,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
         query,
       }
 
-      const ok = module.filter?.call(module, chunk, result, i, candidates);
+      const ok = this.filter?.call(this, chunk, result, i, candidates);
       if (ok) {
         chunks.push(chunk);
         result.push(chunk);
@@ -111,19 +107,19 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
       i++;
     }
 
-    if (isKilled || module._requestId !== requestId) {
+    if (isKilled || this._requestId !== requestId) {
       return;
     }
 
     if (isStopped || i >= candidates.length) {
       // debug
       // console.timeEnd("" + requestId);
-      module.onData?.call(module, chunks, result);
-      module.onEnd?.call(module, result);
+      this.onData?.call(this, chunks, result);
+      this.onEnd?.call(this, result);
       return;
     }
     
-    module.onData?.call(module, chunks, result);
+    this.onData?.call(this, chunks, result);
     setTimeout(processChunk, 0);
   }
 
@@ -134,10 +130,10 @@ export class AutoCompleteModule extends IModule {
   tags: IAutoCompleteTag[];
   indexes: IAutoCompleteIndex[];
 
-  parser: (this: AutoCompleteModule, el: HTMLTextAreaElement) => IAutoCompleteQuery;
-  filter: (this: AutoCompleteModule, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
-  onData: (this: AutoCompleteModule, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
-  onEnd: (this: AutoCompleteModule, result: IAutoCompleteChunk[]) => void;
+  parser: (this: this, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+  filter: (this: this, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
+  onData: (this: this, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
+  onEnd: (this: this, result: IAutoCompleteChunk[]) => void;
 
   _requestId: number;
   _chunkSize: number;
@@ -161,6 +157,7 @@ export class AutoCompleteModule extends IModule {
   onKeyup = onKeyup;
 
   static name = "AutoComplete";
+  
   static defaults: {
     chunkSize: number,
     filter: AutoCompleteModule["filter"],

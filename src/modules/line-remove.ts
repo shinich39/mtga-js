@@ -1,11 +1,15 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { getRows, parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../types/row.js";
+import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function (this: MTGA, e: KeyboardEvent) {
+const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
+
+  const mtga = this.parent;
+  const el = this.parent.element;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   const isValid = ctrlKey && !altKey && shiftKey && key.toLowerCase() === "k";
@@ -15,7 +19,6 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const el = this.element;
   // const { short, long, dir, isReversed } = getState(el);
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
@@ -52,7 +55,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     value = value.substring(0, value.length - 1);
   }
 
-  this.setState({
+  mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
@@ -60,7 +63,7 @@ const onKeydown = function (this: MTGA, e: KeyboardEvent) {
     value,
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
 export class LineRemoveModule extends IModule {
@@ -71,5 +74,6 @@ export class LineRemoveModule extends IModule {
   onKeydown = onKeydown;
 
   static name = "LineRemove";
+
   static defaults = {};
 }

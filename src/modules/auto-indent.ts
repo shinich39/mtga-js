@@ -1,7 +1,8 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
 import { IPairs, isClosing, isPair } from "../types/pair.js";
-import { getState, parseKeyboardEvent } from "./utils.js";
+import { getState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
 const createIndent = function(unit: string, size: number) {
   return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
@@ -30,14 +31,8 @@ const getIndent = function(pairs: IPairs, indentUnit: string, rows: string[]) {
   return "";
 }
 
-const onKeydown = function(this: MTGA, e: KeyboardEvent) {
+const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
-    return;
-  }
-
-  const module = this.getModule<AutoIndentModule>(AutoIndentModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoIndentModule.name}`);
     return;
   }
 
@@ -50,11 +45,12 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const { pairs, indentUnit } = module;
-  const el = this.element;
+  const mtga = this.parent;
+  const el = mtga.element;
+  const { pairs, indentUnit } = this;
   const { short, long, dir, isReversed } = getState(el);
 
-  const prevChar = el.value.charAt(short - 1);
+  // const prevChar = el.value.charAt(short - 1);
   const currChar = el.value.charAt(short);
 
   const left = el.value.substring(0, short);
@@ -77,7 +73,7 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
   const newValue = left + center + right;
   const newLong = newShort;
   
-  this.setState({
+  mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
@@ -85,7 +81,7 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
 export class AutoIndentModule extends IModule {
@@ -101,6 +97,7 @@ export class AutoIndentModule extends IModule {
   onKeydown = onKeydown;
 
   static name = "AutoIndent";
+
   static defaults: {
     pairs: IPairs,
     indentUnit: string,

@@ -1,6 +1,5 @@
 import { IModule } from "./types/module.js";
-import { IKeydownState, IState } from "./types/state.js";
-import { debounce, getState, setState } from "./modules/utils.js";
+import { getState, IKeydownState, IState, setState } from "./types/state.js";
 
 import { HistoryModule } from "./modules/history.js";
 import { CommentModule } from "./modules/comment.js";
@@ -58,7 +57,7 @@ export class MTGA {
     this._keydownState = null;
     this._keydownEvent = (e) => {
       for (const m of this.moduleOrder) {
-        m.onKeydown?.call(this, e);
+        m.onKeydown?.call(m, e);
       }
 
       if (e.defaultPrevented) {
@@ -77,7 +76,7 @@ export class MTGA {
 
     this._keyupEvent = (e) => {
       for (const m of this.moduleOrder) {
-        m.onKeyup?.call(this, e);
+        m.onKeyup?.call(m, e);
       }
     }
 
@@ -101,15 +100,27 @@ export class MTGA {
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
 
-    this.initOrder();
+    this.initModuleOrder();
   }
 
-  initOrder() {
+  initModuleOrder() {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
 
   getModule<T>(name: string) {
     return this.modules[name] as T | undefined;
+  }
+
+  setModule<T extends IModule>(module: T) {
+    this.modules[module.name] = module;
+    this.initModuleOrder();
+  }
+
+  removeModule(name: string) {
+    if (this.modules[name]) {
+      delete this.modules[name];
+      this.initModuleOrder();
+    }
   }
 
   getState(withValue?: boolean) {
@@ -134,5 +145,12 @@ export class MTGA {
       state: getState(this.element),
       key: e.key,
     }
+  }
+
+  destroy() {
+    this.element.removeEventListener("keydown", this._keydownEvent);
+    this.element.removeEventListener("keyup", this._keyupEvent);
+    this.element.removeEventListener("focus", this._focusEvent);
+    this.element.removeEventListener("blur", this._blurEvent);
   }
 }

@@ -1,12 +1,14 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { IState } from "../types/state.js";
-import { getState, parseKeyboardEvent } from "./utils.js";
+import { getState, IState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function(this: MTGA, e: KeyboardEvent) {
+const onKeydown = function(this: HistoryModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
+
+  const mtga = this.parent;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   
@@ -17,43 +19,39 @@ const onKeydown = function(this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const module = this.getModule<HistoryModule>(HistoryModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${HistoryModule.name}`);
-    return;
-  }
-
   let h;
 
   // undo
   if (!shiftKey) {
-    h = module.prev();
+    h = this.prev();
   } // redo
   else {
-    h = module.next();
+    h = this.next();
   }
 
   if (h) {
-    this.setState(h);
+    mtga.setState(h);
   }
 }
 
-const onKeyup = function(this: MTGA, e: KeyboardEvent) {
-  const keydownState = this._keydownState;
+const onKeyup = function(this: HistoryModule, e: KeyboardEvent) {
+  const mtga = this.parent;
+
+  const keydownState = mtga._keydownState;
   
-  this._clearKeydownState();
+  mtga._clearKeydownState();
 
   if (!keydownState) {
     return;
   }
 
-  const el = this.element;
+  const el = mtga.element;
   const prevValue = keydownState.value;
   const currValue = el.value;
 
   // insert
   if (prevValue !== currValue) {
-    this.addHistory();
+    mtga.addHistory();
   } // move
   else {
     const prevState = keydownState.state;
@@ -62,7 +60,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
       prevState.short !== currState.short ||
       prevState.long !== currState.long
     ) {
-      this.addHistory(false);
+      mtga.addHistory(false);
     }
   }
 }
@@ -80,6 +78,7 @@ export class HistoryModule extends IModule {
   }
 
   static name = "History";
+
   static defaults = {
     maxCount: 390,
   };

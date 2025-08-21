@@ -1,20 +1,17 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
 import { getClosing, IPairs, isOpening, isPair } from "../types/pair.js";
-import { getState, parseKeyboardEvent } from "./utils.js";
+import { getState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
-const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
+const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
 
-  const module = this.getModule<AutoPairModule>(AutoPairModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoPairModule.name}`);
-    return;
-  }
-
-  const pairs = module.pairs;
+  const mtga = this.parent;
+  const el = this.parent.element;
+  const pairs = this.pairs;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
@@ -26,7 +23,7 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const el = this.element;
+
   const { short, long, dir, isReversed } = getState(el);
 
   const isRange = short !== long;
@@ -52,7 +49,7 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
     newLong = (left + opening + center).length;
   }
 
-  this.setState({
+  mtga.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -60,24 +57,19 @@ const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
-const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
+const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
 
-  const module = this.getModule<AutoPairModule>(AutoPairModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${AutoPairModule.name}`);
-    return;
-  }
-
-  const pairs = module.pairs;
+  const mtga = this.parent;
+  const el = this.parent.element;
+  const pairs = this.pairs;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const el = this.element;
 
   const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
   if (!isRemoveKey) {
@@ -107,7 +99,7 @@ const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
   const newShort = left.length;
   const newLong = left.length;
 
-  this.setState({
+  mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
@@ -115,10 +107,10 @@ const clearPairHandler = function(this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
-const onKeydown = function(this: MTGA, e: KeyboardEvent) {
+const onKeydown = function(this: AutoPairModule, e: KeyboardEvent) {
   closePairHandler.call(this, e);
   clearPairHandler.call(this, e);
 }
@@ -134,6 +126,7 @@ export class AutoPairModule extends IModule {
   onKeydown = onKeydown;
 
   static name = "AutoPair";
+
   static defaults: {
     pairs: IPairs,
   } = {

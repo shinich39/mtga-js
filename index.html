@@ -226,7 +226,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           }
         }
 
-        const onData = (chunks, result) => {
+        ac.onData = function (chunks, result) {
           if (chunks.length) {
             console.log("onData", chunks, result);
           }
@@ -284,7 +284,6 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
         mtga.element.addEventListener("keydown", keydownHandler);
         mtga.element.addEventListener("click", () => hide(true));
         mtga.element.addEventListener("blur", () => hide(true));
-        ac.onData = onData;
       })();
     </script>
   </body>

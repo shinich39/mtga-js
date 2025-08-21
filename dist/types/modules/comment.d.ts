@@ -9,6 +9,6 @@ export declare class CommentModule extends IModule {
         pattern: RegExp;
         value: string;
     };
-    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
+    onKeydown: (this: CommentModule, e: KeyboardEvent) => void;
 }
 //# sourceMappingURL=comment.d.ts.map

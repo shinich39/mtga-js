@@ -4,7 +4,7 @@ export declare class IndentModule extends IModule {
     pattern: RegExp;
     value: string;
     constructor(parent: MTGA);
-    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
+    onKeydown: (this: IndentModule, e: KeyboardEvent) => void;
     static name: string;
     static defaults: {
         pattern: RegExp;

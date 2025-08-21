@@ -7,4 +7,5 @@ export interface IRow {
     selectionStart: number;
     selectionEnd: number;
 }
+export declare const getRows: (el: HTMLTextAreaElement) => IRow[];
 //# sourceMappingURL=row.d.ts.map

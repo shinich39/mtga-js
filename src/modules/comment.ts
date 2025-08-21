@@ -1,20 +1,18 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { IRow } from "../types/row.js";
-import { getRows, parseKeyboardEvent, getState } from "./utils.js";
+import { getRows } from "../types/row.js";
+import { getState } from "../types/state.js";
+import { parseKeyboardEvent } from "./utils.js";
 
 // text...
-const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
+const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
-
-  const module = this.getModule<CommentModule>(CommentModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${CommentModule.name}`);
-    return;
-  }
   
+  const mtga = this.parent;
+  const el = this.parent.element;
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   const isValid = ctrlKey && !altKey && !shiftKey && key === "/";
   if (!isValid) {
@@ -23,8 +21,7 @@ const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const el = this.element;
-  const { pattern, value } = module;
+  const { pattern, value } = this;
 
   const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
@@ -105,7 +102,7 @@ const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
     newValues.push(newValue);
   }
 
-  this.setState({
+  mtga.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -113,20 +110,17 @@ const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
     value: newValues.join(""),
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
 /** text... */
-const multiLineHandler = function (this: MTGA, e: KeyboardEvent) {
+const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
 
-  const module = this.getModule<CommentModule>(CommentModule.name);
-  if (!module) {
-    console.warn(`Module not found: ${CommentModule.name}`);
-    return;
-  }
+  const mtga = this.parent;
+  const el = this.parent.element;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   const isValid = !ctrlKey && !altKey && shiftKey && key === "*";
@@ -134,7 +128,6 @@ const multiLineHandler = function (this: MTGA, e: KeyboardEvent) {
     return;
   }
 
-  const el = this.element;
   const { short, long, dir, isReversed } = getState(el);
   const isRange = short !== long;
   if (isRange) {
@@ -155,7 +148,7 @@ const multiLineHandler = function (this: MTGA, e: KeyboardEvent) {
     + "**/" 
     + el.value.substring(long); 
 
-  this.setState({
+  mtga.setState({
     isReversed,
     short: newShort,
     long: newLong,
@@ -163,10 +156,10 @@ const multiLineHandler = function (this: MTGA, e: KeyboardEvent) {
     value: newValue,
   });
 
-  this.addHistory();
+  mtga.addHistory();
 }
 
-const onKeydown = function (this: MTGA, e: KeyboardEvent) {
+const onKeydown = function (this: CommentModule, e: KeyboardEvent) {
   singleLineHandler.call(this, e);
   multiLineHandler.call(this, e);
 }
@@ -182,6 +175,7 @@ export class CommentModule extends IModule {
   }
 
   static name = "Comment";
+
   static defaults = {
     pattern: /^\/\/\s?/,
     value:  "// ",

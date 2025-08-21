@@ -5,7 +5,7 @@ export declare class AutoIndentModule extends IModule {
     pairs: IPairs;
     indentUnit: string;
     constructor(parent: MTGA);
-    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
+    onKeydown: (this: AutoIndentModule, e: KeyboardEvent) => void;
     static name: string;
     static defaults: {
         pairs: IPairs;

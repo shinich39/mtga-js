@@ -4,7 +4,7 @@ import { IPairs } from "../types/pair.js";
 export declare class AutoPairModule extends IModule {
     pairs: IPairs;
     constructor(parent: MTGA);
-    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
+    onKeydown: (this: AutoPairModule, e: KeyboardEvent) => void;
     static name: string;
     static defaults: {
         pairs: IPairs;

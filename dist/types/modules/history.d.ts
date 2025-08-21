@@ -10,8 +10,8 @@ export declare class HistoryModule extends IModule {
     static defaults: {
         maxCount: number;
     };
-    onKeydown: (this: MTGA, e: KeyboardEvent) => void;
-    onKeyup: (this: MTGA, e: KeyboardEvent) => void;
+    onKeydown: (this: HistoryModule, e: KeyboardEvent) => void;
+    onKeyup: (this: HistoryModule, e: KeyboardEvent) => void;
     prune(): void;
     add(withPrune?: boolean): void;
     prev(): IState;

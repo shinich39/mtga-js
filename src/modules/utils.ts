@@ -1,6 +1,3 @@
-import { IRow } from "../types/row.js";
-import { IState } from "../types/state.js";
-
 /**
  * @example
  * input.addEventListener("input", debounce((e) => ..., 100));
@@ -14,48 +11,6 @@ export function debounce(
     clearTimeout(timer);
     timer = setTimeout(() => func(...args), delay);
   };
-}
-
-export const getState = function(
-  el: HTMLTextAreaElement,
-  withValue?: boolean,
-): IState {
-  const isReversed = el.selectionStart > el.selectionEnd;
-  const short = Math.min(el.selectionStart, el.selectionEnd);
-  const long = Math.max(el.selectionStart, el.selectionEnd);
-  const dir = el.selectionDirection;
-
-  if (withValue) {
-    return {
-      isReversed,
-      short,
-      long,
-      dir,
-      value: el.value,
-    }
-  }
-
-  return {
-    isReversed,
-    short,
-    long,
-    dir,
-  }
-}
-
-export const setState = function(
-  el: HTMLTextAreaElement,
-  state: IState,
-) {
-  if (typeof state.value === "string") {
-    el.value = state.value;
-  }
-  if (!state.isReversed) {
-    el.setSelectionRange(state.short, state.long, state.dir || "none");
-  } else {
-    el.setSelectionRange(state.long, state.short, state.dir || "none");
-  }
-  el.focus();
 }
 
 export const parseKeyboardEvent = function(e: KeyboardEvent) {
@@ -169,73 +124,4 @@ export function getAllCombinations<T>(arr: T[]) {
     result.push(combo);
   }
   return result;
-}
-
-export const getRows = function(el: HTMLTextAreaElement) {
-  const { short, long } = getState(el);
-  // const isRange = short !== long;
-  const arr = el.value.split(/\n/);
-
-  const rows: IRow[] = [];
-
-  let offset = 0;
-  for (let i = 0; i < arr.length; i++) {
-    const item = arr[i];
-
-    const isLastRow = i === arr.length - 1;
-    const value = isLastRow ? item : item + "\n";
-
-    const startIndex = offset;
-    const endIndex = startIndex + value.length;
-
-    let selectionStart = -1,
-        selectionEnd = -1,
-        selectionValue = "";
-
-    if (short >= startIndex && short < endIndex) {
-      selectionStart = short - startIndex;
-    }
-    
-    if (
-      long > startIndex && 
-      (!isLastRow ? long < endIndex : long <= endIndex)
-    ) {
-      selectionEnd = long - startIndex;
-    }
-
-    if (short <= startIndex && long >= endIndex) {
-      selectionStart = 0;
-      selectionEnd = value.length;
-    }
-
-    if (selectionStart > -1 && selectionEnd === -1) {
-      selectionEnd = value.length;
-    }
-
-    if (selectionEnd > -1 && selectionStart === -1) {
-      selectionStart = 0;
-    }
-
-    const isSelected = selectionStart > -1 && selectionEnd > -1;
-    // if (isSelected) {
-    //   selectionValue = value.substring(selectionStart, selectionEnd);
-    // }
-
-    const newRow = {
-      isSelected,
-      index: i,
-      startIndex,
-      endIndex,
-      value,
-      selectionStart,
-      selectionEnd,
-      // selectionValue,
-    }
-
-    rows.push(newRow);
-
-    offset = endIndex;
-  }
-
-  return rows;
 }
