@@ -3,17 +3,6 @@ import { IModule } from "../types/module.js";
 import { IRow } from "../types/row.js";
 import { getRows, parseKeyboardEvent, getState } from "./utils.js";
 
-const isCommentified = function(selectedRows: IRow[]) {
-  for (const r of selectedRows) {
-    const ok = r.value.startsWith("//");
-    if (!ok) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 // text...
 const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {
@@ -40,8 +29,24 @@ const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
   const rows = getRows(el);
   const { short, long, dir, isReversed } = getState(el);
   const selectedRows = rows.filter((r) => r.isSelected);
+  const selectedEmptyRows = selectedRows.filter((r) => !r.value.trim());
   const isMultiple = selectedRows.length > 1;
-  const shouldRemove = isCommentified(selectedRows);
+  const isIgnoreEmptyRows = isMultiple && selectedRows.length !== selectedEmptyRows.length;
+
+  let shouldRemove = true;
+  for (const r of selectedRows) {
+    if (
+      isIgnoreEmptyRows 
+      && selectedEmptyRows.some((_r) => _r.index === r.index)
+    ) {
+      continue;
+    }
+
+    if (!r.value.startsWith("//")) {
+      shouldRemove = false;
+      break;
+    }
+  }
 
   let newShort = short,
       newLong = long;
@@ -61,10 +66,9 @@ const singleLineHandler = function (this: MTGA, e: KeyboardEvent) {
 
     let newValue;
     if (isMultiple) {
-      const isEmpty = !row.value.trim();
       if (shouldRemove) {
         newValue = row.value.replace(pattern, "");
-      } else if (isEmpty) {
+      } else if (isIgnoreEmptyRows && selectedEmptyRows.some((r) => r.index === row.index)) {
         newValue = row.value;
       } else {
         newValue = value + row.value;
