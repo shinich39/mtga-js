@@ -1,27 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { IPairs } from "../types/pair.js";
+import { getClosing, IPairs, isOpening, isPair } from "../types/pair.js";
 import { getState, parseKeyboardEvent } from "./utils.js";
-
-const isOpening = function(pairs: IPairs, value: string) {
-  return Object.keys(pairs).includes(value);
-}
-
-const isClosing = function(pairs: IPairs, value: string) {
-  return Object.values(pairs).includes(value);
-}
-
-const isPair = function(pairs: IPairs, opening: string, closing: string) {
-  return pairs[opening] && pairs[opening] === closing;
-}
-
-const getOpening = function(pairs: IPairs, value: string) {
-  return Object.entries(pairs).find((entry) => entry[1] === value)?.[0];
-}
-
-const getClosing = function(pairs: IPairs, value: string) {
-  return pairs[value];
-}
 
 const closePairHandler = function(this: MTGA, e: KeyboardEvent) {
   if (e.defaultPrevented) {

@@ -1,11 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
-import { IPairs } from "../types/pair.js";
+import { IPairs, isPair } from "../types/pair.js";
 import { getState, parseKeyboardEvent } from "./utils.js";
-
-const isPair = function(pairs: IPairs, opening: string, closing: string) {
-  return pairs[opening] && pairs[opening] === closing;
-}
 
 const getDepth = function(pairs: IPairs, str: string) {
   const openingChars = Object.keys(pairs).join("");

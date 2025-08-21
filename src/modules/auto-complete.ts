@@ -41,7 +41,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
   
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
-  const isValid = !ctrlKey && (key.length === 1 || key === "Backspace");
+  const isValid = !ctrlKey && !altKey && (key.length === 1 || key === "Backspace");
   if (!isValid) {
     return;
   }
@@ -70,7 +70,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
   module._requestId = requestId;
   module._stop = stop;
 
-  const query = module.parser.call(this, this.element);
+  const query = module.parser.call(module, this.element);
   const text = query.body;
   
   let candidates: IAutoCompleteTag[] = [];
@@ -102,7 +102,7 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
         query,
       }
 
-      const ok = module.filter?.call(this, chunk, i, candidates, result);
+      const ok = module.filter?.call(module, chunk, result, i, candidates);
       if (ok) {
         chunks.push(chunk);
         result.push(chunk);
@@ -118,12 +118,12 @@ const onKeyup = function(this: MTGA, e: KeyboardEvent) {
     if (isStopped || i >= candidates.length) {
       // debug
       // console.timeEnd("" + requestId);
-      module.onData?.call(this, chunks, result);
-      module.onEnd?.call(this, result);
+      module.onData?.call(module, chunks, result);
+      module.onEnd?.call(module, result);
       return;
     }
     
-    module.onData?.call(this, chunks, result);
+    module.onData?.call(module, chunks, result);
     setTimeout(processChunk, 0);
   }
 
@@ -134,10 +134,10 @@ export class AutoCompleteModule extends IModule {
   tags: IAutoCompleteTag[];
   indexes: IAutoCompleteIndex[];
 
-  parser: (this: MTGA, el: HTMLTextAreaElement) => IAutoCompleteQuery;
-  filter: (this: MTGA, chunk: IAutoCompleteChunk, index: number, candidates: IAutoCompleteTag[], result: IAutoCompleteChunk[]) => boolean;
-  onData: (this: MTGA, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
-  onEnd: (this: MTGA, result: IAutoCompleteChunk[]) => void;
+  parser: (this: AutoCompleteModule, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+  filter: (this: AutoCompleteModule, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
+  onData: (this: AutoCompleteModule, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
+  onEnd: (this: AutoCompleteModule, result: IAutoCompleteChunk[]) => void;
 
   _requestId: number;
   _chunkSize: number;
@@ -168,7 +168,7 @@ export class AutoCompleteModule extends IModule {
   } = {
     chunkSize: 100,
 
-    parser: (el: HTMLTextAreaElement) => {
+    parser: function (el: HTMLTextAreaElement) {
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
 
@@ -203,7 +203,18 @@ export class AutoCompleteModule extends IModule {
       }
     },
 
-    filter: () => true,
+    filter: function (chunk, index, candidates, result) {
+      const { tag, query } = chunk;
+      const a = query.body;
+      const b = tag.key;
+
+      // if (result.length >= 100) {
+      //   this.getModule<AutoCompleteModule>(AutoCompleteModule.name)?.stop(true);
+      //   return false;
+      // }
+
+      return b.indexOf(a) > -1;
+    },
   }
 
   compare(a: string, b: string) {

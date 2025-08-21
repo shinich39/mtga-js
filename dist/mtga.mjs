@@ -509,10 +509,18 @@ var IndentModule = class _IndentModule extends IModule {
   };
 };
 
-// src/modules/auto-indent.ts
+// src/types/pair.ts
+var isOpening = function(pairs, value) {
+  return Object.keys(pairs).includes(value);
+};
 var isPair = function(pairs, opening, closing) {
   return pairs[opening] && pairs[opening] === closing;
 };
+var getClosing = function(pairs, value) {
+  return pairs[value];
+};
+
+// src/modules/auto-indent.ts
 var getIndent = function(str) {
   const rows = str.split(/\r\n|\r|\n/);
   const currRow = rows[rows.length - 1];
@@ -585,15 +593,6 @@ var AutoIndentModule = class _AutoIndentModule extends IModule {
 };
 
 // src/modules/auto-pair.ts
-var isOpening = function(pairs, value) {
-  return Object.keys(pairs).includes(value);
-};
-var isPair2 = function(pairs, opening, closing) {
-  return pairs[opening] && pairs[opening] === closing;
-};
-var getClosing = function(pairs, value) {
-  return pairs[value];
-};
 var closePairHandler = function(e) {
   if (e.defaultPrevented) {
     return;
@@ -661,7 +660,7 @@ var clearPairHandler = function(e) {
   }
   const prevChar = el.value.charAt(short - 1);
   const currChar = el.value.charAt(short);
-  if (!isPair2(pairs, prevChar, currChar)) {
+  if (!isPair(pairs, prevChar, currChar)) {
     return;
   }
   e.preventDefault();
@@ -718,7 +717,7 @@ var onKeyup2 = function(e) {
     return;
   }
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValid = !ctrlKey && (key.length === 1 || key === "Backspace");
+  const isValid = !ctrlKey && !altKey && (key.length === 1 || key === "Backspace");
   if (!isValid) {
     return;
   }
@@ -738,7 +737,7 @@ var onKeyup2 = function(e) {
   };
   module._requestId = requestId;
   module._stop = stop;
-  const query = module.parser.call(this, this.element);
+  const query = module.parser.call(module, this.element);
   const text = query.body;
   let candidates = [];
   if (text) {
@@ -758,7 +757,7 @@ var onKeyup2 = function(e) {
         tag,
         query
       };
-      const ok = module.filter?.call(this, chunk, i, candidates, result);
+      const ok = module.filter?.call(module, chunk, result, i, candidates);
       if (ok) {
         chunks.push(chunk);
         result.push(chunk);
@@ -769,11 +768,11 @@ var onKeyup2 = function(e) {
       return;
     }
     if (isStopped || i >= candidates.length) {
-      module.onData?.call(this, chunks, result);
-      module.onEnd?.call(this, result);
+      module.onData?.call(module, chunks, result);
+      module.onEnd?.call(module, result);
       return;
     }
-    module.onData?.call(this, chunks, result);
+    module.onData?.call(module, chunks, result);
     setTimeout(processChunk, 0);
   };
   processChunk();
@@ -804,7 +803,7 @@ var AutoCompleteModule = class _AutoCompleteModule extends IModule {
   static name = "AutoComplete";
   static defaults = {
     chunkSize: 100,
-    parser: (el) => {
+    parser: function(el) {
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
       let selectionStart = 0, selectionEnd = 0;
@@ -828,7 +827,12 @@ var AutoCompleteModule = class _AutoCompleteModule extends IModule {
         tail
       };
     },
-    filter: () => true
+    filter: function(chunk, index, candidates, result) {
+      const { tag, query } = chunk;
+      const a = query.body;
+      const b = tag.key;
+      return b.indexOf(a) > -1;
+    }
   };
   compare(a, b) {
     return compareString(a, b);

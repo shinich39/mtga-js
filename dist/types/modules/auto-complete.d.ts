@@ -22,10 +22,10 @@ interface IAutoCompleteIndex {
 export declare class AutoCompleteModule extends IModule {
     tags: IAutoCompleteTag[];
     indexes: IAutoCompleteIndex[];
-    parser: (this: MTGA, el: HTMLTextAreaElement) => IAutoCompleteQuery;
-    filter: (this: MTGA, chunk: IAutoCompleteChunk, index: number, candidates: IAutoCompleteTag[], result: IAutoCompleteChunk[]) => boolean;
-    onData: (this: MTGA, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
-    onEnd: (this: MTGA, result: IAutoCompleteChunk[]) => void;
+    parser: (this: AutoCompleteModule, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+    filter: (this: AutoCompleteModule, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
+    onData: (this: AutoCompleteModule, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
+    onEnd: (this: AutoCompleteModule, result: IAutoCompleteChunk[]) => void;
     _requestId: number;
     _chunkSize: number;
     _stop: (kill?: boolean) => void;
