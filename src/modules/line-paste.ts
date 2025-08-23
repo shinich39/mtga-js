@@ -34,10 +34,11 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
     return;
   }
 
-  console.log(copiedText.replace(/\s/g, "_"), copiedText.length);
+  // normalize windows linebreak
+  copiedText = copiedText.replace(/\r\n|\r/g, "\n");
 
   // supports single line copy only
-  const copiedRows = copiedText.split(/\r\n|\r|\n/);
+  const copiedRows = copiedText.split("\n");
   const isSingleLine = copiedRows.length === 2;
   const isLastLineEmpty = copiedRows[copiedRows.length - 1] === "";
 

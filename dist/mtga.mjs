@@ -1076,8 +1076,8 @@ var onPaste = function(e) {
   if (!copiedText) {
     return;
   }
-  console.log(copiedText.replace(/\s/g, "_"), copiedText.length);
-  const copiedRows = copiedText.split(/\r\n|\r|\n/);
+  copiedText = copiedText.replace(/\r\n|\r/g, "\n");
+  const copiedRows = copiedText.split("\n");
   const isSingleLine = copiedRows.length === 2;
   const isLastLineEmpty = copiedRows[copiedRows.length - 1] === "";
   if (!isSingleLine || !isLastLineEmpty) {
