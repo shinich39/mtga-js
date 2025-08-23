@@ -1077,7 +1077,7 @@ var MtgaJs = (() => {
     if (!data) {
       return;
     }
-    if (!data.endsWith("\n")) {
+    if (!/\r?\n$/.test(data)) {
       data += "\n";
     }
     await navigator.clipboard.writeText(data);
