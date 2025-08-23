@@ -43,8 +43,6 @@ const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
     data += "\n";
   }
 
-  console.log(data.replace(/\s/g, "_"), data.length)
-
   await navigator.clipboard.writeText(data);
 }
 

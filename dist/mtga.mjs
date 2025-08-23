@@ -1043,7 +1043,6 @@ var onKeydownAsync2 = async function(e) {
   if (!data.endsWith("\n")) {
     data += "\n";
   }
-  console.log(data.replace(/\s/g, "_"), data.length);
   await navigator.clipboard.writeText(data);
 };
 var LineCopyModule = class _LineCopyModule extends IModule {
@@ -1077,6 +1076,7 @@ var onPaste = function(e) {
   if (!copiedText) {
     return;
   }
+  console.log(copiedText.replace(/\s/g, "_"), copiedText.length);
   const copiedRows = copiedText.split(/\r\n|\r|\n/);
   const isSingleLine = copiedRows.length === 2;
   const isLastLineEmpty = copiedRows[copiedRows.length - 1] === "";

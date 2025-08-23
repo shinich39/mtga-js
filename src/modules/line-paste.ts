@@ -34,6 +34,8 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
     return;
   }
 
+  console.log(copiedText.replace(/\s/g, "_"), copiedText.length);
+
   // supports single line copy only
   const copiedRows = copiedText.split(/\r\n|\r|\n/);
   const isSingleLine = copiedRows.length === 2;
