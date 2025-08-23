@@ -54,7 +54,7 @@ const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent) {
     return;
   }
 
-  if (!/\r?\n$/.test(data)) {
+  if (!data.endsWith("\n")) {
     data += "\n";
   }
 

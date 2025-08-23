@@ -39,9 +39,11 @@ const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
     return;
   }
 
-  if (!/\r?\n$/.test(data)) {
+  if (!data.endsWith("\n")) {
     data += "\n";
   }
+
+  console.log(data.replace(/\s/g, "_"), data.length)
 
   await navigator.clipboard.writeText(data);
 }

@@ -1030,7 +1030,7 @@ var MtgaJs = (() => {
     if (!data) {
       return;
     }
-    if (!/\r?\n$/.test(data)) {
+    if (!data.endsWith("\n")) {
       data += "\n";
     }
     await navigator.clipboard.writeText(data);
@@ -1077,9 +1077,10 @@ var MtgaJs = (() => {
     if (!data) {
       return;
     }
-    if (!/\r?\n$/.test(data)) {
+    if (!data.endsWith("\n")) {
       data += "\n";
     }
+    console.log(data.replace(/\s/g, "_"), data.length);
     await navigator.clipboard.writeText(data);
   };
   var LineCopyModule = class _LineCopyModule extends IModule {
