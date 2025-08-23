@@ -177,12 +177,11 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
               taRect.left + caretPosition.left - 11,
             ) + "px";
           }
-          index = -1;
         }
 
         const hide = (kill) => {
           items = [];
-          index = -1;
+          index = 0;
           listEl.innerHTML = "";
           listEl.style.visibility = "hidden";
           if (kill) {
@@ -196,12 +195,20 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
             switch(key) {
               case "ArrowUp":
                 e.preventDefault();
-                index = Math.max(-1, index - 1);
+                if (index > 0) {
+                  index = Math.max(0, index - 1);
+                } else {
+                  index = items.length - 1;
+                }
                 render();
                 break;
               case "ArrowDown":
                 e.preventDefault();
-                index = Math.min(items.length - 1, index + 1);
+                if (index < items.length - 1) {
+                  index = Math.min(items.length - 1, index + 1);
+                } else {
+                  index = 0;
+                }
                 render();
                 break;
               case "ArrowLeft":
