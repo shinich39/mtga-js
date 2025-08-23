@@ -1,0 +1,1 @@
+{"version":3,"file":"line-paste.d.ts","sourceRoot":"","sources":["../../../src/modules/line-paste.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,YAAY,CAAC;AAClC,OAAO,EAAE,OAAO,EAAE,MAAM,oBAAoB,CAAC;AAyE7C,qBAAa,eAAgB,SAAQ,OAAO;gBAC9B,MAAM,EAAE,IAAI;IAIxB,OAAO,SAvEuB,eAAe,KAAK,cAAc,UAuE9C;IAElB,MAAM,CAAC,IAAI,SAAe;IAE1B,MAAM,CAAC,QAAQ,KAAM;CACtB"}

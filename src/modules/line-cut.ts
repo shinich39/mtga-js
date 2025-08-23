@@ -6,7 +6,7 @@ import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydown = function (this: LineCutModule, e: KeyboardEvent) {
+const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -33,7 +33,7 @@ const onKeydown = function (this: LineCutModule, e: KeyboardEvent) {
 
   const rows = getRows(el);
 
-  let data: string = "",
+  let data = "",
       newValues: string[] = [], 
       newShort = short, 
       newLong = long;
@@ -50,22 +50,25 @@ const onKeydown = function (this: LineCutModule, e: KeyboardEvent) {
   }
 
   if (!data) {
-    console.warn(`No data selected`);
+    // console.warn(`No data selected`);
     return;
   }
 
-  navigator.clipboard.writeText(data)
-    .then(() => {
-      mtga.setState({
-        isReversed: false,
-        short: newShort,
-        long: newLong,
-        dir: "none",
-        value: newValues.join(""),
-      });
+  if (!data.endsWith("\n")) {
+    data += "\n";
+  }
 
-      mtga.addHistory();
-    });
+  await navigator.clipboard.writeText(data);
+
+  mtga.setState({
+    isReversed: false,
+    short: newShort,
+    long: newLong,
+    dir: "none",
+    value: newValues.join(""),
+  });
+
+  mtga.addHistory();
 }
 
 export class LineCutModule extends IModule {
@@ -73,7 +76,7 @@ export class LineCutModule extends IModule {
     super(parent, LineCutModule.name);
   }
 
-  onKeydown = onKeydown;
+  onKeydownAsync = onKeydownAsync;
 
   static name = "LineCut";
 

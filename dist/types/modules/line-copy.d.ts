@@ -2,7 +2,7 @@ import { MTGA } from "../mtga.js";
 import { IModule } from "../types/module.js";
 export declare class LineCopyModule extends IModule {
     constructor(parent: MTGA);
-    onKeydown: (this: LineCopyModule, e: KeyboardEvent) => void;
+    onKeydownAsync: (this: LineCopyModule, e: KeyboardEvent) => Promise<void>;
     static name: string;
     static defaults: {};
 }

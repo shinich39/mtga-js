@@ -6,7 +6,7 @@ import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydown = function (this: LineCopyModule, e: KeyboardEvent) {
+const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -32,14 +32,18 @@ const onKeydown = function (this: LineCopyModule, e: KeyboardEvent) {
   e.preventDefault();
 
   const rows = getRows(el);
-  const data = rows.find((r) => r.isSelected)?.value;
+  let data = rows.find((r) => r.isSelected)?.value;
 
   if (!data) {
-    console.warn(`No data selected`);
+    // console.warn(`No data selected`);
     return;
   }
 
-  navigator.clipboard.writeText(data);
+  if (!data.endsWith("\n")) {
+    data += "\n";
+  }
+
+  await navigator.clipboard.writeText(data);
 }
 
 export class LineCopyModule extends IModule {
@@ -47,7 +51,7 @@ export class LineCopyModule extends IModule {
     super(parent, LineCopyModule.name);
   }
 
-  onKeydown = onKeydown;
+  onKeydownAsync = onKeydownAsync;
 
   static name = "LineCopy";
 

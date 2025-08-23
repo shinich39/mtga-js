@@ -10,6 +10,7 @@ export { LineBreakModule } from "./modules/line-break.js";
 export { LineRemoveModule } from "./modules/line-remove.js";
 export { LineCutModule } from "./modules/line-cut.js";
 export { LineCopyModule } from "./modules/line-copy.js";
+export { LinePasteModule } from "./modules/line-paste.js";
 export declare class MTGA {
     element: HTMLTextAreaElement;
     modules: Record<string, IModule>;
@@ -17,6 +18,7 @@ export declare class MTGA {
     _keydownState: IKeydownState | null;
     _keydownEvent: (e: KeyboardEvent) => void;
     _keyupEvent: (e: KeyboardEvent) => void;
+    _pasteEvent: (e: ClipboardEvent) => void;
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
