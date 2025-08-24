@@ -1,7 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
@@ -20,7 +19,7 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
 
   e.preventDefault();
 
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
   const targetRow = e.shiftKey
@@ -68,7 +67,7 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
   mtga.addHistory();
 }
 
-export class LineBreakModule extends IModule {
+export class LineBreakModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LineBreakModule.name);
   }

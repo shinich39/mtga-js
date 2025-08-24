@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-export declare class CommentModule extends IModule {
+import { MTGAModule } from "../types/module.js";
+export declare class CommentModule extends MTGAModule {
     pattern: RegExp;
     value: string;
     constructor(parent: MTGA);

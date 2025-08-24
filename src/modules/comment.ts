@@ -1,7 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 // text...
@@ -24,7 +23,7 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   const { pattern, value } = this;
 
   const rows = getRows(el);
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
   const selectedRows = rows.filter((r) => r.isSelected);
   const selectedEmptyRows = selectedRows.filter((r) => !r.value.trim());
   const isMultiple = selectedRows.length > 1;
@@ -128,7 +127,7 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     return;
   }
 
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
   const isRange = short !== long;
   if (isRange) {
     return;
@@ -164,7 +163,7 @@ const onKeydown = function (this: CommentModule, e: KeyboardEvent) {
   multiLineHandler.call(this, e);
 }
 
-export class CommentModule extends IModule {
+export class CommentModule extends MTGAModule {
   pattern: RegExp;
   value: string;
 

@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-export declare class LineCutModule extends IModule {
+import { MTGAModule } from "../types/module.js";
+export declare class LineCutModule extends MTGAModule {
     constructor(parent: MTGA);
     onKeydownAsync: (this: LineCutModule, e: KeyboardEvent) => Promise<void>;
     static name: string;

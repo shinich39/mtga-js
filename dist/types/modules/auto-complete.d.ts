@@ -1,5 +1,5 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 interface IAutoCompleteTag {
     key: string;
     value: string;
@@ -19,7 +19,7 @@ interface IAutoCompleteIndex {
     pattern: RegExp;
     tags: IAutoCompleteTag[];
 }
-export declare class AutoCompleteModule extends IModule {
+export declare class AutoCompleteModule extends MTGAModule {
     tags: IAutoCompleteTag[];
     indexes: IAutoCompleteIndex[];
     parser: (this: this, el: HTMLTextAreaElement) => IAutoCompleteQuery;

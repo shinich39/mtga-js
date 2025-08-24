@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-export declare class IndentModule extends IModule {
+import { MTGAModule } from "../types/module.js";
+export declare class IndentModule extends MTGAModule {
     pattern: RegExp;
     value: string;
     constructor(parent: MTGA);

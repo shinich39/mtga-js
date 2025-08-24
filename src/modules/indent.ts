@@ -1,7 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
@@ -24,7 +23,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
   const { pattern, value } = this;
 
   const rows = getRows(el);
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
   const selectedRows = rows.filter((r) => r.isSelected);
   const isMultiple = selectedRows.length > 1;
   const shouldRemove = e.shiftKey;
@@ -98,7 +97,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
   mtga.addHistory();
 }
 
-export class IndentModule extends IModule {
+export class IndentModule extends MTGAModule {
   pattern: RegExp;
   value: string;
 

@@ -1,4 +1,4 @@
-import { IModule } from "./types/module.js";
+import { MTGAModule } from "./types/module.js";
 import { getState, IKeydownState, IState, setState } from "./types/state.js";
 
 import { HistoryModule } from "./modules/history.js";
@@ -13,6 +13,7 @@ import { LineCutModule } from "./modules/line-cut.js";
 import { LineCopyModule } from "./modules/line-copy.js";
 import { LinePasteModule } from "./modules/line-paste.js";
 
+export { MTGAModule } from "./types/module.js";
 export { HistoryModule } from "./modules/history.js";
 export { CommentModule } from "./modules/comment.js";
 export { IndentModule } from "./modules/indent.js";
@@ -28,8 +29,8 @@ export { LinePasteModule } from "./modules/line-paste.js";
 export class MTGA {
   element: HTMLTextAreaElement;
 
-  modules: Record<string, IModule>;
-  moduleOrder: IModule[];
+  modules: Record<string, MTGAModule>;
+  moduleOrder: MTGAModule[];
 
   _keydownState: IKeydownState | null;
   _keydownEvent: (e: KeyboardEvent) => void;
@@ -112,7 +113,6 @@ export class MTGA {
     this.element.addEventListener("keydown", this._keydownEvent, true);
     this.element.addEventListener("keyup", this._keyupEvent, true);
     this.element.addEventListener("paste", this._pasteEvent, true);
-
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
 
@@ -124,11 +124,11 @@ export class MTGA {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
 
-  getModule<T extends IModule>(name: string) {
+  getModule<T extends MTGAModule>(name: string) {
     return this.modules[name] as T | undefined;
   }
 
-  setModule<T extends IModule>(module: T) {
+  setModule<T extends MTGAModule>(module: T) {
     this.modules[module.name] = module;
     this.initModuleOrder();
   }

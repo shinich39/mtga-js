@@ -8,7 +8,7 @@
 
   <body>
 
-<textarea id="textarea" style="width: 512px; height: 512px;">
+<!-- <textarea id="textarea" style="width: 512px; height: 512px;">
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
 Sed ornare augue nibh, non dignissim felis viverra et.
 Integer ex lorem, lobortis at viverra sit amet, imperdiet ac erat.
@@ -17,10 +17,41 @@ Mauris placerat viverra ipsum quis sagittis.
 Cras laoreet neque tortor. Quisque in maximus eros. 
 Vivamus vehicula vestibulum est, in interdum turpis. 
 Aenean tempor nulla at sapien suscipit finibus. 
+Proin id leo nec nisi eleifend eleifend.</textarea> -->
+
+<textarea id="textarea" style="width: 512px; height: 512px;">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+Sed ornare augue nibh, non dignissim felis viverra et.
+Integer ex lorem, lobortis at viverra sit amet, imperdiet ac erat.
+Maecenas malesuada maximus leo quis posuere.
+
+// Mauris placerat viverra ipsum quis sagittis.
+
+/*
+  Cras laoreet neque tortor. Quisque in maximus eros. 
+*/
+
+{a,|b,|c} {d|e|f}
+
+{{a,|b,|c,}|d|e|||}
+
+{
+  {
+    a,|
+    b,|
+    c,
+  }|
+  d|
+  e|||
+}
+
+Vivamus vehicula vestibulum est, in interdum turpis. 
+Aenean tempor nulla at sapien suscipit finibus. 
 Proin id leo nec nisi eleifend eleifend.</textarea>
 
     <script src="test/textarea-caret-position.js"></script>
     <script src="dist/mtga.js"></script>
+    <script src="example/beautify.js"></script>
     <script>
       const MAX_ITEM_COUNT = 100;
       const VISIBLE_COUNT = 11;
@@ -38,7 +69,10 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
       } = window.MtgaJs;
 
       const mtga = new MTGA(document.getElementById("textarea"));
+
       console.log("MTGA", mtga);
+      mtga.setModule(new window.BeautifyModule(mtga));
+      console.log("BeautifyModule", mtga.getModule(window.BeautifyModule.name));
 
       const ac = mtga.getModule(AutoCompleteModule.name);
       console.log("AutoCompleteModule", ac);

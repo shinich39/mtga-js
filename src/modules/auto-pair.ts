@@ -1,7 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getClosing, IPairs, isOpening, isPair } from "../types/pair.js";
-import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
@@ -15,7 +14,6 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
-  // check close pair
   const isValid = !ctrlKey && !altKey && isOpening(pairs, key);
   if (!isValid) {
     return;
@@ -23,8 +21,7 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
 
   e.preventDefault();
 
-
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
 
   const isRange = short !== long;
   const opening = key;
@@ -76,7 +73,7 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     return;
   }
 
-  const { short, long } = getState(el);
+  const { short, long } = mtga.getState();
 
   const isRange = short !== long;
   if (isRange) {
@@ -115,7 +112,7 @@ const onKeydown = function(this: AutoPairModule, e: KeyboardEvent) {
   clearPairHandler.call(this, e);
 }
 
-export class AutoPairModule extends IModule {
+export class AutoPairModule extends MTGAModule {
   pairs: IPairs;
 
   constructor(parent: MTGA) {

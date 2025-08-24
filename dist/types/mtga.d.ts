@@ -1,5 +1,6 @@
-import { IModule } from "./types/module.js";
+import { MTGAModule } from "./types/module.js";
 import { IKeydownState, IState } from "./types/state.js";
+export { MTGAModule } from "./types/module.js";
 export { HistoryModule } from "./modules/history.js";
 export { CommentModule } from "./modules/comment.js";
 export { IndentModule } from "./modules/indent.js";
@@ -13,8 +14,8 @@ export { LineCopyModule } from "./modules/line-copy.js";
 export { LinePasteModule } from "./modules/line-paste.js";
 export declare class MTGA {
     element: HTMLTextAreaElement;
-    modules: Record<string, IModule>;
-    moduleOrder: IModule[];
+    modules: Record<string, MTGAModule>;
+    moduleOrder: MTGAModule[];
     _keydownState: IKeydownState | null;
     _keydownEvent: (e: KeyboardEvent) => void;
     _keyupEvent: (e: KeyboardEvent) => void;
@@ -23,8 +24,8 @@ export declare class MTGA {
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
     initModuleOrder(): void;
-    getModule<T extends IModule>(name: string): T | undefined;
-    setModule<T extends IModule>(module: T): void;
+    getModule<T extends MTGAModule>(name: string): T | undefined;
+    setModule<T extends MTGAModule>(module: T): void;
     removeModule(name: string): void;
     getState(withValue?: boolean): IState;
     setState(state: IState): void;

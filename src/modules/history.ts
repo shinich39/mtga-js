@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-import { getState, IState } from "../types/state.js";
+import { MTGAModule } from "../types/module.js";
+import { IState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const onKeydown = function(this: HistoryModule, e: KeyboardEvent) {
@@ -55,7 +55,7 @@ const onKeyup = function(this: HistoryModule, e: KeyboardEvent) {
   } // move
   else {
     const prevState = keydownState.state;
-    const currState = getState(el);
+    const currState = mtga.getState();
     if (
       prevState.short !== currState.short ||
       prevState.long !== currState.long
@@ -65,7 +65,7 @@ const onKeyup = function(this: HistoryModule, e: KeyboardEvent) {
   }
 }
 
-export class HistoryModule extends IModule {
+export class HistoryModule extends MTGAModule {
   items: IState[];
   maxCount: number;
   _i: number;
@@ -94,7 +94,7 @@ export class HistoryModule extends IModule {
   }
 
   add(withPrune = true) {
-    const el = this.parent.element;
+    const mtga = this.parent;
     
     if (withPrune) {
       this.prune();
@@ -103,7 +103,7 @@ export class HistoryModule extends IModule {
     }
 
     const prevState = this.items[this.items.length - 1];
-    const currState = getState(el, true);
+    const currState = mtga.getState(true);
 
     const isChanged = !prevState ||
       prevState.short !== currState.short ||

@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-export declare class LinePasteModule extends IModule {
+import { MTGAModule } from "../types/module.js";
+export declare class LinePasteModule extends MTGAModule {
     constructor(parent: MTGA);
     onPaste: (this: LinePasteModule, e: ClipboardEvent) => void;
     static name: string;

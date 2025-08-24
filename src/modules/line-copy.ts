@@ -1,7 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
@@ -20,7 +19,7 @@ const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
   const el = this.parent.element;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
 
   const isRange = short !== long;
 
@@ -46,7 +45,7 @@ const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
   await navigator.clipboard.writeText(data);
 }
 
-export class LineCopyModule extends IModule {
+export class LineCopyModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LineCopyModule.name);
   }

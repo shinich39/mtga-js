@@ -1,7 +1,7 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { IPairs } from "../types/pair.js";
-export declare class AutoPairModule extends IModule {
+export declare class AutoPairModule extends MTGAModule {
     pairs: IPairs;
     constructor(parent: MTGA);
     onKeydown: (this: AutoPairModule, e: KeyboardEvent) => void;

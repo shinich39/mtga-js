@@ -1,5 +1,5 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { compareString, parseKeyboardEvent } from "./utils.js";
 
 interface IAutoCompleteTag {
@@ -46,10 +46,11 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
     return;
   }
 
-
   this.stop(true);
   
   const mtga = this.parent;
+  const el = this.parent.element;
+
   const requestId = this._requestId + 1;
   const chunkSize = this._chunkSize;
   const result: IAutoCompleteChunk[] = [];
@@ -66,7 +67,7 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
   this._requestId = requestId;
   this._stop = stop;
 
-  const query = this.parser.call(this, mtga.element);
+  const query = this.parser.call(this, el);
   const text = query.body;
   
   let candidates: IAutoCompleteTag[] = [];
@@ -126,7 +127,7 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
   processChunk();
 }
 
-export class AutoCompleteModule extends IModule {
+export class AutoCompleteModule extends MTGAModule {
   tags: IAutoCompleteTag[];
   indexes: IAutoCompleteIndex[];
 

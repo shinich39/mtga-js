@@ -1,5 +1,5 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
 import { parseKeyboardEvent } from "./utils.js";
 
@@ -66,7 +66,7 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
   mtga.addHistory();
 }
 
-export class LineRemoveModule extends IModule {
+export class LineRemoveModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LineRemoveModule.name);
   }

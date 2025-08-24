@@ -1,25 +1,16 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
-import { parseKeyboardEvent } from "./utils.js";
-
-const IS_SUPPORTED = !!navigator.clipboard?.readText;
 
 const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
 
-  if (!IS_SUPPORTED) {
-    console.warn(`navigator.clipboard?.readText not found`);
-    return;
-  }
-
   const mtga = this.parent;
   const el = this.parent.element;
 
-  const { short, long, dir, isReversed } = getState(el);
+  const { short, long, dir, isReversed } = mtga.getState();
 
   const isRange = short !== long;
 
@@ -75,7 +66,7 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
   mtga.addHistory();
 }
 
-export class LinePasteModule extends IModule {
+export class LinePasteModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LinePasteModule.name);
   }

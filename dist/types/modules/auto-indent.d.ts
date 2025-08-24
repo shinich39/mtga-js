@@ -1,7 +1,7 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { IPairs } from "../types/pair.js";
-export declare class AutoIndentModule extends IModule {
+export declare class AutoIndentModule extends MTGAModule {
     pairs: IPairs;
     indentUnit: string;
     constructor(parent: MTGA);

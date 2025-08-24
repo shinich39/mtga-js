@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
 
-export class IModule {
+export class MTGAModule {
   parent: MTGA;
   name: string;
   index: number;

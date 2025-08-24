@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
-export declare class LineBreakModule extends IModule {
+import { MTGAModule } from "../types/module.js";
+export declare class LineBreakModule extends MTGAModule {
     constructor(parent: MTGA);
     onKeydown: (this: LineBreakModule, e: KeyboardEvent) => void;
     static name: string;

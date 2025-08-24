@@ -1,7 +1,7 @@
 import { MTGA } from "../mtga.js";
-import { IModule } from "../types/module.js";
+import { MTGAModule } from "../types/module.js";
 import { IState } from "../types/state.js";
-export declare class HistoryModule extends IModule {
+export declare class HistoryModule extends MTGAModule {
     items: IState[];
     maxCount: number;
     _i: number;

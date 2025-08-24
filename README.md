@@ -24,6 +24,10 @@ Make Textarea Garbage Again
 
 ### Usage
 
+### Custom Module
+
+example/beautify.js
+
 ## Acknowledgements
 
 - [textarea-caret-position](https://github.com/component/textarea-caret-position)
