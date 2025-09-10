@@ -38,7 +38,7 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
-  const isValid = !ctrlKey && !altKey && !shiftKey && key === "Enter";
+  const isValid = !ctrlKey && !altKey && key === "Enter";
   if (!isValid) {
     return;
   }

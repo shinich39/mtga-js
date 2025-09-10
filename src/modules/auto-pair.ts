@@ -68,7 +68,7 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
-  const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
+  const isRemoveKey = !ctrlKey && !altKey && key === "Backspace";
   if (!isRemoveKey) {
     return;
   }
