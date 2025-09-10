@@ -8,6 +8,27 @@
 
   <body>
 
+    <table>
+      <thead>
+        <tr>
+          <th>Ctrl</th>
+          <th>Meta</th>
+          <th>Shift</th>
+          <th>Alt</th>
+          <th>Key</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="keydown-row">
+          <td>false</td>
+          <td>false</td>
+          <td>false</td>
+          <td>false</td>
+          <td>false</td>
+        </tr>
+      </tbody>
+    </table>
+
 <textarea id="textarea" style="width: 512px; height: 512px;">
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
 Sed ornare augue nibh, non dignissim felis viverra et.
@@ -22,6 +43,31 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
     <script src="test/textarea-caret-position.js"></script>
     <script src="dist/mtga.js"></script>
     <script src="example/beautify.js"></script>
+    <script>
+      const row = document.querySelector("#keydown-row");
+      const ctrlEl = row.children[0];
+      const metaEl = row.children[1];
+      const shiftEl = row.children[2];
+      const altEl = row.children[3];
+      const keyEl = row.children[4];
+
+      window.addEventListener("keydown", (e) => {
+        ctrlEl.innerHTML = e.ctrlKey;
+        metaEl.innerHTML = e.metaKey;
+        shiftEl.innerHTML = e.shiftKey;
+        altEl.innerHTML = e.altKey;
+        keyEl.innerHTML = e.key;
+      });
+
+      window.addEventListener("keyup", (e) => {
+        ctrlEl.innerHTML = e.ctrlKey;
+        metaEl.innerHTML = e.metaKey;
+        shiftEl.innerHTML = e.shiftKey;
+        altEl.innerHTML = e.altKey;
+        keyEl.innerHTML = e.key;
+      });
+      
+    </script>
     <script>
       const MAX_ITEM_COUNT = 100;
       const VISIBLE_COUNT = 11;
