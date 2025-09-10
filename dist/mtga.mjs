@@ -545,7 +545,7 @@ var onKeydown4 = function(e) {
     return;
   }
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isValid = !ctrlKey && !altKey && !shiftKey && key === "Enter";
+  const isValid = !ctrlKey && !altKey && key === "Enter";
   if (!isValid) {
     return;
   }
@@ -649,7 +649,7 @@ var clearPairHandler = function(e) {
   const el = this.parent.element;
   const pairs = this.pairs;
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  const isRemoveKey = !ctrlKey && !altKey && !shiftKey && key === "Backspace";
+  const isRemoveKey = !ctrlKey && !altKey && key === "Backspace";
   if (!isRemoveKey) {
     return;
   }
