@@ -46,6 +46,8 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     newLong = (left + opening + center).length;
   }
 
+  mtga.addHistory();
+  
   mtga.setState({
     isReversed,
     short: newShort,
@@ -95,6 +97,8 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   const newValue = left + right;
   const newShort = left.length;
   const newLong = left.length;
+
+  mtga.addHistory();
 
   mtga.setState({
     isReversed: false,

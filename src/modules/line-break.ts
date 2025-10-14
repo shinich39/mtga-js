@@ -56,6 +56,8 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
     newLong += 1;
   }
 
+  mtga.addHistory();
+
   mtga.setState({
     isReversed: false,
     short: newShort,

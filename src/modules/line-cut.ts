@@ -59,6 +59,8 @@ const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent) {
 
   await navigator.clipboard.writeText(data);
 
+  mtga.addHistory();
+  
   mtga.setState({
     isReversed: false,
     short: newShort,

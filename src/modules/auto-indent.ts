@@ -73,6 +73,8 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
   const newValue = left + center + right;
   const newLong = newShort;
   
+  // mtga.addHistory();
+
   mtga.setState({
     isReversed: false,
     short: newShort,

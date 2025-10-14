@@ -147,6 +147,8 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     + "**/" 
     + el.value.substring(long); 
 
+  mtga.addHistory();
+  
   mtga.setState({
     isReversed,
     short: newShort,

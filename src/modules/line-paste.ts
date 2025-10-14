@@ -54,6 +54,8 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
 
     newValues.push(row.value);
   }
+  
+  mtga.addHistory();
 
   mtga.setState({
     isReversed,
