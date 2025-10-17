@@ -107,9 +107,7 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     long: newLong,
     dir,
     value: newValues.join(""),
-  });
-
-  mtga.addHistory();
+  }, false, true);
 }
 
 /** text... */
@@ -147,8 +145,6 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     + "**/" 
     + el.value.substring(long); 
 
-  mtga.addHistory();
-  
   mtga.setState({
     isReversed,
     short: newShort,
@@ -156,8 +152,6 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     dir,
     value: newValue,
   });
-
-  mtga.addHistory();
 }
 
 const onKeydown = function (this: CommentModule, e: KeyboardEvent) {

@@ -1,3 +1,5 @@
+import { IPairs } from "../types/pair.js";
+
 /**
  * @example
  * input.addEventListener("input", debounce((e) => ..., 100));
@@ -124,4 +126,40 @@ export function getAllCombinations<T>(arr: T[]) {
     result.push(combo);
   }
   return result;
+}
+
+/**
+ * 
+ * @param pairs 
+ * @param indentUnit 
+ * @param rows value.substring(0, selectionStart).split(/\r\n|\r|\n/)
+ * @returns 
+ */
+export function getIndent(pairs: IPairs, indentUnit: string, rows: string[]) {
+
+  const createIndent = function(unit: string, size: number) {
+    return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
+  }
+
+  const openingChars = Object.keys(pairs).join("");
+  const closingChars = Object.values(pairs).join("");
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const row = rows[i];
+    for (let j = row.length - 1; j >= 0; j--) {
+      const ch = row[j];
+
+      if (closingChars.includes(ch)) {
+        const depth = (row.match(/^\s*/)?.[0].length || 0);
+        return createIndent(indentUnit, depth);
+      }
+
+      if (openingChars.includes(ch)) {
+        const depth = (row.match(/^\s*/)?.[0].length || 0) + indentUnit.length;
+        return createIndent(indentUnit, depth);
+      }
+    }
+  }
+
+  return "";
 }

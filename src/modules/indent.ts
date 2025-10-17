@@ -86,8 +86,6 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
     newValues.push(newValue);
   }
 
-  mtga.addHistory();
-  
   mtga.setState({
     isReversed,
     short: newShort,
@@ -95,8 +93,6 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
     dir,
     value: newValues.join(""),
   });
-
-  mtga.addHistory();
 }
 
 export class IndentModule extends MTGAModule {

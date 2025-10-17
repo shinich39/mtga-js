@@ -1,35 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
-import { IPairs, isClosing, isPair } from "../types/pair.js";
-import { parseKeyboardEvent } from "./utils.js";
-
-const createIndent = function(unit: string, size: number) {
-  return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
-}
-
-const getIndent = function(pairs: IPairs, indentUnit: string, rows: string[]) {
-  const openingChars = Object.keys(pairs).join("");
-  const closingChars = Object.values(pairs).join("");
-
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const row = rows[i];
-    for (let j = row.length - 1; j >= 0; j--) {
-      const ch = row[j];
-
-      if (closingChars.includes(ch)) {
-        const depth = (row.match(/^\s*/)?.[0].length || 0);
-        return createIndent(indentUnit, depth);
-      }
-
-      if (openingChars.includes(ch)) {
-        const depth = (row.match(/^\s*/)?.[0].length || 0) + indentUnit.length;
-        return createIndent(indentUnit, depth);
-      }
-    }
-  }
-
-  return "";
-}
+import { IPairs, isClosing, } from "../types/pair.js";
+import { getIndent, parseKeyboardEvent } from "./utils.js";
 
 const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
@@ -57,8 +29,9 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
   let center = "\n";
   const right = el.value.substring(long);
 
-  const rows = left.split(/\r\n|\r|\n/);
-  const currIndent = getIndent(pairs, indentUnit, rows);
+  // calculate indent size
+  const leftRows = left.split(/\r\n|\r|\n/);
+  const currIndent = getIndent(pairs, indentUnit, leftRows);
 
   let newShort = short + 1;
   if (isClosing(pairs, currChar)) {
@@ -73,16 +46,12 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
   const newValue = left + center + right;
   const newLong = newShort;
   
-  // mtga.addHistory();
-
   mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
     value: newValue,
-  });
-
-  mtga.addHistory();
+  }, false, true);
 }
 
 export class AutoIndentModule extends MTGAModule {

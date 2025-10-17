@@ -116,10 +116,10 @@ export class MTGA {
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
 
-    this.initModuleOrder();
+    this.initModules();
   }
 
-  initModuleOrder() {
+  initModules() {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
 
@@ -129,13 +129,13 @@ export class MTGA {
 
   setModule<T extends MTGAModule>(module: T) {
     this.modules[module.name] = module;
-    this.initModuleOrder();
+    this.initModules();
   }
 
   removeModule(name: string) {
     if (this.modules[name]) {
       delete this.modules[name];
-      this.initModuleOrder();
+      this.initModules();
     }
   }
 
@@ -143,12 +143,24 @@ export class MTGA {
     return getState(this.element, withValue);
   }
 
-  setState(state: IState) {
+  setState(state: IState, beforeHistory = true, afterHistory = true) {
+    if (beforeHistory) {
+      this.addHistory();
+    }
+
     setState(this.element, state);
+
+    if (afterHistory) {
+      this.addHistory();
+    }
   }
 
   addHistory(withPrune = true) {
     this.getModule<HistoryModule>(HistoryModule.name)?.add(withPrune);
+  }
+
+  removeHistory() {
+    this.getModule<HistoryModule>(HistoryModule.name)?.remove();
   }
 
   _clearKeydownState() {

@@ -30,7 +30,7 @@ const onKeydown = function(this: HistoryModule, e: KeyboardEvent) {
   }
 
   if (h) {
-    mtga.setState(h);
+    mtga.setState(h, false, false);
   }
 }
 
@@ -119,6 +119,12 @@ export class HistoryModule extends MTGAModule {
     if (this.items.length > this.maxCount) {
       this.items.shift();
     }
+
+    console.log(`history saved: ${this.items.length}`);
+  }
+
+  remove() {
+    this.items.pop();
   }
 
   prev() {

@@ -45,8 +45,6 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     newShort = (left + opening).length;
     newLong = (left + opening + center).length;
   }
-
-  mtga.addHistory();
   
   mtga.setState({
     isReversed,
@@ -55,8 +53,6 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     dir,
     value: newValue,
   });
-
-  mtga.addHistory();
 }
 
 const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
@@ -98,8 +94,6 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   const newShort = left.length;
   const newLong = left.length;
 
-  mtga.addHistory();
-
   mtga.setState({
     isReversed: false,
     short: newShort,
@@ -107,8 +101,6 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     dir: "forward",
     value: newValue,
   });
-
-  mtga.addHistory();
 }
 
 const onKeydown = function(this: AutoPairModule, e: KeyboardEvent) {

@@ -67,16 +67,12 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
     value = value.substring(0, value.length - 1);
   }
 
-  mtga.addHistory();
-  
   mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
     value,
   });
-
-  mtga.addHistory();
 }
 
 export class LineRemoveModule extends MTGAModule {

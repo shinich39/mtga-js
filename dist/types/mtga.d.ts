@@ -23,13 +23,14 @@ export declare class MTGA {
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
-    initModuleOrder(): void;
+    initModules(): void;
     getModule<T extends MTGAModule>(name: string): T | undefined;
     setModule<T extends MTGAModule>(module: T): void;
     removeModule(name: string): void;
     getState(withValue?: boolean): IState;
-    setState(state: IState): void;
+    setState(state: IState, beforeHistory?: boolean, afterHistory?: boolean): void;
     addHistory(withPrune?: boolean): void;
+    removeHistory(): void;
     _clearKeydownState(): void;
     _setKeydownState(e: KeyboardEvent): void;
     destroy(): void;

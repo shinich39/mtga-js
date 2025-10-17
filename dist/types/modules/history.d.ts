@@ -14,6 +14,7 @@ export declare class HistoryModule extends MTGAModule {
     onKeyup: (this: HistoryModule, e: KeyboardEvent) => void;
     prune(): void;
     add(withPrune?: boolean): void;
+    remove(): void;
     prev(): IState;
     next(): IState;
     curr(): IState;

@@ -87,9 +87,11 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
       const mtga = new MTGA(document.getElementById("textarea"));
 
       console.log("MTGA", mtga);
+
       mtga.setModule(new window.BeautifyModule(mtga));
       console.log("BeautifyModule", mtga.getModule(window.BeautifyModule.name));
 
+      const h = mtga.getModule(HistoryModule.name);
       const ac = mtga.getModule(AutoCompleteModule.name);
       console.log("AutoCompleteModule", ac);
 
@@ -338,7 +340,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           render();
         }
 
-        mtga.element.addEventListener("keydown", keydownHandler);
+        window.addEventListener("keydown", keydownHandler, true);
         mtga.element.addEventListener("click", () => hide(true));
         mtga.element.addEventListener("blur", () => hide(true));
       })();

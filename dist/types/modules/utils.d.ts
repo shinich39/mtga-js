@@ -1,3 +1,4 @@
+import { IPairs } from "../types/pair.js";
 /**
  * @example
  * input.addEventListener("input", debounce((e) => ..., 100));
@@ -24,4 +25,12 @@ export declare function compareString(from: string, to: string): {
     match: [0 | 1 | -1, string][];
 };
 export declare function getAllCombinations<T>(arr: T[]): T[][];
+/**
+ *
+ * @param pairs
+ * @param indentUnit
+ * @param rows value.substring(0, selectionStart).split(/\r\n|\r|\n/)
+ * @returns
+ */
+export declare function getIndent(pairs: IPairs, indentUnit: string, rows: string[]): string;
 //# sourceMappingURL=utils.d.ts.map

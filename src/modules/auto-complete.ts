@@ -142,6 +142,7 @@ export class AutoCompleteModule extends MTGAModule {
 
   constructor(parent: MTGA) {
     super(parent, AutoCompleteModule.name, 1);
+    
     this.tags = [];
     this.indexes = [];
 
@@ -242,6 +243,8 @@ export class AutoCompleteModule extends MTGAModule {
       value,
     }
 
-    this.parent.setState(state);
+    const mtga = this.parent;
+
+    mtga.setState(state);
   }
 }

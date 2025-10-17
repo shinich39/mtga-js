@@ -125,6 +125,28 @@ function compareString(from, to) {
     match: result.reverse()
   };
 }
+function getIndent(pairs, indentUnit, rows) {
+  const createIndent = function(unit, size) {
+    return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
+  };
+  const openingChars = Object.keys(pairs).join("");
+  const closingChars = Object.values(pairs).join("");
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const row = rows[i];
+    for (let j = row.length - 1; j >= 0; j--) {
+      const ch = row[j];
+      if (closingChars.includes(ch)) {
+        const depth = row.match(/^\s*/)?.[0].length || 0;
+        return createIndent(indentUnit, depth);
+      }
+      if (openingChars.includes(ch)) {
+        const depth = (row.match(/^\s*/)?.[0].length || 0) + indentUnit.length;
+        return createIndent(indentUnit, depth);
+      }
+    }
+  }
+  return "";
+}
 
 // src/modules/history.ts
 var onKeydown = function(e) {
@@ -145,7 +167,7 @@ var onKeydown = function(e) {
     h = this.next();
   }
   if (h) {
-    mtga.setState(h);
+    mtga.setState(h, false, false);
   }
 };
 var onKeyup = function(e) {
@@ -207,6 +229,10 @@ var HistoryModule = class _HistoryModule extends MTGAModule {
     if (this.items.length > this.maxCount) {
       this.items.shift();
     }
+    console.log(`history saved: ${this.items.length}`);
+  }
+  remove() {
+    this.items.pop();
   }
   prev() {
     if (this._i < this.items.length) {
@@ -355,8 +381,7 @@ var singleLineHandler = function(e) {
     long: newLong,
     dir,
     value: newValues.join("")
-  });
-  mtga.addHistory();
+  }, false, true);
 };
 var multiLineHandler = function(e) {
   if (e.defaultPrevented) {
@@ -381,7 +406,6 @@ var multiLineHandler = function(e) {
   e.preventDefault();
   const newShort = short + 1, newLong = long + 1;
   const newValue = el.value.substring(0, short) + "**/" + el.value.substring(long);
-  mtga.addHistory();
   mtga.setState({
     isReversed,
     short: newShort,
@@ -389,7 +413,6 @@ var multiLineHandler = function(e) {
     dir,
     value: newValue
   });
-  mtga.addHistory();
 };
 var onKeydown2 = function(e) {
   singleLineHandler.call(this, e);
@@ -479,7 +502,6 @@ var onKeydown3 = function(e) {
     }
     newValues.push(newValue);
   }
-  mtga.addHistory();
   mtga.setState({
     isReversed,
     short: newShort,
@@ -487,7 +509,6 @@ var onKeydown3 = function(e) {
     dir,
     value: newValues.join("")
   });
-  mtga.addHistory();
 };
 var IndentModule = class _IndentModule extends MTGAModule {
   pattern;
@@ -520,28 +541,6 @@ var getClosing = function(pairs, value) {
 };
 
 // src/modules/auto-indent.ts
-var createIndent = function(unit, size) {
-  return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);
-};
-var getIndent = function(pairs, indentUnit, rows) {
-  const openingChars = Object.keys(pairs).join("");
-  const closingChars = Object.values(pairs).join("");
-  for (let i = rows.length - 1; i >= 0; i--) {
-    const row = rows[i];
-    for (let j = row.length - 1; j >= 0; j--) {
-      const ch = row[j];
-      if (closingChars.includes(ch)) {
-        const depth = row.match(/^\s*/)?.[0].length || 0;
-        return createIndent(indentUnit, depth);
-      }
-      if (openingChars.includes(ch)) {
-        const depth = (row.match(/^\s*/)?.[0].length || 0) + indentUnit.length;
-        return createIndent(indentUnit, depth);
-      }
-    }
-  }
-  return "";
-};
 var onKeydown4 = function(e) {
   if (e.defaultPrevented) {
     return;
@@ -560,8 +559,8 @@ var onKeydown4 = function(e) {
   const left = el.value.substring(0, short);
   let center = "\n";
   const right = el.value.substring(long);
-  const rows = left.split(/\r\n|\r|\n/);
-  const currIndent = getIndent(pairs, indentUnit, rows);
+  const leftRows = left.split(/\r\n|\r|\n/);
+  const currIndent = getIndent(pairs, indentUnit, leftRows);
   let newShort = short + 1;
   if (isClosing(pairs, currChar)) {
     const nextIndent = currIndent.substring(0, currIndent.length - indentUnit.length);
@@ -578,8 +577,7 @@ var onKeydown4 = function(e) {
     short: newShort,
     long: newLong,
     value: newValue
-  });
-  mtga.addHistory();
+  }, false, true);
 };
 var AutoIndentModule = class _AutoIndentModule extends MTGAModule {
   pairs;
@@ -633,7 +631,6 @@ var closePairHandler = function(e) {
     newShort = (left + opening).length;
     newLong = (left + opening + center).length;
   }
-  mtga.addHistory();
   mtga.setState({
     isReversed,
     short: newShort,
@@ -641,7 +638,6 @@ var closePairHandler = function(e) {
     dir,
     value: newValue
   });
-  mtga.addHistory();
 };
 var clearPairHandler = function(e) {
   if (e.defaultPrevented) {
@@ -671,7 +667,6 @@ var clearPairHandler = function(e) {
   const newValue = left + right;
   const newShort = left.length;
   const newLong = left.length;
-  mtga.addHistory();
   mtga.setState({
     isReversed: false,
     short: newShort,
@@ -679,7 +674,6 @@ var clearPairHandler = function(e) {
     dir: "forward",
     value: newValue
   });
-  mtga.addHistory();
 };
 var onKeydown5 = function(e) {
   closePairHandler.call(this, e);
@@ -850,7 +844,8 @@ var AutoCompleteModule = class _AutoCompleteModule extends MTGAModule {
       long,
       value
     };
-    this.parent.setState(state);
+    const mtga = this.parent;
+    mtga.setState(state);
   }
 };
 
@@ -861,6 +856,7 @@ var onKeydown6 = function(e) {
   }
   const mtga = this.parent;
   const el = this.parent.element;
+  const { pairs, indentUnit } = this;
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
   const isValid = ctrlKey && !altKey && key === "Enter";
   if (!isValid) {
@@ -893,22 +889,38 @@ var onKeydown6 = function(e) {
     newShort += 1;
     newLong += 1;
   }
-  mtga.addHistory();
+  let newValue = newValues.join("");
+  const left = newValue.substring(0, newShort);
+  const leftRows = left.split(/\r\n|\r|\n/);
+  const currIndent = getIndent(pairs, indentUnit, leftRows);
+  newValue = newValue.substring(0, newShort) + currIndent + newValue.substring(newLong);
+  newShort += currIndent.length;
+  newLong += currIndent.length;
   mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
-    value: newValues.join("")
+    value: newValue
   });
-  mtga.addHistory();
 };
 var LineBreakModule = class _LineBreakModule extends MTGAModule {
+  pairs;
+  indentUnit;
   constructor(parent) {
     super(parent, _LineBreakModule.name);
+    this.pairs = _LineBreakModule.defaults.pairs;
+    this.indentUnit = _LineBreakModule.defaults.indentUnit;
   }
   onKeydown = onKeydown6;
   static name = "LineBreak";
-  static defaults = {};
+  static defaults = {
+    pairs: {
+      "(": ")",
+      "[": "]",
+      "{": "}"
+    },
+    indentUnit: "  "
+  };
 };
 
 // src/modules/line-remove.ts
@@ -952,14 +964,12 @@ var onKeydown7 = function(e) {
   if (removeLastLinebreak) {
     value = value.substring(0, value.length - 1);
   }
-  mtga.addHistory();
   mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
     value
   });
-  mtga.addHistory();
 };
 var LineRemoveModule = class _LineRemoveModule extends MTGAModule {
   constructor(parent) {
@@ -1009,14 +1019,12 @@ var onKeydownAsync = async function(e) {
     data += "\n";
   }
   await navigator.clipboard.writeText(data);
-  mtga.addHistory();
   mtga.setState({
     isReversed: false,
     short: newShort,
     long: newLong,
     value: newValues.join("")
   });
-  mtga.addHistory();
 };
 var LineCutModule = class _LineCutModule extends MTGAModule {
   constructor(parent) {
@@ -1100,7 +1108,6 @@ var onPaste = function(e) {
     }
     newValues.push(row.value);
   }
-  mtga.addHistory();
   mtga.setState({
     isReversed,
     short: newShort,
@@ -1108,7 +1115,6 @@ var onPaste = function(e) {
     dir,
     value: newValues.join("")
   });
-  mtga.addHistory();
 };
 var LinePasteModule = class _LinePasteModule extends MTGAModule {
   constructor(parent) {
@@ -1191,9 +1197,9 @@ var MTGA = class {
     this.element.addEventListener("paste", this._pasteEvent, true);
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
-    this.initModuleOrder();
+    this.initModules();
   }
-  initModuleOrder() {
+  initModules() {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
   getModule(name) {
@@ -1201,22 +1207,31 @@ var MTGA = class {
   }
   setModule(module) {
     this.modules[module.name] = module;
-    this.initModuleOrder();
+    this.initModules();
   }
   removeModule(name) {
     if (this.modules[name]) {
       delete this.modules[name];
-      this.initModuleOrder();
+      this.initModules();
     }
   }
   getState(withValue) {
     return getState(this.element, withValue);
   }
-  setState(state) {
+  setState(state, beforeHistory = true, afterHistory = true) {
+    if (beforeHistory) {
+      this.addHistory();
+    }
     setState(this.element, state);
+    if (afterHistory) {
+      this.addHistory();
+    }
   }
   addHistory(withPrune = true) {
     this.getModule(HistoryModule.name)?.add(withPrune);
+  }
+  removeHistory() {
+    this.getModule(HistoryModule.name)?.remove();
   }
   _clearKeydownState() {
     this._keydownState = null;
