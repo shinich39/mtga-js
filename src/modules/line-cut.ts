@@ -65,7 +65,6 @@ const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent) {
     isReversed: false,
     short: newShort,
     long: newLong,
-    dir: "none",
     value: newValues.join(""),
   });
 

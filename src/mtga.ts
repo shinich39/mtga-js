@@ -116,7 +116,6 @@ export class MTGA {
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
 
-
     this.initModuleOrder();
   }
 

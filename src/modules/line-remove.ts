@@ -1,6 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
+import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
@@ -23,25 +24,36 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
   const firstSelectedRow = selectedRows[0];
+  const lastSelectedRow = selectedRows[selectedRows.length - 1];
 
   let newValues: string[] = [], 
       newShort = 0, 
-      newLong = 0;
+      newLong = 0,
+      maxRowIndex = 0;
 
   for (const row of rows) {
-    const isSelected = row.isSelected;
-    if (isSelected) {
+    if (row.isSelected) {
       continue;
     }
 
     // the row before the first selected row
     if (row.index === firstSelectedRow.index - 1) {
-      newShort = row.startIndex;
-      newLong = row.startIndex;
+      newShort = row.endIndex;
+      newLong = row.endIndex;
+    } else if (row.index === lastSelectedRow.index + 1) {
+      maxRowIndex = row.value.length - 1;
     }
     
     newValues.push(row.value);
   }
+
+  const rowIndex = Math.min(
+    Math.max(lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1), 
+    maxRowIndex,
+  );
+
+  newShort += rowIndex;
+  newLong += rowIndex;
 
   let value = newValues.join("");
 
@@ -61,7 +73,6 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
     isReversed: false,
     short: newShort,
     long: newLong,
-    dir: "none",
     value,
   });
 

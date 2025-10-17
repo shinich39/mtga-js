@@ -62,7 +62,6 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
     isReversed: false,
     short: newShort,
     long: newLong,
-    dir: "none",
     value: newValues.join(""),
   });
 

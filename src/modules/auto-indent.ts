@@ -79,7 +79,6 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent) {
     isReversed: false,
     short: newShort,
     long: newLong,
-    dir: "none",
     value: newValue,
   });
 

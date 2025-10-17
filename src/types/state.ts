@@ -47,9 +47,9 @@ export const setState = function(
     el.value = state.value;
   }
   if (!state.isReversed) {
-    el.setSelectionRange(state.short, state.long, state.dir || "none");
+    el.setSelectionRange(state.short, state.long, state.dir);
   } else {
-    el.setSelectionRange(state.long, state.short, state.dir || "none");
+    el.setSelectionRange(state.long, state.short, state.dir);
   }
   el.focus();
 }

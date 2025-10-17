@@ -63,9 +63,9 @@ var MtgaJs = (() => {
       el.value = state.value;
     }
     if (!state.isReversed) {
-      el.setSelectionRange(state.short, state.long, state.dir || "none");
+      el.setSelectionRange(state.short, state.long, state.dir);
     } else {
-      el.setSelectionRange(state.long, state.short, state.dir || "none");
+      el.setSelectionRange(state.long, state.short, state.dir);
     }
     el.focus();
   };
@@ -615,7 +615,6 @@ var MtgaJs = (() => {
       isReversed: false,
       short: newShort,
       long: newLong,
-      dir: "none",
       value: newValue
     });
     mtga.addHistory();
@@ -937,7 +936,6 @@ var MtgaJs = (() => {
       isReversed: false,
       short: newShort,
       long: newLong,
-      dir: "none",
       value: newValues.join("")
     });
     mtga.addHistory();
@@ -967,18 +965,26 @@ var MtgaJs = (() => {
     const rows = getRows(el);
     const selectedRows = rows.filter((r) => r.isSelected);
     const firstSelectedRow = selectedRows[0];
-    let newValues = [], newShort = 0, newLong = 0;
+    const lastSelectedRow = selectedRows[selectedRows.length - 1];
+    let newValues = [], newShort = 0, newLong = 0, maxRowIndex = 0;
     for (const row of rows) {
-      const isSelected = row.isSelected;
-      if (isSelected) {
+      if (row.isSelected) {
         continue;
       }
       if (row.index === firstSelectedRow.index - 1) {
-        newShort = row.startIndex;
-        newLong = row.startIndex;
+        newShort = row.endIndex;
+        newLong = row.endIndex;
+      } else if (row.index === lastSelectedRow.index + 1) {
+        maxRowIndex = row.value.length - 1;
       }
       newValues.push(row.value);
     }
+    const rowIndex = Math.min(
+      Math.max(lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1),
+      maxRowIndex
+    );
+    newShort += rowIndex;
+    newLong += rowIndex;
     let value = newValues.join("");
     const removeLastLinebreak = selectedRows.length === 1 && selectedRows[0].value === "" && rows[rows.length - 1].index === selectedRows[0].index;
     if (removeLastLinebreak) {
@@ -989,7 +995,6 @@ var MtgaJs = (() => {
       isReversed: false,
       short: newShort,
       long: newLong,
-      dir: "none",
       value
     });
     mtga.addHistory();
@@ -1047,7 +1052,6 @@ var MtgaJs = (() => {
       isReversed: false,
       short: newShort,
       long: newLong,
-      dir: "none",
       value: newValues.join("")
     });
     mtga.addHistory();
