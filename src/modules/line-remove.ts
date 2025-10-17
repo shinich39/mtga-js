@@ -41,15 +41,15 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
       newShort = row.endIndex;
       newLong = row.endIndex;
     } else if (row.index === lastSelectedRow.index + 1) {
-      maxRowIndex = row.value.length - 1;
+      maxRowIndex = row.value.length;
     }
     
     newValues.push(row.value);
   }
 
   const rowIndex = Math.min(
-    Math.max(lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1), 
-    maxRowIndex,
+    Math.max(0, lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1), 
+    Math.max(0, maxRowIndex - 1),
   );
 
   newShort += rowIndex;
