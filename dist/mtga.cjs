@@ -211,7 +211,7 @@ var onKeydown = function(e) {
 var onKeyup = function(e) {
   const mtga = this.parent;
   const keydownState = mtga._keydownState;
-  mtga._clearKeydownState();
+  mtga._removeKeydownState();
   if (!keydownState) {
     return;
   }
@@ -1195,7 +1195,7 @@ var MTGA = class {
         await m.onKeydownAsync?.call(m, e);
       }
       if (e.defaultPrevented) {
-        this._clearKeydownState();
+        this._removeKeydownState();
       } else if (![
         "Meta",
         "Control",
@@ -1239,7 +1239,7 @@ var MTGA = class {
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
   }
-  clearEvents() {
+  removeEvents() {
     this.element.removeEventListener("keydown", this._keydownEvent);
     this.element.removeEventListener("keyup", this._keyupEvent);
     this.element.removeEventListener("paste", this._pasteEvent);
@@ -1287,7 +1287,7 @@ var MTGA = class {
       key: e.key
     };
   }
-  _clearKeydownState() {
+  _removeKeydownState() {
     this._keydownState = null;
   }
 };

@@ -24,7 +24,7 @@ export declare class MTGA {
     _blurEvent: (e: FocusEvent) => void;
     constructor(el: HTMLTextAreaElement);
     setEvents(): void;
-    clearEvents(): void;
+    removeEvents(): void;
     setModuleOrder(): void;
     getModule<T extends MTGAModule>(name: string): T | undefined;
     setModule<T extends MTGAModule>(module: T): void;
@@ -34,6 +34,6 @@ export declare class MTGA {
     addHistory(withPrune?: boolean): void;
     removeHistory(): void;
     _setKeydownState(e: KeyboardEvent): void;
-    _clearKeydownState(): void;
+    _removeKeydownState(): void;
 }
 //# sourceMappingURL=mtga.d.ts.map

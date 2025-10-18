@@ -39,7 +39,7 @@ const onKeyup = function(this: HistoryModule, e: KeyboardEvent) {
 
   const keydownState = mtga._keydownState;
   
-  mtga._clearKeydownState();
+  mtga._removeKeydownState();
 
   if (!keydownState) {
     return;

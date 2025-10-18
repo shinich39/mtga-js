@@ -67,7 +67,7 @@ export class MTGA {
       }
 
       if (e.defaultPrevented) {
-        this._clearKeydownState();
+        this._removeKeydownState();
       } else if (
         ![
           "Meta",
@@ -121,7 +121,7 @@ export class MTGA {
     this.element.addEventListener("blur", this._blurEvent, true);
   }
 
-  clearEvents() {
+  removeEvents() {
     this.element.removeEventListener("keydown", this._keydownEvent);
     this.element.removeEventListener("keyup", this._keyupEvent);
     this.element.removeEventListener("paste", this._pasteEvent);
@@ -181,7 +181,7 @@ export class MTGA {
     }
   }
 
-  _clearKeydownState() {
+  _removeKeydownState() {
     this._keydownState = null;
   }
 }
