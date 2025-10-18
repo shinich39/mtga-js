@@ -267,7 +267,6 @@ var HistoryModule = class _HistoryModule extends MTGAModule {
     if (this.items.length > this.maxCount) {
       this.items.shift();
     }
-    console.log(`history saved: ${this.items.length}`);
   }
   remove() {
     this.items.pop();

@@ -120,7 +120,7 @@ export class HistoryModule extends MTGAModule {
       this.items.shift();
     }
 
-    console.log(`history saved: ${this.items.length}`);
+    // console.log(`history saved: ${this.items.length}`);
   }
 
   remove() {

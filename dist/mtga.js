@@ -267,7 +267,6 @@ var MtgaJs = (() => {
       if (this.items.length > this.maxCount) {
         this.items.shift();
       }
-      console.log(`history saved: ${this.items.length}`);
     }
     remove() {
       this.items.pop();
