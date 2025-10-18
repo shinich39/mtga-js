@@ -1137,6 +1137,7 @@ var MTGA = class {
   _blurEvent;
   constructor(el) {
     this.element = el;
+    this.moduleOrder = [];
     this.modules = {};
     this.modules[HistoryModule.name] = new HistoryModule(this);
     this.modules[CommentModule.name] = new CommentModule(this);
@@ -1149,7 +1150,6 @@ var MTGA = class {
     this.modules[AutoIndentModule.name] = new AutoIndentModule(this);
     this.modules[AutoPairModule.name] = new AutoPairModule(this);
     this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
-    this.moduleOrder = [];
     this._keydownState = null;
     this._keydownEvent = async (e) => {
       for (const m of this.moduleOrder) {
@@ -1191,14 +1191,24 @@ var MTGA = class {
     this._blurEvent = (e) => {
       this.element.removeEventListener("pointerup", _selectionEvent, true);
     };
+    this.setEvents();
+    this.setModuleOrder();
+  }
+  setEvents() {
     this.element.addEventListener("keydown", this._keydownEvent, true);
     this.element.addEventListener("keyup", this._keyupEvent, true);
     this.element.addEventListener("paste", this._pasteEvent, true);
     this.element.addEventListener("focus", this._focusEvent, true);
     this.element.addEventListener("blur", this._blurEvent, true);
-    this.initModules();
   }
-  initModules() {
+  clearEvents() {
+    this.element.removeEventListener("keydown", this._keydownEvent);
+    this.element.removeEventListener("keyup", this._keyupEvent);
+    this.element.removeEventListener("paste", this._pasteEvent);
+    this.element.removeEventListener("focus", this._focusEvent);
+    this.element.removeEventListener("blur", this._blurEvent);
+  }
+  setModuleOrder() {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
   getModule(name) {
@@ -1206,12 +1216,12 @@ var MTGA = class {
   }
   setModule(module) {
     this.modules[module.name] = module;
-    this.initModules();
+    this.setModuleOrder();
   }
   removeModule(name) {
     if (this.modules[name]) {
       delete this.modules[name];
-      this.initModules();
+      this.setModuleOrder();
     }
   }
   getState(withValue) {
@@ -1232,9 +1242,6 @@ var MTGA = class {
   removeHistory() {
     this.getModule(HistoryModule.name)?.remove();
   }
-  _clearKeydownState() {
-    this._keydownState = null;
-  }
   _setKeydownState(e) {
     this._keydownState = {
       value: this.element.value,
@@ -1242,12 +1249,8 @@ var MTGA = class {
       key: e.key
     };
   }
-  destroy() {
-    this.element.removeEventListener("keydown", this._keydownEvent);
-    this.element.removeEventListener("keyup", this._keyupEvent);
-    this.element.removeEventListener("paste", this._pasteEvent);
-    this.element.removeEventListener("focus", this._focusEvent);
-    this.element.removeEventListener("blur", this._blurEvent);
+  _clearKeydownState() {
+    this._keydownState = null;
   }
 };
 export {
