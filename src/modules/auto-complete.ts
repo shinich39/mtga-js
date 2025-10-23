@@ -48,8 +48,8 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
 
   this.stop(true);
   
-  const mtga = this.parent;
-  const el = this.parent.element;
+  // const mtga = this.parent;
+  // const el = this.parent.element;
 
   const requestId = this._requestId + 1;
   const chunkSize = this._chunkSize;
@@ -167,7 +167,7 @@ export class AutoCompleteModule extends MTGAModule {
   } = {
     chunkSize: 100,
 
-    parser: function (e: KeyboardEvent) {
+    parser: function (e: Event) {
       const el = e.target as HTMLTextAreaElement;
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;

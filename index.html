@@ -150,14 +150,24 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
         ac.parser = function (e) {
           // console.log("parser", e);
           const r = origParser(e);
-          r.body = r.body.toLowerCase().replace(/\s/g, "_");
 
           hide();
-
-          if (r.body.length < 1 || r.body.length > 16) {
+          
+          if (r.body.length < 1 || r.body.length > 39) {
             this.stop(true);
             return r;
           }
+
+          // prevent auto-complete with backspace key if it is not the last character.
+          const el = e.target;
+          const isBackspace = e.key.toLowerCase() === "backspace";
+          const isLastChar = el.selectionStart === r.head.length + r.body.length;
+          if (isBackspace && !isLastChar) {
+            this.stop(true);
+            return r;
+          }
+
+          r.body = r.body.toLowerCase().replace(/\s/g, "_");
 
           return r;
         }
@@ -174,11 +184,11 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           }
 
           // 100000 items, 5332ms
-          // const { score } = ac.compare(a, b);
-          // const ok = score >= a.length;
+          const { score } = ac.compare(a, b);
+          const ok = score >= a.length;
 
           // 100000 items, 4529ms
-          const ok = b.indexOf(a) > -1;
+          // const ok = b.indexOf(a) > -1;
 
           return ok;
         }
@@ -242,9 +252,15 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
         }
 
         const keydownHandler = (e) => {
-          const { key } = e;
+          const { key, shiftKey, metaKey, ctrlKey } = e;
           if (isShown()) {
             switch(key) {
+              case "z":
+              case "Z":
+                if (ctrlKey || metaKey) {
+                  hide(true);
+                }
+                break;
               case "ArrowUp":
                 e.preventDefault();
                 if (index > 0) {

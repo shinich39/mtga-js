@@ -756,8 +756,6 @@ var onKeyup2 = function(e) {
     return;
   }
   this.stop(true);
-  const mtga = this.parent;
-  const el = this.parent.element;
   const requestId = this._requestId + 1;
   const chunkSize = this._chunkSize;
   const result = [];
