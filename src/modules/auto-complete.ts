@@ -67,7 +67,7 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
   this._requestId = requestId;
   this._stop = stop;
 
-  const query = this.parser.call(this, el);
+  const query = this.parser.call(this, e);
   const text = query.body;
   
   let candidates: IAutoCompleteTag[] = [];
@@ -131,7 +131,7 @@ export class AutoCompleteModule extends MTGAModule {
   tags: IAutoCompleteTag[];
   indexes: IAutoCompleteIndex[];
 
-  parser: (this: this, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+  parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery;
   filter: (this: this, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
   onData: (this: this, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
   onEnd: (this: this, result: IAutoCompleteChunk[]) => void;
@@ -167,7 +167,8 @@ export class AutoCompleteModule extends MTGAModule {
   } = {
     chunkSize: 100,
 
-    parser: function (el: HTMLTextAreaElement) {
+    parser: function (e: KeyboardEvent) {
+      const el = e.target as HTMLTextAreaElement;
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
 

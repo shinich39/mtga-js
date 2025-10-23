@@ -147,9 +147,9 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
             index = 0;
 
         const origParser = ac.parser;
-        ac.parser = function (el) {
-          // console.log("parser", el);
-          const r = origParser(el);
+        ac.parser = function (e) {
+          // console.log("parser", e);
+          const r = origParser(e);
           r.body = r.body.toLowerCase().replace(/\s/g, "_");
 
           hide();

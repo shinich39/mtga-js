@@ -730,7 +730,7 @@ var onKeyup2 = function(e) {
   };
   this._requestId = requestId;
   this._stop = stop;
-  const query = this.parser.call(this, el);
+  const query = this.parser.call(this, e);
   const text = query.body;
   let candidates = [];
   if (text) {
@@ -796,7 +796,8 @@ var AutoCompleteModule = class _AutoCompleteModule extends MTGAModule {
   static name = "AutoComplete";
   static defaults = {
     chunkSize: 100,
-    parser: function(el) {
+    parser: function(e) {
+      const el = e.target;
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
       let selectionStart = 0, selectionEnd = 0;

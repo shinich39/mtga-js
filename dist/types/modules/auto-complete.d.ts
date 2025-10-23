@@ -22,7 +22,7 @@ interface IAutoCompleteIndex {
 export declare class AutoCompleteModule extends MTGAModule {
     tags: IAutoCompleteTag[];
     indexes: IAutoCompleteIndex[];
-    parser: (this: this, el: HTMLTextAreaElement) => IAutoCompleteQuery;
+    parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery;
     filter: (this: this, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
     onData: (this: this, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
     onEnd: (this: this, result: IAutoCompleteChunk[]) => void;
