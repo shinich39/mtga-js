@@ -151,7 +151,8 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           // console.log("parser", e);
           const r = origParser(e);
 
-          hide();
+          // don't block current searching
+          hide(false);
           
           if (r.body.length < 1 || r.body.length > 39) {
             this.stop(true);
@@ -241,7 +242,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
           }
         }
 
-        const hide = (kill) => {
+        const hide = (kill = true) => {
           items = [];
           index = 0;
           listEl.innerHTML = "";
@@ -258,7 +259,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
               case "z":
               case "Z":
                 if (ctrlKey || metaKey) {
-                  hide(true);
+                  hide();
                 }
                 break;
               case "ArrowUp":
@@ -281,20 +282,20 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
                 break;
               case "ArrowLeft":
               case "ArrowRight":
-                hide(true);
+                hide();
                 break;
               case "Escape":
                 e.preventDefault();
-                hide(true);
+                hide();
                 break;
               case "Enter":
                 e.preventDefault();
                 load();
-                hide(true);
+                hide();
                 break;
               default:
                 if (e.defaultPrevented) {
-                  hide(true);
+                  hide();
                   return;
                 }
             }
@@ -337,7 +338,7 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
                 render();
               } else {
                 load();
-                hide(true);
+                hide();
               }
             });
 
@@ -357,8 +358,8 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
         }
 
         window.addEventListener("keydown", keydownHandler, true);
-        mtga.element.addEventListener("click", () => hide(true));
-        mtga.element.addEventListener("blur", () => hide(true));
+        mtga.element.addEventListener("click", () => hide());
+        mtga.element.addEventListener("blur", () => hide());
       })();
     </script>
   </body>
