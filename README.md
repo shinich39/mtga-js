@@ -26,7 +26,7 @@ Make Textarea Garbage Again
 
 ### Custom Module
 
-[Example](example/beautify.js)
+[example/beautify.js](example/beautify.js)
 
 ## Acknowledgements
 
