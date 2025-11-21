@@ -10,24 +10,21 @@ interface IAutoCompleteQuery {
     body: string;
     tail: string;
 }
-interface IAutoCompleteChunk {
-    tag: IAutoCompleteTag;
-    query: IAutoCompleteQuery;
-    [key: string]: any;
-}
 interface IAutoCompleteIndex {
-    pattern: RegExp;
+    pattern: string | RegExp;
     tags: IAutoCompleteTag[];
 }
 export declare class AutoCompleteModule extends MTGAModule {
     tags: IAutoCompleteTag[];
     indexes: IAutoCompleteIndex[];
-    parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery;
-    filter: (this: this, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
-    onData: (this: this, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
-    onEnd: (this: this, result: IAutoCompleteChunk[]) => void;
-    _requestId: number;
-    _chunkSize: number;
+    chunkSize: number;
+    query: IAutoCompleteQuery | null | undefined;
+    candidates: IAutoCompleteTag[];
+    result: IAutoCompleteTag[];
+    parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery | null | undefined;
+    filter: (this: this, query: IAutoCompleteQuery, tag: IAutoCompleteTag, index: number, tags: IAutoCompleteTag[]) => boolean;
+    onData: (this: this, tags: IAutoCompleteTag[]) => void;
+    onEnd: (this: this) => void;
     _stop: (kill?: boolean) => void;
     constructor(parent: MTGA);
     onKeyup: (this: AutoCompleteModule, e: KeyboardEvent) => void;
@@ -37,13 +34,10 @@ export declare class AutoCompleteModule extends MTGAModule {
         filter: AutoCompleteModule["filter"];
         parser: AutoCompleteModule["parser"];
     };
-    compare(a: string, b: string): {
-        accuracy: number;
-        score: number;
-        match: [0 | 1 | -1, string][];
-    };
-    stop(kill?: boolean): void;
-    set(chunk: IAutoCompleteChunk): void;
+    getIndex(value: string): IAutoCompleteIndex | undefined;
+    stop(): void;
+    kill(): void;
+    set(tag: IAutoCompleteTag, query?: IAutoCompleteQuery | undefined | null): void;
 }
 export {};
 //# sourceMappingURL=auto-complete.d.ts.map

@@ -18,8 +18,8 @@
   "main": "./dist/mtga.min.mjs",
   "types": "./dist/types/mtga.d.ts",
   "scripts": {
-    "dev": "tsc-watch --noClear --onSuccess \"npm run build\"",
     "test": "tsx --test \"**/*.test.{js,jsx,ts,tsx}\"",
+    "dev": "tsc-watch --noClear --onSuccess \"npm run build\"",
     "build": "npm run lint && node esbuild.config.js && tsc",
     "lint": "eslint \"src/**/*\""
   },

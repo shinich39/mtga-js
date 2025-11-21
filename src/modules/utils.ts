@@ -15,6 +15,10 @@ export function debounce(
   };
 }
 
+export function escapePattern(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export const parseKeyboardEvent = function(e: KeyboardEvent) {
   const key = e.key;
   const altKey = e.altKey;
@@ -26,90 +30,6 @@ export const parseKeyboardEvent = function(e: KeyboardEvent) {
     altKey,
     shiftKey,
     ctrlKey,
-  }
-}
-/**
- * analyze diff between two strings
- *
- * \-1: Number of deleted characters
- *
- * 0: Number of matched characters
- *
- * 1: Number of inserted characters
- */
-export function compareString(from: string, to: string) {
-  // create a dynamic programming table
-  const dp: number[][] = Array.from({ length: from.length + 1 }, () =>
-    Array(to.length + 1).fill(0)
-  );
-
-  // fill dp with LCS
-  for (let i = 1; i <= from.length; i++) {
-    for (let j = 1; j <= to.length; j++) {
-      if (from[i - 1] === to[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  // backtrack to get diffs
-  const result: [-1 | 0 | 1, string][] = [];
-  let score = 0;
-  let i = from.length,
-    j = to.length;
-
-  let currentType: -1 | 0 | 1 | null = null;
-  let buffer: string[] = [];
-
-  const flush = function() {
-    if (currentType !== null && buffer.length > 0) {
-      result.push([currentType, buffer.reverse().join("")]);
-    }
-    currentType = null;
-    buffer = [];
-  }
-
-  while (i > 0 || j > 0) {
-    const a = from[i - 1];
-    const b = to[j - 1];
-
-    if (i > 0 && j > 0 && a === b) {
-      // match
-      if (currentType !== 0) {
-        flush();
-      }
-      currentType = 0;
-      buffer.push(a);
-      score++;
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-      // insertion
-      if (currentType !== 1) {
-        flush();
-      }
-      currentType = 1;
-      buffer.push(b);
-      j--;
-    } else if (i > 0) {
-      // deletion
-      if (currentType !== -1) {
-        flush();
-      }
-      currentType = -1;
-      buffer.push(a);
-      i--;
-    }
-  }
-
-  flush();
-
-  return {
-    accuracy: score * 2 / (from.length + to.length),
-    score,
-    match: result.reverse(),
   }
 }
 
@@ -127,7 +47,6 @@ export function getAllCombinations<T>(arr: T[]) {
   }
   return result;
 }
-
 /**
  * 
  * @param pairs 

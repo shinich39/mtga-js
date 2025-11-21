@@ -1,6 +1,6 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
-import { compareString, parseKeyboardEvent } from "./utils.js";
+import { parseKeyboardEvent } from "./utils.js";
 
 interface IAutoCompleteTag {
   key: string;
@@ -14,24 +14,9 @@ interface IAutoCompleteQuery {
   tail: string,
 }
 
-interface IAutoCompleteChunk {
-  tag: IAutoCompleteTag,
-  query: IAutoCompleteQuery,
-  [key: string]: any;
-}
-
 interface IAutoCompleteIndex {
-  pattern: RegExp,
+  pattern: string | RegExp,
   tags: IAutoCompleteTag[],
-}
-
-const findIndex = function(indexes: IAutoCompleteIndex[], value: string) {
-  for (const index of indexes) {
-    const pattern = index.pattern;
-    if (pattern.test(value)) {
-      return index;
-    }
-  }
 }
 
 const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
@@ -46,14 +31,13 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
     return;
   }
 
-  this.stop(true);
+  // kill previous process
+  this.kill();
   
   // const mtga = this.parent;
   // const el = this.parent.element;
 
-  const requestId = this._requestId + 1;
-  const chunkSize = this._chunkSize;
-  const result: IAutoCompleteChunk[] = [];
+  const chunkSize = this.chunkSize;
 
   let isStopped = false,
       isKilled = false,
@@ -64,63 +48,69 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
     isKilled = kill || false;
   };
 
-  this._requestId = requestId;
   this._stop = stop;
 
   const query = this.parser.call(this, e);
-  const text = query.body;
-  
-  let candidates: IAutoCompleteTag[] = [];
+  const text = query?.body;
 
-  if (text) {
-    const index = findIndex(this.indexes, text);
-    if (index) {
-      candidates = index.tags;
-
-      // debug
-      // console.log(`Use Index:`, index);
-    } else {
-      candidates = this.tags;
-    }
+  if (!text) {
+    this.query = null;
+    this.candidates = [];
+    this.result = [];
+    return;
   }
+
+  const candidates: IAutoCompleteTag[] = this.getIndex(text)?.tags || this.tags;
+  const result: IAutoCompleteTag[] = [];
   
+  this.query = query;
+  this.candidates = candidates;
+  this.result = result;
+
   // debug
-  // console.time("" + requestId);
+  // console.time("AutoComplete");
 
   const processChunk = () => {
-    const chunks: IAutoCompleteChunk[] = [];
+    const chunks: IAutoCompleteTag[] = [];
 
     let j = i + chunkSize;
     while(i < j && i < candidates.length) {
       const tag = candidates[i];
 
-      const chunk = {
-        tag,
-        query,
+      if (isKilled || isStopped) {
+        break;
       }
 
-      const ok = this.filter?.call(this, chunk, result, i, candidates);
+      const ok = this.filter?.call(this, query, tag, i, candidates);
+
       if (ok) {
-        chunks.push(chunk);
-        result.push(chunk);
+        chunks.push(tag);
+        result.push(tag);
       }
 
       i++;
     }
 
-    if (isKilled || this._requestId !== requestId) {
+    // debug
+    // console.log(`Process ${i}`);
+
+    if (isKilled) {
+      // debug
+      // console.log("Killed");
       return;
     }
 
     if (isStopped || i >= candidates.length) {
       // debug
-      // console.timeEnd("" + requestId);
-      this.onData?.call(this, chunks, result);
-      this.onEnd?.call(this, result);
+      // console.timeEnd("AutoComplete");
+      // console.log("Stopped");
+      this.onData?.call(this, chunks);
+      this.onEnd?.call(this);
       return;
     }
     
-    this.onData?.call(this, chunks, result);
+    this.onData?.call(this, chunks);
+
     setTimeout(processChunk, 0);
   }
 
@@ -130,29 +120,34 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
 export class AutoCompleteModule extends MTGAModule {
   tags: IAutoCompleteTag[];
   indexes: IAutoCompleteIndex[];
+  chunkSize: number;
 
-  parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery;
-  filter: (this: this, chunk: IAutoCompleteChunk, result: IAutoCompleteChunk[], index: number, candidates: IAutoCompleteTag[]) => boolean;
-  onData: (this: this, chunks: IAutoCompleteChunk[], result: IAutoCompleteChunk[]) => void;
-  onEnd: (this: this, result: IAutoCompleteChunk[]) => void;
+  query: IAutoCompleteQuery | null | undefined;
+  candidates: IAutoCompleteTag[];
+  result: IAutoCompleteTag[];
 
-  _requestId: number;
-  _chunkSize: number;
+  parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery | null | undefined;
+  filter: (this: this, query: IAutoCompleteQuery, tag: IAutoCompleteTag, index: number, tags: IAutoCompleteTag[]) => boolean;
+  
+  onData: (this: this, tags: IAutoCompleteTag[]) => void;
+  onEnd: (this: this) => void;
+
   _stop: (kill?: boolean) => void;
 
   constructor(parent: MTGA) {
     super(parent, AutoCompleteModule.name, 1);
-    
     this.tags = [];
     this.indexes = [];
+    this.chunkSize = AutoCompleteModule.defaults.chunkSize;
+    this.query = null;
+    this.candidates = [];
+    this.result = [];
 
     this.parser = AutoCompleteModule.defaults.parser;
     this.filter = AutoCompleteModule.defaults.filter;
     this.onData = () => undefined;
     this.onEnd = () => undefined;
 
-    this._requestId = 0;
-    this._chunkSize = AutoCompleteModule.defaults.chunkSize;
     this._stop = () => undefined;
   }
 
@@ -203,13 +198,12 @@ export class AutoCompleteModule extends MTGAModule {
       }
     },
 
-    filter: function (chunk, index, candidates, result) {
-      const { tag, query } = chunk;
+    filter: function (query, tag, index, tags) {
       const a = query.body;
       const b = tag.key;
 
-      // if (result.length >= 100) {
-      //   this.getModule<AutoCompleteModule>(AutoCompleteModule.name)?.stop(true);
+      // if (this.result.length >= 100) {
+      //   this.stop(true);
       //   return false;
       // }
 
@@ -217,35 +211,42 @@ export class AutoCompleteModule extends MTGAModule {
     },
   }
 
-  compare(a: string, b: string) {
-    return compareString(a, b);
+  getIndex(value: string) {
+    return this.indexes.find((i) => 
+      typeof i.pattern === "string"
+        ? i.pattern === value
+        : i.pattern.test(value));
   }
 
-  stop(kill?: boolean) {
+  stop() {
     const stop = this._stop;
-    stop?.(kill);
+    stop?.(false);
   }
 
-  set(chunk: IAutoCompleteChunk) {
-    // const short = chunk.query.head.length;
-    const short = chunk.query.head.length 
-      + chunk.tag.value.length;
+  kill() {
+    const stop = this._stop;
+    stop?.(true);
+  }
 
-    const long = chunk.query.head.length 
-      + chunk.tag.value.length;
+  set(tag: IAutoCompleteTag, query?: IAutoCompleteQuery | undefined | null) {
+    const mtga = this.parent;
+    
+    if (!query) {
+      query = this.query;
+    }
 
-    const value = chunk.query.head 
-      + chunk.tag.value 
-      + chunk.query.tail;
+    if (!query) {
+      throw new Error("Query not found");
+    }
 
-    const state = {
+    const short = query.head.length + tag.value.length;
+    const long = query.head.length + tag.value.length;
+    const value = query.head + tag.value + query.tail;
+
+    mtga.setState({
       short,
       long,
       value,
-    }
-
-    const mtga = this.parent;
-
-    mtga.setState(state);
+    });
   }
 }
