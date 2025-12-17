@@ -1,6 +1,7 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
-import { getClosing, IPairs, isOpening, isPair } from "../types/pair.js";
+import { getClosing, isOpening, isPair } from "../types/pair.js";
+import type { IPairs } from "../types/pair.js";
 import { parseKeyboardEvent } from "./utils.js";
 
 const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
@@ -103,7 +104,7 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   });
 }
 
-const onKeydown = function(this: AutoPairModule, e: KeyboardEvent) {
+const onKeydown = function(this: AutoPairModule, e: KeyboardEvent): void {
   closePairHandler.call(this, e);
   clearPairHandler.call(this, e);
 }
@@ -116,7 +117,7 @@ export class AutoPairModule extends MTGAModule {
     this.pairs = { ...AutoPairModule.defaults.pairs };
   }
 
-  onKeydown = onKeydown;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "AutoPair";
 

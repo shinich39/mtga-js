@@ -1,10 +1,10 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
-import { IPairs } from "../types/pair.js";
+import type { IPairs } from "../types/pair.js";
 import { getRows } from "../types/row.js";
 import { getIndent, parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function (this: LineBreakModule, e: KeyboardEvent) {
+const onKeydown = function (this: LineBreakModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -89,7 +89,7 @@ export class LineBreakModule extends MTGAModule {
     this.indentUnit = LineBreakModule.defaults.indentUnit;
   }
 
-  onKeydown = onKeydown;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "LineBreak";
 

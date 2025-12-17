@@ -14,6 +14,7 @@ interface IAutoCompleteIndex {
     pattern: string | RegExp;
     tags: IAutoCompleteTag[];
 }
+declare const onKeyup: (this: AutoCompleteModule, e: KeyboardEvent) => void;
 export declare class AutoCompleteModule extends MTGAModule {
     tags: IAutoCompleteTag[];
     indexes: IAutoCompleteIndex[];
@@ -27,7 +28,7 @@ export declare class AutoCompleteModule extends MTGAModule {
     onEnd: (this: this) => void;
     _stop: (kill?: boolean) => void;
     constructor(parent: MTGA);
-    onKeyup: (this: AutoCompleteModule, e: KeyboardEvent) => void;
+    onKeyup: typeof onKeyup;
     static name: string;
     static defaults: {
         chunkSize: number;

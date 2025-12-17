@@ -1,4 +1,4 @@
-const { MTGAModule } = window.MtgaJs;
+const { MTGAModule } = window.mtgaJs;
 
 const onKeydown = function(e) {
   if (e.defaultPrevented) {

@@ -154,7 +154,7 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   });
 }
 
-const onKeydown = function (this: CommentModule, e: KeyboardEvent) {
+const onKeydown = function(this: CommentModule, e: KeyboardEvent): void {
   singleLineHandler.call(this, e);
   multiLineHandler.call(this, e);
 }
@@ -171,10 +171,13 @@ export class CommentModule extends MTGAModule {
 
   static name = "Comment";
 
-  static defaults = {
+  static defaults: {
+    pattern: RegExp,
+    value: string
+  } = {
     pattern: /^\/\/\s?/,
     value:  "// ",
   }
 
-  onKeydown = onKeydown;
+  onKeydown: typeof onKeydown = onKeydown;
 }

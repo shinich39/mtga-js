@@ -5,7 +5,7 @@ import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent) {
+const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent): Promise<void> {
   if (e.defaultPrevented) {
     return;
   }
@@ -72,7 +72,7 @@ export class LineCutModule extends MTGAModule {
     super(parent, LineCutModule.name);
   }
 
-  onKeydownAsync = onKeydownAsync;
+  onKeydownAsync: typeof onKeydownAsync = onKeydownAsync;
 
   static name = "LineCut";
 

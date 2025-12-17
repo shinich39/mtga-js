@@ -19,7 +19,7 @@ interface IAutoCompleteIndex {
   tags: IAutoCompleteTag[],
 }
 
-const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent) {
+const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -151,7 +151,7 @@ export class AutoCompleteModule extends MTGAModule {
     this._stop = () => undefined;
   }
 
-  onKeyup = onKeyup;
+  onKeyup: typeof onKeyup = onKeyup;
 
   static name = "AutoComplete";
   
@@ -211,24 +211,24 @@ export class AutoCompleteModule extends MTGAModule {
     },
   }
 
-  getIndex(value: string) {
+  getIndex(value: string): IAutoCompleteIndex | undefined {
     return this.indexes.find((i) => 
       typeof i.pattern === "string"
         ? i.pattern === value
         : i.pattern.test(value));
   }
 
-  stop() {
+  stop(): void {
     const stop = this._stop;
     stop?.(false);
   }
 
-  kill() {
+  kill(): void {
     const stop = this._stop;
     stop?.(true);
   }
 
-  set(tag: IAutoCompleteTag, query?: IAutoCompleteQuery | undefined | null) {
+  set(tag: IAutoCompleteTag, query?: IAutoCompleteQuery | undefined | null): void {
     const mtga = this.parent;
     
     if (!query) {

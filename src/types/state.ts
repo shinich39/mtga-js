@@ -42,7 +42,7 @@ export const getState = function(
 export const setState = function(
   el: HTMLTextAreaElement,
   state: IState,
-) {
+): void {
   if (typeof state.value === "string") {
     el.value = state.value;
   }

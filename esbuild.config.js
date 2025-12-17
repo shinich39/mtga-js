@@ -1,100 +1,103 @@
-import fs from "node:fs";
 import path from "node:path";
+import fs from "node:fs";
 import * as esbuild from 'esbuild';
 
-// const pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
-
-const OUTPUT_FILENAME = "mtga";
 const ESM = true;
 const CJS = true;
 const BROWSER = true;
-const BROWSER_GLOBAL_NAME = "MtgaJs";
+const BROWSER_GLOBAL_NAME = "mtgaJs";
 
-// https://esbuild.github.io/api/#external
+const ENTRY_POINT = "./src/mtga.ts";
+const FILENAME = path.basename(ENTRY_POINT, path.extname(ENTRY_POINT));
+
+const ESM_OUTPUT_PATH = `./dist/${FILENAME}.mjs`;
+const ESM_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.mjs`;
+const CJS_OUTPUT_PATH = `./dist/${FILENAME}.cjs`;
+const CJS_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.cjs`;
+const BROWSER_OUTPUT_PATH = `./dist/${FILENAME}.js`;
+const BROWSER_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.js`;
+const TYPE_OUTPUT_PATH = `./dist/types/${FILENAME}.d.ts`;
+
+/** @see https://esbuild.github.io/api/#external */
 const externalPackages = [];
 
-// https://esbuild.github.io/api/#packages
-const bundleExternalPackages = true;
+/** @type {import("esbuild").BuildOptions[]} */
+const buildOptions = [];
 
-const options = [];
 if (ESM) {
-  options.push(
+  buildOptions.push(
     {
-      entryPoints: ["./src/mtga.ts"],
-      platform: BROWSER ? "browser" : "node",
+      entryPoints: [ENTRY_POINT],
+      platform: "node",
       format: 'esm',
       bundle: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.mjs`,
+      outfile: ESM_OUTPUT_PATH,
       external: externalPackages,
-      ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
     {
-      entryPoints: ["./src/mtga.ts"],
-      platform: BROWSER ? "browser" : "node",
+      entryPoints: [ENTRY_POINT],
+      platform: "node",
       format: 'esm',
       bundle: true,
       minify: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.min.mjs`,
+      outfile: ESM_MIN_OUTPUT_PATH,
       external: externalPackages,
-      ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
   );
 }
 
 if (CJS) {
-  options.push(
+  buildOptions.push(
     {
-      entryPoints: ["./src/mtga.ts"],
-      platform: BROWSER ? "browser" : "node",
+      entryPoints: [ENTRY_POINT],
+      platform: "node",
       format: 'cjs',
       bundle: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.cjs`,
+      outfile: CJS_OUTPUT_PATH,
       external: externalPackages,
-      ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
     {
-      entryPoints: ["./src/mtga.ts"],
-      platform: BROWSER ? "browser" : "node",
+      entryPoints: [ENTRY_POINT],
+      platform: "node",
       format: 'cjs',
       bundle: true,
       minify: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.min.cjs`,
+      outfile: CJS_MIN_OUTPUT_PATH,
       external: externalPackages,
-      ...(bundleExternalPackages ? {} : { packages: "external" }),
     },
   );
 }
 
 if (BROWSER) {
-  options.push(
+  buildOptions.push(
     {
-      entryPoints: ["./src/mtga.ts"],
+      entryPoints: [ENTRY_POINT],
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,
       bundle: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.js`,
+      outfile: BROWSER_OUTPUT_PATH,
       external: externalPackages,
     },
     {
-      entryPoints: ["./src/mtga.ts"],
+      entryPoints: [ENTRY_POINT],
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,
       bundle: true,
       minify: true,
-      outfile: `./dist/${OUTPUT_FILENAME}.min.js`,
+      outfile: BROWSER_MIN_OUTPUT_PATH,
       external: externalPackages,
     },
   );
 }
 
-// clear
+// Clear
 if (fs.existsSync("./dist")) {
   fs.rmSync("./dist", { recursive: true });
 }
 
-// build
-for (const option of options) {
+// Build
+for (const option of buildOptions) {
   await esbuild.build(option);
 }

@@ -1,9 +1,9 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
-import { IState } from "../types/state.js";
+import type { IState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function(this: HistoryModule, e: KeyboardEvent) {
+const onKeydown = function(this: HistoryModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -34,7 +34,7 @@ const onKeydown = function(this: HistoryModule, e: KeyboardEvent) {
   }
 }
 
-const onKeyup = function(this: HistoryModule, e: KeyboardEvent) {
+const onKeyup = function(this: HistoryModule, e: KeyboardEvent): void {
   const mtga = this.parent;
 
   const keydownState = mtga._keydownState;
@@ -83,17 +83,17 @@ export class HistoryModule extends MTGAModule {
     maxCount: 390,
   };
 
-  onKeydown = onKeydown;
-  onKeyup = onKeyup;
+  onKeydown: typeof onKeydown = onKeydown;
+  onKeyup: typeof onKeydown = onKeyup;
 
-  prune() {
+  prune(): void {
     if (this._i > 1) {
       this.items = this.items.slice(0, this.items.length - (this._i - 1));
       this._i = 1;
     }
   }
 
-  add(withPrune = true) {
+  add(withPrune = true): void {
     const mtga = this.parent;
     
     if (withPrune) {
@@ -123,25 +123,25 @@ export class HistoryModule extends MTGAModule {
     // console.log(`history saved: ${this.items.length}`);
   }
 
-  remove() {
+  remove(): void {
     this.items.pop();
   }
 
-  prev() {
+  prev(): IState | undefined {
     if (this._i < this.items.length) {
       this._i += 1;
     }
     return this.curr();
   }
 
-  next() {
+  next(): IState | undefined {
     if (this._i > 1) {
       this._i -= 1;
     }
     return this.curr();
   }
 
-  curr() {
+  curr(): IState | undefined {
     return this.items[this.items.length - this._i];
   }
 }

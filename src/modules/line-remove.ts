@@ -4,7 +4,7 @@ import { getRows } from "../types/row.js";
 import { getState } from "../types/state.js";
 import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent) {
+const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -80,7 +80,7 @@ export class LineRemoveModule extends MTGAModule {
     super(parent, LineRemoveModule.name);
   }
 
-  onKeydown = onKeydown;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "LineRemove";
 

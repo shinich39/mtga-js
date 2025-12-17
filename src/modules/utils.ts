@@ -1,4 +1,4 @@
-import { IPairs } from "../types/pair.js";
+import type { IPairs } from "../types/pair.js";
 
 /**
  * @example
@@ -7,19 +7,24 @@ import { IPairs } from "../types/pair.js";
 export function debounce(
   func: (...args: any[]) => any,
   delay: number
-) {
+): () => void {
   let timer: ReturnType<typeof setTimeout>;
-  return (...args: any[]) => {
+  return function(...args: any[]) {
     clearTimeout(timer);
     timer = setTimeout(() => func(...args), delay);
   };
 }
 
-export function escapePattern(str: string) {
+export function escapePattern(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export const parseKeyboardEvent = function(e: KeyboardEvent) {
+export const parseKeyboardEvent = function(e: KeyboardEvent): {
+  key: string,
+  altKey: boolean,
+  shiftKey: boolean,
+  ctrlKey: boolean,
+} {
   const key = e.key;
   const altKey = e.altKey;
   const shiftKey = e.shiftKey;
@@ -33,7 +38,7 @@ export const parseKeyboardEvent = function(e: KeyboardEvent) {
   }
 }
 
-export function getAllCombinations<T>(arr: T[]) {
+export function getAllCombinations<T>(arr: T[]): T[][] {
   const result: T[][] = [];
   const n = arr.length;
   for (let i = 1; i < (1 << n); i++) {
@@ -48,13 +53,11 @@ export function getAllCombinations<T>(arr: T[]) {
   return result;
 }
 /**
- * 
  * @param pairs 
  * @param indentUnit 
  * @param rows value.substring(0, selectionStart).split(/\r\n|\r|\n/)
- * @returns 
  */
-export function getIndent(pairs: IPairs, indentUnit: string, rows: string[]) {
+export function getIndent(pairs: IPairs, indentUnit: string, rows: string[]): string {
 
   const createIndent = function(unit: string, size: number) {
     return unit.repeat(Math.ceil(size / unit.length)).slice(0, size);

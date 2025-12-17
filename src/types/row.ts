@@ -11,7 +11,7 @@ export interface IRow {
   // selectionValue: string,
 }
 
-export const getRows = function(el: HTMLTextAreaElement) {
+export const getRows = function(el: HTMLTextAreaElement): IRow[] {
   const { short, long } = getState(el);
   // const isRange = short !== long;
   const arr = el.value.split(/\n/);

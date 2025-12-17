@@ -5,7 +5,7 @@ import { parseKeyboardEvent } from "./utils.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent) {
+const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent): Promise<void> {
   if (e.defaultPrevented) {
     return;
   }
@@ -50,7 +50,7 @@ export class LineCopyModule extends MTGAModule {
     super(parent, LineCopyModule.name);
   }
 
-  onKeydownAsync = onKeydownAsync;
+  onKeydownAsync: typeof onKeydownAsync = onKeydownAsync;
 
   static name = "LineCopy";
 

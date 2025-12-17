@@ -2,7 +2,7 @@ import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
 
-const onPaste = function (this: LinePasteModule, e: ClipboardEvent) {
+const onPaste = function (this: LinePasteModule, e: ClipboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -69,7 +69,7 @@ export class LinePasteModule extends MTGAModule {
     super(parent, LinePasteModule.name);
   }
 
-  onPaste = onPaste;
+  onPaste: typeof onPaste = onPaste;
 
   static name = "LinePaste";
 

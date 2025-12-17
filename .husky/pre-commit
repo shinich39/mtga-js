@@ -1,0 +1,4 @@
+npx lint-staged --config lint-staged.config.js
+npx tsc --noEmit
+npm run build
+git add dist

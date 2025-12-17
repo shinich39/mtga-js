@@ -1,5 +1,5 @@
 import { MTGAModule } from "./types/module.js";
-import { IKeydownState, IState } from "./types/state.js";
+import type { IKeydownState, IState } from "./types/state.js";
 export { MTGAModule } from "./types/module.js";
 export { HistoryModule } from "./modules/history.js";
 export { CommentModule } from "./modules/comment.js";
@@ -22,6 +22,10 @@ export declare class MTGA {
     _pasteEvent: (e: ClipboardEvent) => void;
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
+    static getMTGA(el: HTMLTextAreaElement): MTGA | undefined;
+    static defaults: {
+        eventListenerOptions: AddEventListenerOptions;
+    };
     constructor(el: HTMLTextAreaElement);
     setEvents(): void;
     removeEvents(): void;

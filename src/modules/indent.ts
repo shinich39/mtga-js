@@ -3,7 +3,7 @@ import { MTGAModule } from "../types/module.js";
 import { getRows } from "../types/row.js";
 import { parseKeyboardEvent } from "./utils.js";
 
-const onKeydown = function (this: IndentModule, e: KeyboardEvent) {
+const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -105,11 +105,14 @@ export class IndentModule extends MTGAModule {
     this.value = IndentModule.defaults.value;
   }
 
-  onKeydown = onKeydown;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "Indent";
 
-  static defaults = {
+  static defaults: {
+    pattern: RegExp,
+    value: string
+  } = {
     pattern: /^[^\S\n\r][^\S\n\r]?/,
     value: "  ",
   }

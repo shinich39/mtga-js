@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "allowJs": true,
-    "checkJs": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
     "declaration": true,
     "declarationMap": true,
-    "declarationDir": "./dist/types",
     "emitDeclarationOnly": true,
+    "isolatedDeclarations": true,
+    "declarationDir": "./dist/types",
+    "rootDir": "./src",
+
+    "verbatimModuleSyntax": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts"]

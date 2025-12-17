@@ -8,6 +8,9 @@
   "license": "MIT",
   "author": "shinich39 <shinich39@gmail.com>",
   "type": "module",
+  "main": "./dist/mtga.min.mjs",
+  "module": "./dist/mtga.min.mjs",
+  "types": "./dist/types/mtga.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/mtga.d.ts",
@@ -15,19 +18,21 @@
       "require": "./dist/mtga.min.cjs"
     }
   },
-  "main": "./dist/mtga.min.mjs",
-  "types": "./dist/types/mtga.d.ts",
   "scripts": {
     "test": "tsx --test \"**/*.test.{js,jsx,ts,tsx}\"",
-    "dev": "tsc-watch --noClear --onSuccess \"npm run build\"",
-    "build": "npm run lint && node esbuild.config.js && tsc",
-    "lint": "eslint \"src/**/*\""
+    "dev": "nodemon --config nodemon.config.json",
+    "build": "node esbuild.config.js && tsc",
+    "lint": "eslint \"src/**/*\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@types/node": "^22.14.0",
     "esbuild": "^0.25.2",
     "eslint": "^9.24.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "nodemon": "^3.1.11",
     "rimraf": "^6.0.1",
     "tsc-watch": "^7.1.1",
     "tsx": "^4.19.3",

@@ -1,5 +1,6 @@
 import { MTGAModule } from "./types/module.js";
-import { getState, IKeydownState, IState, setState } from "./types/state.js";
+import { getState, setState } from "./types/state.js";
+import type { IKeydownState, IState } from "./types/state.js";
 
 import { HistoryModule } from "./modules/history.js";
 import { CommentModule } from "./modules/comment.js";
@@ -26,6 +27,8 @@ export { LineCutModule } from "./modules/line-cut.js";
 export { LineCopyModule } from "./modules/line-copy.js";
 export { LinePasteModule } from "./modules/line-paste.js";
 
+const MTGAMap = new WeakMap<HTMLTextAreaElement, MTGA>();
+
 export class MTGA {
   element: HTMLTextAreaElement;
 
@@ -38,8 +41,38 @@ export class MTGA {
   _pasteEvent: (e: ClipboardEvent) => void;
   _focusEvent: (e: FocusEvent) => void;
   _blurEvent: (e: FocusEvent) => void;
-  
+
+  static getMTGA(el: HTMLTextAreaElement) : MTGA | undefined {
+    return MTGAMap.get(el);
+  }
+
+  static defaults: {
+    eventListenerOptions: AddEventListenerOptions,
+  } = {
+    eventListenerOptions: {
+      capture: true,
+      once: false,
+      passive: false,
+    }
+  }
+
   constructor(el: HTMLTextAreaElement) {
+    const exists = MTGA.getMTGA(el);
+
+    if (exists) {
+      console.warn("Already initialized");
+      this.element = exists.element;
+      this.modules = exists.modules;
+      this.moduleOrder = exists.moduleOrder;
+      this._keydownState = exists._keydownState;
+      this._keydownEvent = exists._keydownEvent;
+      this._keyupEvent = exists._keyupEvent;
+      this._pasteEvent = exists._pasteEvent;
+      this._focusEvent = exists._focusEvent;
+      this._blurEvent = exists._blurEvent;
+      return;
+    }
+
     this.element = el;
 
     // setup default modules
@@ -101,27 +134,29 @@ export class MTGA {
     this._focusEvent = (e) => {
       setTimeout(() => {
         this.addHistory(false);
-        this.element.addEventListener("pointerup", _selectionEvent, true);
+        this.element.addEventListener("pointerup", _selectionEvent, MTGA.defaults.eventListenerOptions);
       }, 0);
     }
 
     this._blurEvent = (e) => {
-      this.element.removeEventListener("pointerup", _selectionEvent, true);
+      this.element.removeEventListener("pointerup", _selectionEvent, MTGA.defaults.eventListenerOptions);
     }
 
     this.setEvents();
     this.setModuleOrder();
+
+    MTGAMap.set(el, this);
   }
 
-  setEvents() {
-    this.element.addEventListener("keydown", this._keydownEvent, true);
-    this.element.addEventListener("keyup", this._keyupEvent, true);
-    this.element.addEventListener("paste", this._pasteEvent, true);
-    this.element.addEventListener("focus", this._focusEvent, true);
-    this.element.addEventListener("blur", this._blurEvent, true);
+  setEvents(): void {
+    this.element.addEventListener("keydown", this._keydownEvent, MTGA.defaults.eventListenerOptions);
+    this.element.addEventListener("keyup", this._keyupEvent, MTGA.defaults.eventListenerOptions);
+    this.element.addEventListener("paste", this._pasteEvent, MTGA.defaults.eventListenerOptions);
+    this.element.addEventListener("focus", this._focusEvent, MTGA.defaults.eventListenerOptions);
+    this.element.addEventListener("blur", this._blurEvent, MTGA.defaults.eventListenerOptions);
   }
 
-  removeEvents() {
+  removeEvents(): void {
     this.element.removeEventListener("keydown", this._keydownEvent);
     this.element.removeEventListener("keyup", this._keyupEvent);
     this.element.removeEventListener("paste", this._pasteEvent);
@@ -129,31 +164,31 @@ export class MTGA {
     this.element.removeEventListener("blur", this._blurEvent);
   }
 
-  setModuleOrder() {
+  setModuleOrder(): void {
     this.moduleOrder = Object.values(this.modules).sort((a, b) => a.index - b.index);
   }
 
-  getModule<T extends MTGAModule>(name: string) {
+  getModule<T extends MTGAModule>(name: string): T | undefined {
     return this.modules[name] as T | undefined;
   }
 
-  setModule<T extends MTGAModule>(module: T) {
+  setModule<T extends MTGAModule>(module: T): void {
     this.modules[module.name] = module;
     this.setModuleOrder();
   }
 
-  removeModule(name: string) {
+  removeModule(name: string): void {
     if (this.modules[name]) {
       delete this.modules[name];
       this.setModuleOrder();
     }
   }
 
-  getState(withValue?: boolean) {
+  getState(withValue?: boolean): IState {
     return getState(this.element, withValue);
   }
 
-  setState(state: IState, beforeHistory = true, afterHistory = true) {
+  setState(state: IState, beforeHistory = true, afterHistory = true): void {
     if (beforeHistory) {
       this.addHistory();
     }
@@ -165,15 +200,15 @@ export class MTGA {
     }
   }
 
-  addHistory(withPrune = true) {
+  addHistory(withPrune = true): void {
     this.getModule<HistoryModule>(HistoryModule.name)?.add(withPrune);
   }
 
-  removeHistory() {
+  removeHistory(): void {
     this.getModule<HistoryModule>(HistoryModule.name)?.remove();
   }
 
-  _setKeydownState(e: KeyboardEvent) {
+  _setKeydownState(e: KeyboardEvent): void {
     this._keydownState = {
       value: this.element.value,
       state: getState(this.element),
@@ -181,7 +216,7 @@ export class MTGA {
     }
   }
 
-  _removeKeydownState() {
+  _removeKeydownState(): void {
     this._keydownState = null;
   }
 }

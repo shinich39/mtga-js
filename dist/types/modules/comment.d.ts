@@ -1,5 +1,6 @@
 import { MTGA } from "../mtga.js";
 import { MTGAModule } from "../types/module.js";
+declare const onKeydown: (this: CommentModule, e: KeyboardEvent) => void;
 export declare class CommentModule extends MTGAModule {
     pattern: RegExp;
     value: string;
@@ -9,6 +10,7 @@ export declare class CommentModule extends MTGAModule {
         pattern: RegExp;
         value: string;
     };
-    onKeydown: (this: CommentModule, e: KeyboardEvent) => void;
+    onKeydown: typeof onKeydown;
 }
+export {};
 //# sourceMappingURL=comment.d.ts.map
