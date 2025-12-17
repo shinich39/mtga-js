@@ -42,7 +42,11 @@ export class MTGA {
   _focusEvent: (e: FocusEvent) => void;
   _blurEvent: (e: FocusEvent) => void;
 
-  static getMTGA(el: HTMLTextAreaElement) : MTGA | undefined {
+  static exists(el: HTMLTextAreaElement): boolean {
+    return !!this.getMTGA(el);
+  }
+
+  static getMTGA(el: HTMLTextAreaElement): MTGA | undefined {
     return MTGAMap.get(el);
   }
 
@@ -57,20 +61,8 @@ export class MTGA {
   }
 
   constructor(el: HTMLTextAreaElement) {
-    const exists = MTGA.getMTGA(el);
-
-    if (exists) {
-      console.warn("Already initialized");
-      this.element = exists.element;
-      this.modules = exists.modules;
-      this.moduleOrder = exists.moduleOrder;
-      this._keydownState = exists._keydownState;
-      this._keydownEvent = exists._keydownEvent;
-      this._keyupEvent = exists._keyupEvent;
-      this._pasteEvent = exists._pasteEvent;
-      this._focusEvent = exists._focusEvent;
-      this._blurEvent = exists._blurEvent;
-      return;
+    if (MTGA.exists(el)) {
+      throw new Error("Already initialized");
     }
 
     this.element = el;

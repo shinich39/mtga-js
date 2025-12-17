@@ -22,6 +22,7 @@ export declare class MTGA {
     _pasteEvent: (e: ClipboardEvent) => void;
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
+    static exists(el: HTMLTextAreaElement): boolean;
     static getMTGA(el: HTMLTextAreaElement): MTGA | undefined;
     static defaults: {
         eventListenerOptions: AddEventListenerOptions;

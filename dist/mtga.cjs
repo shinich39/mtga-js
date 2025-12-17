@@ -1114,6 +1114,9 @@ var MTGA13 = class _MTGA {
   _pasteEvent;
   _focusEvent;
   _blurEvent;
+  static exists(el) {
+    return !!this.getMTGA(el);
+  }
   static getMTGA(el) {
     return MTGAMap.get(el);
   }
@@ -1125,19 +1128,8 @@ var MTGA13 = class _MTGA {
     }
   };
   constructor(el) {
-    const exists = _MTGA.getMTGA(el);
-    if (exists) {
-      console.warn("Already initialized");
-      this.element = exists.element;
-      this.modules = exists.modules;
-      this.moduleOrder = exists.moduleOrder;
-      this._keydownState = exists._keydownState;
-      this._keydownEvent = exists._keydownEvent;
-      this._keyupEvent = exists._keyupEvent;
-      this._pasteEvent = exists._pasteEvent;
-      this._focusEvent = exists._focusEvent;
-      this._blurEvent = exists._blurEvent;
-      return;
+    if (_MTGA.exists(el)) {
+      throw new Error("Already initialized");
     }
     this.element = el;
     this.moduleOrder = [];
