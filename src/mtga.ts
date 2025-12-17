@@ -65,6 +65,8 @@ export class MTGA {
       throw new Error("Already initialized");
     }
 
+    MTGAMap.set(el, this);
+
     this.element = el;
 
     // setup default modules
@@ -81,10 +83,12 @@ export class MTGA {
     this.modules[AutoIndentModule.name] = new AutoIndentModule(this);
     this.modules[AutoPairModule.name] = new AutoPairModule(this);
     this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
+    this.setModuleOrder();
 
     // private properties
     this._keydownState = null;
 
+    // create events
     this._keydownEvent = async (e) => {
       for (const m of this.moduleOrder) {
         m.onKeydown?.call(m, e);
@@ -135,9 +139,6 @@ export class MTGA {
     }
 
     this.setEvents();
-    this.setModuleOrder();
-
-    MTGAMap.set(el, this);
   }
 
   setEvents(): void {

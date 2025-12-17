@@ -24,6 +24,15 @@ Make Textarea Garbage Again
 
 ### Usage
 
+```html
+<script src="dist/mtga.js"></script>
+<script>
+  const { MTGA } = window.mtgaJs;
+  const el = document.getElementId("textarea");
+  const mtga = new MTGA(el);
+</script>
+```
+
 ### Custom Module
 
 [example/beautify.js](example/beautify.js)

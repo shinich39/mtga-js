@@ -1131,6 +1131,7 @@ var mtgaJs = (() => {
       if (_MTGA.exists(el)) {
         throw new Error("Already initialized");
       }
+      MTGAMap.set(el, this);
       this.element = el;
       this.moduleOrder = [];
       this.modules = {};
@@ -1145,6 +1146,7 @@ var mtgaJs = (() => {
       this.modules[AutoIndentModule.name] = new AutoIndentModule(this);
       this.modules[AutoPairModule.name] = new AutoPairModule(this);
       this.modules[AutoCompleteModule.name] = new AutoCompleteModule(this);
+      this.setModuleOrder();
       this._keydownState = null;
       this._keydownEvent = async (e) => {
         for (const m of this.moduleOrder) {
@@ -1187,8 +1189,6 @@ var mtgaJs = (() => {
         this.element.removeEventListener("pointerup", _selectionEvent, _MTGA.defaults.eventListenerOptions);
       };
       this.setEvents();
-      this.setModuleOrder();
-      MTGAMap.set(el, this);
     }
     setEvents() {
       this.element.addEventListener("keydown", this._keydownEvent, _MTGA.defaults.eventListenerOptions);
