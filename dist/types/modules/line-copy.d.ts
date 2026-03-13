@@ -1,9 +1,9 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-declare const onKeydownAsync: (this: LineCopyModule, e: KeyboardEvent) => Promise<void>;
+declare const onKeydown: (this: LineCopyModule, e: KeyboardEvent) => Promise<void>;
 export declare class LineCopyModule extends MTGAModule {
     constructor(parent: MTGA);
-    onKeydownAsync: typeof onKeydownAsync;
+    onKeydown: typeof onKeydown;
     static name: string;
     static defaults: {};
 }

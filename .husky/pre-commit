@@ -1,4 +1,4 @@
-npx lint-staged --config lint-staged.config.js
+biome check --write --staged --no-errors-on-unmatched .
 npx tsc --noEmit
 npm run build
 git add dist

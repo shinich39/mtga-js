@@ -1,6 +1,6 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
+import { getRows } from "../utils/row.js";
 
 const onPaste = function (this: LinePasteModule, e: ClipboardEvent): void {
   if (e.defaultPrevented) {
@@ -42,9 +42,9 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent): void {
 
   const rows = getRows(el);
 
-  let newValues: string[] = [], 
-      newShort = short + copiedText.length,
-      newLong = long + copiedText.length;
+  let newValues: string[] = [],
+    newShort = short + copiedText.length,
+    newLong = long + copiedText.length;
 
   for (const row of rows) {
     const isSelected = row.isSelected;
@@ -54,7 +54,7 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent): void {
 
     newValues.push(row.value);
   }
-  
+
   mtga.setState({
     isReversed,
     short: newShort,
@@ -62,7 +62,7 @@ const onPaste = function (this: LinePasteModule, e: ClipboardEvent): void {
     dir,
     value: newValues.join(""),
   });
-}
+};
 
 export class LinePasteModule extends MTGAModule {
   constructor(parent: MTGA) {

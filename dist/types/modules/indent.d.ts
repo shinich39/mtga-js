@@ -1,4 +1,4 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 declare const onKeydown: (this: IndentModule, e: KeyboardEvent) => void;
 export declare class IndentModule extends MTGAModule {

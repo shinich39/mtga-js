@@ -37,6 +37,6 @@ Make Textarea Garbage Again
 
 [example/beautify.js](example/beautify.js)
 
-## Acknowledgements
+## Tech Stack
 
-- [textarea-caret-position](https://github.com/component/textarea-caret-position)
+- TypeScript

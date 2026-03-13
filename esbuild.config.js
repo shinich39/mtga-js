@@ -1,25 +1,36 @@
-import path from "node:path";
 import fs from "node:fs";
-import * as esbuild from 'esbuild';
+import * as esbuild from "esbuild";
+
+const pkg = JSON.parse(fs.readFileSync("./package.json"));
+
+const ENTRY_POINTS = ["./src/index.ts"];
+const FILENAME = "mtga";
 
 const ESM = true;
 const CJS = true;
 const BROWSER = true;
 const BROWSER_GLOBAL_NAME = "mtgaJs";
 
-const ENTRY_POINT = "./src/mtga.ts";
-const FILENAME = path.basename(ENTRY_POINT, path.extname(ENTRY_POINT));
-
-const ESM_OUTPUT_PATH = `./dist/${FILENAME}.mjs`;
-const ESM_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.mjs`;
-const CJS_OUTPUT_PATH = `./dist/${FILENAME}.cjs`;
-const CJS_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.cjs`;
-const BROWSER_OUTPUT_PATH = `./dist/${FILENAME}.js`;
-const BROWSER_MIN_OUTPUT_PATH = `./dist/${FILENAME}.min.js`;
-const TYPE_OUTPUT_PATH = `./dist/types/${FILENAME}.d.ts`;
-
 /** @see https://esbuild.github.io/api/#external */
-const externalPackages = [];
+const EXTERNAL_PACKAGES = [];
+
+const paths = {
+  type: `./dist/types/index.d.ts`,
+  esm: `./dist/${FILENAME}.mjs`,
+  esmMin: `./dist/${FILENAME}.min.mjs`,
+  cjs: `./dist/${FILENAME}.cjs`,
+  cjsMin: `./dist/${FILENAME}.min.cjs`,
+  browser: `./dist/${FILENAME}.js`,
+  browserMin: `./dist/${FILENAME}.min.js`,
+};
+
+const isPackageChanged =
+  pkg.main !== paths.esmMin ||
+  pkg.module !== paths.esmMin ||
+  pkg.types !== paths.type ||
+  pkg.exports["."].types !== paths.type ||
+  pkg.exports["."].import !== paths.esmMin ||
+  pkg.exports["."].require !== paths.cjsMin;
 
 /** @type {import("esbuild").BuildOptions[]} */
 const buildOptions = [];
@@ -27,21 +38,23 @@ const buildOptions = [];
 if (ESM) {
   buildOptions.push(
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "node",
-      format: 'esm',
+      format: "esm",
       bundle: true,
-      outfile: ESM_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.esm,
+      external: EXTERNAL_PACKAGES,
     },
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "node",
-      format: 'esm',
+      format: "esm",
       bundle: true,
       minify: true,
-      outfile: ESM_MIN_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.esmMin,
+      external: EXTERNAL_PACKAGES,
     },
   );
 }
@@ -49,21 +62,23 @@ if (ESM) {
 if (CJS) {
   buildOptions.push(
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "node",
-      format: 'cjs',
+      format: "cjs",
       bundle: true,
-      outfile: CJS_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.cjs,
+      external: EXTERNAL_PACKAGES,
     },
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "node",
-      format: 'cjs',
+      format: "cjs",
       bundle: true,
       minify: true,
-      outfile: CJS_MIN_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.cjsMin,
+      external: EXTERNAL_PACKAGES,
     },
   );
 }
@@ -71,33 +86,46 @@ if (CJS) {
 if (BROWSER) {
   buildOptions.push(
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,
       bundle: true,
-      outfile: BROWSER_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.browser,
+      external: EXTERNAL_PACKAGES,
     },
     {
-      entryPoints: [ENTRY_POINT],
+      entryPoints: ENTRY_POINTS,
       platform: "browser",
       format: "iife",
       globalName: BROWSER_GLOBAL_NAME,
       bundle: true,
       minify: true,
-      outfile: BROWSER_MIN_OUTPUT_PATH,
-      external: externalPackages,
+      sourcemap: true,
+      outfile: paths.browserMin,
+      external: EXTERNAL_PACKAGES,
     },
   );
 }
 
-// Clear
+// clear ./dist
 if (fs.existsSync("./dist")) {
   fs.rmSync("./dist", { recursive: true });
 }
 
-// Build
+// create scripts
 for (const option of buildOptions) {
   await esbuild.build(option);
+}
+
+// update package.json
+if (isPackageChanged) {
+  pkg.main = paths.esmMin;
+  pkg.module = paths.esmMin;
+  pkg.types = paths.type;
+  pkg.exports["."].types = paths.type;
+  pkg.exports["."].import = paths.esmMin;
+  pkg.exports["."].require = paths.cjsMin;
+  fs.writeFileSync("./package.json", JSON.stringify(pkg, null, 2), "utf8");
 }

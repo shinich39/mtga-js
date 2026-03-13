@@ -1,4 +1,4 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 declare const onPaste: (this: LinePasteModule, e: ClipboardEvent) => void;
 export declare class LinePasteModule extends MTGAModule {

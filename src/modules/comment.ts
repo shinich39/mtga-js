@@ -1,14 +1,14 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 // text...
 const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
-  
+
   const mtga = this.parent;
   const el = this.parent.element;
 
@@ -31,10 +31,7 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
 
   let shouldRemove = true;
   for (const r of selectedRows) {
-    if (
-      isIgnoreEmptyRows 
-      && selectedEmptyRows.some((_r) => _r.index === r.index)
-    ) {
+    if (isIgnoreEmptyRows && selectedEmptyRows.some((_r) => _r.index === r.index)) {
       continue;
     }
 
@@ -45,7 +42,7 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   }
 
   let newShort = short,
-      newLong = long;
+    newLong = long;
 
   const newValues: string[] = [];
   for (let i = 0; i < rows.length; i++) {
@@ -60,7 +57,7 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
       continue;
     }
 
-    let newValue;
+    let newValue: string;
     if (isMultiple) {
       if (shouldRemove) {
         newValue = row.value.replace(pattern, "");
@@ -101,14 +98,18 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     newValues.push(newValue);
   }
 
-  mtga.setState({
-    isReversed,
-    short: newShort,
-    long: newLong,
-    dir,
-    value: newValues.join(""),
-  }, false, true);
-}
+  mtga.setState(
+    {
+      isReversed,
+      short: newShort,
+      long: newLong,
+      dir,
+      value: newValues.join(""),
+    },
+    false,
+    true,
+  );
+};
 
 /** text... */
 const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
@@ -137,13 +138,11 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   }
 
   e.preventDefault();
-  
-  const newShort = short + 1,
-        newLong = long + 1;
 
-  const newValue = el.value.substring(0, short) 
-    + "**/" 
-    + el.value.substring(long); 
+  const newShort = short + 1,
+    newLong = long + 1;
+
+  const newValue = el.value.substring(0, short) + "**/" + el.value.substring(long);
 
   mtga.setState({
     isReversed,
@@ -152,12 +151,12 @@ const multiLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     dir,
     value: newValue,
   });
-}
+};
 
-const onKeydown = function(this: CommentModule, e: KeyboardEvent): void {
+const onKeydown = function (this: CommentModule, e: KeyboardEvent): void {
   singleLineHandler.call(this, e);
   multiLineHandler.call(this, e);
-}
+};
 
 export class CommentModule extends MTGAModule {
   pattern: RegExp;
@@ -172,12 +171,12 @@ export class CommentModule extends MTGAModule {
   static name = "Comment";
 
   static defaults: {
-    pattern: RegExp,
-    value: string
+    pattern: RegExp;
+    value: string;
   } = {
     pattern: /^\/\/\s?/,
-    value:  "// ",
-  }
+    value: "// ",
+  };
 
   onKeydown: typeof onKeydown = onKeydown;
 }

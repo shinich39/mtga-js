@@ -1,6 +1,6 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 interface IAutoCompleteTag {
   key: string;
@@ -9,21 +9,21 @@ interface IAutoCompleteTag {
 }
 
 interface IAutoCompleteQuery {
-  head: string,
-  body: string,
-  tail: string,
+  head: string;
+  body: string;
+  tail: string;
 }
 
 interface IAutoCompleteIndex {
-  pattern: string | RegExp,
-  tags: IAutoCompleteTag[],
+  pattern: string | RegExp;
+  tags: IAutoCompleteTag[];
 }
 
-const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
+const onKeyup = function (this: AutoCompleteModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
-  
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
   const isValid = !ctrlKey && !altKey && (key.length === 1 || key === "Backspace");
@@ -33,15 +33,15 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
 
   // kill previous process
   this.kill();
-  
+
   // const mtga = this.parent;
   // const el = this.parent.element;
 
   const chunkSize = this.chunkSize;
 
   let isStopped = false,
-      isKilled = false,
-      i = 0;
+    isKilled = false,
+    i = 0;
 
   const stop = (kill?: boolean) => {
     isStopped = true;
@@ -62,7 +62,7 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
 
   const candidates: IAutoCompleteTag[] = this.getIndex(text)?.tags || this.tags;
   const result: IAutoCompleteTag[] = [];
-  
+
   this.query = query;
   this.candidates = candidates;
   this.result = result;
@@ -74,7 +74,7 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
     const chunks: IAutoCompleteTag[] = [];
 
     let j = i + chunkSize;
-    while(i < j && i < candidates.length) {
+    while (i < j && i < candidates.length) {
       const tag = candidates[i];
 
       if (isKilled || isStopped) {
@@ -108,14 +108,14 @@ const onKeyup = function(this: AutoCompleteModule, e: KeyboardEvent): void {
       this.onEnd?.call(this);
       return;
     }
-    
+
     this.onData?.call(this, chunks);
 
     setTimeout(processChunk, 0);
-  }
+  };
 
   processChunk();
-}
+};
 
 export class AutoCompleteModule extends MTGAModule {
   tags: IAutoCompleteTag[];
@@ -127,8 +127,14 @@ export class AutoCompleteModule extends MTGAModule {
   result: IAutoCompleteTag[];
 
   parser: (this: this, event: KeyboardEvent) => IAutoCompleteQuery | null | undefined;
-  filter: (this: this, query: IAutoCompleteQuery, tag: IAutoCompleteTag, index: number, tags: IAutoCompleteTag[]) => boolean;
-  
+  filter: (
+    this: this,
+    query: IAutoCompleteQuery,
+    tag: IAutoCompleteTag,
+    index: number,
+    tags: IAutoCompleteTag[],
+  ) => boolean;
+
   onData: (this: this, tags: IAutoCompleteTag[]) => void;
   onEnd: (this: this) => void;
 
@@ -151,24 +157,22 @@ export class AutoCompleteModule extends MTGAModule {
     this._stop = () => undefined;
   }
 
-  onKeyup: typeof onKeyup = onKeyup;
-
   static name = "AutoComplete";
-  
+
   static defaults: {
-    chunkSize: number,
-    filter: AutoCompleteModule["filter"],
-    parser: AutoCompleteModule["parser"],
+    chunkSize: number;
+    filter: AutoCompleteModule["filter"];
+    parser: AutoCompleteModule["parser"];
   } = {
     chunkSize: 100,
 
-    parser: function (e: Event) {
+    parser: (e: Event) => {
       const el = e.target as HTMLTextAreaElement;
       const parts = el.value.split(/[,.․‧・｡。{}()<>[\]\\/|'"`!?]|\r\n|\r|\n/);
       const index = el.selectionStart;
 
       let selectionStart = 0,
-          selectionEnd = 0;
+        selectionEnd = 0;
 
       for (const part of parts) {
         selectionEnd = selectionStart + part.length;
@@ -179,8 +183,8 @@ export class AutoCompleteModule extends MTGAModule {
       }
 
       let head = el.value.substring(0, selectionStart),
-          body = el.value.substring(selectionStart, selectionEnd),
-          tail = el.value.substring(selectionEnd);
+        body = el.value.substring(selectionStart, selectionEnd),
+        tail = el.value.substring(selectionEnd);
 
       // re-format selection value for seaching
       const match = body.match(/^(\s*)(.*?)(\s*)$/);
@@ -195,10 +199,10 @@ export class AutoCompleteModule extends MTGAModule {
         head,
         body,
         tail,
-      }
+      };
     },
 
-    filter: function (query, tag, index, tags) {
+    filter: (query, tag, index, tags) => {
       const a = query.body;
       const b = tag.key;
 
@@ -209,13 +213,14 @@ export class AutoCompleteModule extends MTGAModule {
 
       return b.indexOf(a) > -1;
     },
-  }
+  };
+
+  onKeyup: typeof onKeyup = onKeyup;
 
   getIndex(value: string): IAutoCompleteIndex | undefined {
-    return this.indexes.find((i) => 
-      typeof i.pattern === "string"
-        ? i.pattern === value
-        : i.pattern.test(value));
+    return this.indexes.find((i) =>
+      typeof i.pattern === "string" ? i.pattern === value : i.pattern.test(value),
+    );
   }
 
   stop(): void {
@@ -230,7 +235,7 @@ export class AutoCompleteModule extends MTGAModule {
 
   set(tag: IAutoCompleteTag, query?: IAutoCompleteQuery | undefined | null): void {
     const mtga = this.parent;
-    
+
     if (!query) {
       query = this.query;
     }

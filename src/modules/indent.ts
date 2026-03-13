@@ -1,7 +1,7 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
@@ -10,7 +10,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
 
   const mtga = this.parent;
   const el = this.parent.element;
-  
+
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
 
   const isValid = !ctrlKey && !altKey && key === "Tab";
@@ -29,7 +29,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
   const shouldRemove = e.shiftKey;
 
   let newShort = short,
-      newLong = long;
+    newLong = long;
 
   const newValues: string[] = [];
   for (let i = 0; i < rows.length; i++) {
@@ -44,7 +44,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
       continue;
     }
 
-    let newValue;
+    let newValue: string;
     if (isMultiple) {
       const isEmpty = !row.value.trim();
       if (shouldRemove) {
@@ -93,7 +93,7 @@ const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
     dir,
     value: newValues.join(""),
   });
-}
+};
 
 export class IndentModule extends MTGAModule {
   pattern: RegExp;
@@ -110,10 +110,10 @@ export class IndentModule extends MTGAModule {
   static name = "Indent";
 
   static defaults: {
-    pattern: RegExp,
-    value: string
+    pattern: RegExp;
+    value: string;
   } = {
     pattern: /^[^\S\n\r][^\S\n\r]?/,
     value: "  ",
-  }
+  };
 }

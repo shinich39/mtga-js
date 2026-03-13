@@ -1,9 +1,9 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IState } from "../types/state.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
-const onKeydown = function(this: HistoryModule, e: KeyboardEvent): void {
+const onKeydown = function (this: HistoryModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -11,7 +11,7 @@ const onKeydown = function(this: HistoryModule, e: KeyboardEvent): void {
   const mtga = this.parent;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);
-  
+
   const isValid = ctrlKey && !altKey && key.toLowerCase() === "z";
   if (!isValid) {
     return;
@@ -19,7 +19,7 @@ const onKeydown = function(this: HistoryModule, e: KeyboardEvent): void {
 
   e.preventDefault();
 
-  let h;
+  let h: IState | undefined;
 
   // undo
   if (!shiftKey) {
@@ -32,13 +32,13 @@ const onKeydown = function(this: HistoryModule, e: KeyboardEvent): void {
   if (h) {
     mtga.setState(h, false, false);
   }
-}
+};
 
-const onKeyup = function(this: HistoryModule, e: KeyboardEvent): void {
+const onKeyup = function (this: HistoryModule, e: KeyboardEvent): void {
   const mtga = this.parent;
 
   const keydownState = mtga._keydownState;
-  
+
   mtga._removeKeydownState();
 
   if (!keydownState) {
@@ -56,14 +56,11 @@ const onKeyup = function(this: HistoryModule, e: KeyboardEvent): void {
   else {
     const prevState = keydownState.state;
     const currState = mtga.getState();
-    if (
-      prevState.short !== currState.short ||
-      prevState.long !== currState.long
-    ) {
+    if (prevState.short !== currState.short || prevState.long !== currState.long) {
       mtga.addHistory(false);
     }
   }
-}
+};
 
 export class HistoryModule extends MTGAModule {
   items: IState[];
@@ -95,7 +92,7 @@ export class HistoryModule extends MTGAModule {
 
   add(withPrune = true): void {
     const mtga = this.parent;
-    
+
     if (withPrune) {
       this.prune();
     } else if (this._i !== 1) {
@@ -105,7 +102,8 @@ export class HistoryModule extends MTGAModule {
     const prevState = this.items[this.items.length - 1];
     const currState = mtga.getState(true);
 
-    const isChanged = !prevState ||
+    const isChanged =
+      !prevState ||
       prevState.short !== currState.short ||
       prevState.long !== currState.long ||
       prevState.value !== currState.value;

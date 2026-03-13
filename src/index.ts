@@ -1,31 +1,30 @@
-import { MTGAModule } from "./types/module.js";
-import { getState, setState } from "./types/state.js";
-import type { IKeydownState, IState } from "./types/state.js";
-
-import { HistoryModule } from "./modules/history.js";
-import { CommentModule } from "./modules/comment.js";
-import { IndentModule } from "./modules/indent.js";
+import { AutoCompleteModule } from "./modules/auto-complete.js";
 import { AutoIndentModule } from "./modules/auto-indent.js";
 import { AutoPairModule } from "./modules/auto-pair.js";
-import { AutoCompleteModule } from "./modules/auto-complete.js";
+import { CommentModule } from "./modules/comment.js";
+import { HistoryModule } from "./modules/history.js";
+import { IndentModule } from "./modules/indent.js";
 import { LineBreakModule } from "./modules/line-break.js";
-import { LineRemoveModule } from "./modules/line-remove.js";
-import { LineCutModule } from "./modules/line-cut.js";
 import { LineCopyModule } from "./modules/line-copy.js";
+import { LineCutModule } from "./modules/line-cut.js";
 import { LinePasteModule } from "./modules/line-paste.js";
+import { LineRemoveModule } from "./modules/line-remove.js";
+import type { MTGAModule } from "./types/module.js";
+import type { IKeydownState, IState } from "./types/state.js";
+import { getState, setState } from "./utils/state.js";
 
-export { MTGAModule } from "./types/module.js";
-export { HistoryModule } from "./modules/history.js";
-export { CommentModule } from "./modules/comment.js";
-export { IndentModule } from "./modules/indent.js";
-export { AutoIndentModule } from "./modules/auto-indent.js";
 export { AutoCompleteModule } from "./modules/auto-complete.js";
+export { AutoIndentModule } from "./modules/auto-indent.js";
 export { AutoPairModule } from "./modules/auto-pair.js";
+export { CommentModule } from "./modules/comment.js";
+export { HistoryModule } from "./modules/history.js";
+export { IndentModule } from "./modules/indent.js";
 export { LineBreakModule } from "./modules/line-break.js";
-export { LineRemoveModule } from "./modules/line-remove.js";
-export { LineCutModule } from "./modules/line-cut.js";
 export { LineCopyModule } from "./modules/line-copy.js";
+export { LineCutModule } from "./modules/line-cut.js";
 export { LinePasteModule } from "./modules/line-paste.js";
+export { LineRemoveModule } from "./modules/line-remove.js";
+export { MTGAModule } from "./types/module.js";
 
 const MTGAMap = new WeakMap<HTMLTextAreaElement, MTGA>();
 
@@ -43,7 +42,7 @@ export class MTGA {
   _blurEvent: (e: FocusEvent) => void;
 
   static exists(el: HTMLTextAreaElement): boolean {
-    return !!this.getMTGA(el);
+    return !!MTGA.getMTGA(el);
   }
 
   static getMTGA(el: HTMLTextAreaElement): MTGA | undefined {
@@ -51,14 +50,14 @@ export class MTGA {
   }
 
   static defaults: {
-    eventListenerOptions: AddEventListenerOptions,
+    eventListenerOptions: AddEventListenerOptions;
   } = {
     eventListenerOptions: {
       capture: true,
       once: false,
       passive: false,
-    }
-  }
+    },
+  };
 
   constructor(el: HTMLTextAreaElement) {
     if (MTGA.exists(el)) {
@@ -91,58 +90,60 @@ export class MTGA {
     // create events
     this._keydownEvent = async (e) => {
       for (const m of this.moduleOrder) {
-        m.onKeydown?.call(m, e);
-        await m.onKeydownAsync?.call(m, e);
+        await m.onKeydown?.call(m, e);
       }
 
       if (e.defaultPrevented) {
         this._removeKeydownState();
-      } else if (
-        ![
-          "Meta",
-          "Control",
-          "Alt",
-          "Shift",
-        ].includes(e.key)
-      ) {
+      } else if (!["Meta", "Control", "Alt", "Shift"].includes(e.key)) {
         this._setKeydownState(e);
       }
-    }
+    };
 
     this._keyupEvent = async (e) => {
       for (const m of this.moduleOrder) {
-        m.onKeyup?.call(m, e);
-        await m.onKeyupAsync?.call(m, e);
+        await m.onKeyup?.call(m, e);
       }
-    }
+    };
 
     this._pasteEvent = async (e) => {
       for (const m of this.moduleOrder) {
-        m.onPaste?.call(m, e);
-        await m.onPasteAsync?.call(m, e);
+        await m.onPaste?.call(m, e);
       }
-    }
+    };
 
     const _selectionEvent = (e: MouseEvent) => {
       this.addHistory(false);
-    }
+    };
 
     this._focusEvent = (e) => {
       setTimeout(() => {
         this.addHistory(false);
-        this.element.addEventListener("pointerup", _selectionEvent, MTGA.defaults.eventListenerOptions);
+        this.element.addEventListener(
+          "pointerup",
+          _selectionEvent,
+          MTGA.defaults.eventListenerOptions,
+        );
       }, 0);
-    }
+    };
 
     this._blurEvent = (e) => {
-      this.element.removeEventListener("pointerup", _selectionEvent, MTGA.defaults.eventListenerOptions);
-    }
+      this.element.removeEventListener(
+        "pointerup",
+        _selectionEvent,
+        MTGA.defaults.eventListenerOptions,
+      );
+    };
 
     this.setEvents();
   }
 
   setEvents(): void {
-    this.element.addEventListener("keydown", this._keydownEvent, MTGA.defaults.eventListenerOptions);
+    this.element.addEventListener(
+      "keydown",
+      this._keydownEvent,
+      MTGA.defaults.eventListenerOptions,
+    );
     this.element.addEventListener("keyup", this._keyupEvent, MTGA.defaults.eventListenerOptions);
     this.element.addEventListener("paste", this._pasteEvent, MTGA.defaults.eventListenerOptions);
     this.element.addEventListener("focus", this._focusEvent, MTGA.defaults.eventListenerOptions);
@@ -206,7 +207,7 @@ export class MTGA {
       value: this.element.value,
       state: getState(this.element),
       key: e.key,
-    }
+    };
   }
 
   _removeKeydownState(): void {

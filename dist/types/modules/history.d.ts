@@ -1,4 +1,4 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IState } from "../types/state.js";
 declare const onKeydown: (this: HistoryModule, e: KeyboardEvent) => void;

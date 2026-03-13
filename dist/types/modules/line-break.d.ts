@@ -1,4 +1,4 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
 declare const onKeydown: (this: LineBreakModule, e: KeyboardEvent) => void;

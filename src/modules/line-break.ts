@@ -1,14 +1,15 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
-import { getRows } from "../types/row.js";
-import { getIndent, parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
+import { getIndent } from "../utils/pair.js";
 
 const onKeydown = function (this: LineBreakModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
-  
+
   const mtga = this.parent;
   const el = this.parent.element;
   const { pairs, indentUnit } = this;
@@ -25,15 +26,14 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent): void {
 
   const rows = getRows(el);
   const selectedRows = rows.filter((r) => r.isSelected);
-  const targetRow = e.shiftKey
-    ? selectedRows[0]
-    : selectedRows[selectedRows.length - 1];
+  const targetRow = e.shiftKey ? selectedRows[0] : selectedRows[selectedRows.length - 1];
 
-  const isLastRowSelected = rows[rows.length - 1].index === selectedRows[selectedRows.length - 1].index;
+  const isLastRowSelected =
+    rows[rows.length - 1].index === selectedRows[selectedRows.length - 1].index;
 
-  let newValues: string[] = [], 
-      newShort = short, 
-      newLong = long;
+  let newValues: string[] = [],
+    newShort = short,
+    newLong = long;
 
   for (const row of rows) {
     const isTarget = targetRow.index === row.index;
@@ -77,7 +77,7 @@ const onKeydown = function (this: LineBreakModule, e: KeyboardEvent): void {
     long: newLong,
     value: newValue,
   });
-}
+};
 
 export class LineBreakModule extends MTGAModule {
   pairs: IPairs;
@@ -94,8 +94,8 @@ export class LineBreakModule extends MTGAModule {
   static name = "LineBreak";
 
   static defaults: {
-    pairs: IPairs,
-    indentUnit: string,
+    pairs: IPairs;
+    indentUnit: string;
   } = {
     pairs: {
       "(": ")",

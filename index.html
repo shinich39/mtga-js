@@ -40,7 +40,6 @@ Vivamus vehicula vestibulum est, in interdum turpis.
 Aenean tempor nulla at sapien suscipit finibus. 
 Proin id leo nec nisi eleifend eleifend.</textarea>
 
-    <script src="test/textarea-caret-position.js"></script>
     <script src="dist/mtga.js"></script>
     <script src="example/beautify.js"></script>
     <script>
@@ -224,15 +223,14 @@ Proin id leo nec nisi eleifend eleifend.</textarea>
 
         const show = () => {
           if (!isShown()) {
-            const caretPosition = getCaretCoordinates(mtga.element, mtga.element.selectionEnd);
             const taRect = mtga.element.getBoundingClientRect();
             const listRect = listEl.getBoundingClientRect();
             listEl.style.visibility = "";
             listEl.style.zIndex = 3939;
-            listEl.style.top = (taRect.top + caretPosition.top + 18) + "px";
+            listEl.style.top = (taRect.top + 0) + "px";
             listEl.style.left = Math.min(
               taRect.left + document.documentElement.clientWidth - listRect.width, 
-              taRect.left + caretPosition.left - 11,
+              taRect.left + 0,
             ) + "px";
           }
         }

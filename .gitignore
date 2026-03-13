@@ -2,6 +2,11 @@
 
 .env
 .vscode/
+.idea/
+coverage/
+test-results/
+playwright-report/
+# dist/
 
 /node_modules
 /.pnp
@@ -15,6 +20,7 @@
 .DS_*
 *.pem
 
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

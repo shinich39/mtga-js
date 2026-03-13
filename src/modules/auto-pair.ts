@@ -1,10 +1,10 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getClosing, isOpening, isPair } from "../types/pair.js";
 import type { IPairs } from "../types/pair.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getClosing, isOpening, isPair } from "../utils/pair.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
-const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
+const closePairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -32,9 +32,7 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
   const center = el.value.substring(short, long);
   const right = el.value.substring(long);
 
-  let newShort, 
-      newLong,
-      newValue;
+  let newShort: number, newLong: number, newValue: string;
 
   if (!isRange) {
     const start = (left + opening).length;
@@ -46,7 +44,7 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     newShort = (left + opening).length;
     newLong = (left + opening + center).length;
   }
-  
+
   mtga.setState({
     isReversed,
     short: newShort,
@@ -54,9 +52,9 @@ const closePairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     dir,
     value: newValue,
   });
-}
+};
 
-const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
+const clearPairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
   }
@@ -102,12 +100,12 @@ const clearPairHandler = function(this: AutoPairModule, e: KeyboardEvent) {
     dir: "forward",
     value: newValue,
   });
-}
+};
 
-const onKeydown = function(this: AutoPairModule, e: KeyboardEvent): void {
+const onKeydown = function (this: AutoPairModule, e: KeyboardEvent): void {
   closePairHandler.call(this, e);
   clearPairHandler.call(this, e);
-}
+};
 
 export class AutoPairModule extends MTGAModule {
   pairs: IPairs;
@@ -117,12 +115,10 @@ export class AutoPairModule extends MTGAModule {
     this.pairs = { ...AutoPairModule.defaults.pairs };
   }
 
-  onKeydown: typeof onKeydown = onKeydown;
-
   static name = "AutoPair";
 
   static defaults: {
-    pairs: IPairs,
+    pairs: IPairs;
   } = {
     pairs: {
       "(": ")",
@@ -130,8 +126,10 @@ export class AutoPairModule extends MTGAModule {
       "{": "}",
       "<": ">",
       "'": "'",
-      "\"": "\"",
+      '"': '"',
       "`": "`",
     },
-  }
+  };
+
+  onKeydown: typeof onKeydown = onKeydown;
 }

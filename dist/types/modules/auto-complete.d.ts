@@ -1,4 +1,4 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 interface IAutoCompleteTag {
     key: string;
@@ -28,13 +28,13 @@ export declare class AutoCompleteModule extends MTGAModule {
     onEnd: (this: this) => void;
     _stop: (kill?: boolean) => void;
     constructor(parent: MTGA);
-    onKeyup: typeof onKeyup;
     static name: string;
     static defaults: {
         chunkSize: number;
         filter: AutoCompleteModule["filter"];
         parser: AutoCompleteModule["parser"];
     };
+    onKeyup: typeof onKeyup;
     getIndex(value: string): IAutoCompleteIndex | undefined;
     stop(): void;
     kill(): void;

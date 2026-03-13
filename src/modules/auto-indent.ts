@@ -1,10 +1,10 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { isClosing, } from "../types/pair.js";
 import type { IPairs } from "../types/pair.js";
-import { getIndent, parseKeyboardEvent } from "./utils.js";
+import { isClosing, getIndent } from "../utils/pair.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
-const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent): void {
+const onKeydown = function (this: AutoIndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
   }
@@ -43,17 +43,21 @@ const onKeydown = function(this: AutoIndentModule, e: KeyboardEvent): void {
     center += currIndent;
     newShort += currIndent.length;
   }
-  
+
   const newValue = left + center + right;
   const newLong = newShort;
-  
-  mtga.setState({
-    isReversed: false,
-    short: newShort,
-    long: newLong,
-    value: newValue,
-  }, false, true);
-}
+
+  mtga.setState(
+    {
+      isReversed: false,
+      short: newShort,
+      long: newLong,
+      value: newValue,
+    },
+    false,
+    true,
+  );
+};
 
 export class AutoIndentModule extends MTGAModule {
   pairs: IPairs;
@@ -65,13 +69,11 @@ export class AutoIndentModule extends MTGAModule {
     this.indentUnit = AutoIndentModule.defaults.indentUnit;
   }
 
-  onKeydown: typeof onKeydown = onKeydown;
-
   static name = "AutoIndent";
 
   static defaults: {
-    pairs: IPairs,
-    indentUnit: string,
+    pairs: IPairs;
+    indentUnit: string;
   } = {
     pairs: {
       "(": ")",
@@ -80,4 +82,6 @@ export class AutoIndentModule extends MTGAModule {
     },
     indentUnit: "  ",
   };
+
+  onKeydown: typeof onKeydown = onKeydown;
 }

@@ -1,8 +1,7 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
-import { getState } from "../types/state.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
@@ -26,10 +25,10 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
   const firstSelectedRow = selectedRows[0];
   const lastSelectedRow = selectedRows[selectedRows.length - 1];
 
-  let newValues: string[] = [], 
-      newShort = 0, 
-      newLong = 0,
-      maxRowIndex = 0;
+  let newValues: string[] = [],
+    newShort = 0,
+    newLong = 0,
+    maxRowIndex = 0;
 
   for (const row of rows) {
     if (row.isSelected) {
@@ -43,12 +42,12 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
     } else if (row.index === lastSelectedRow.index + 1) {
       maxRowIndex = row.value.length;
     }
-    
+
     newValues.push(row.value);
   }
 
   const rowIndex = Math.min(
-    Math.max(0, lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1), 
+    Math.max(0, lastSelectedRow.selectionStart, lastSelectedRow.selectionEnd - 1),
     Math.max(0, maxRowIndex - 1),
   );
 
@@ -57,11 +56,12 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
 
   let value = newValues.join("");
 
-  // if last char is empty 
+  // if last char is empty
   // previous char is \n
-  const removeLastLinebreak = selectedRows.length === 1
-    && selectedRows[0].value === ""
-    && rows[rows.length - 1].index === selectedRows[0].index;
+  const removeLastLinebreak =
+    selectedRows.length === 1 &&
+    selectedRows[0].value === "" &&
+    rows[rows.length - 1].index === selectedRows[0].index;
 
   if (removeLastLinebreak) {
     value = value.substring(0, value.length - 1);
@@ -73,7 +73,7 @@ const onKeydown = function (this: LineRemoveModule, e: KeyboardEvent): void {
     long: newLong,
     value,
   });
-}
+};
 
 export class LineRemoveModule extends MTGAModule {
   constructor(parent: MTGA) {

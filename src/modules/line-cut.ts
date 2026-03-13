@@ -1,11 +1,11 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent): Promise<void> {
+const onKeydown = async function (this: LineCutModule, e: KeyboardEvent): Promise<void> {
   if (e.defaultPrevented) {
     return;
   }
@@ -33,9 +33,9 @@ const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent): P
   const rows = getRows(el);
 
   let data = "",
-      newValues: string[] = [], 
-      newShort = short, 
-      newLong = long;
+    newValues: string[] = [],
+    newShort = short,
+    newLong = long;
 
   for (const row of rows) {
     const isSelected = row.isSelected;
@@ -65,14 +65,14 @@ const onKeydownAsync = async function (this: LineCutModule, e: KeyboardEvent): P
     long: newLong,
     value: newValues.join(""),
   });
-}
+};
 
 export class LineCutModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LineCutModule.name);
   }
 
-  onKeydownAsync: typeof onKeydownAsync = onKeydownAsync;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "LineCut";
 

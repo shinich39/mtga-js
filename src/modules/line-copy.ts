@@ -1,11 +1,11 @@
-import { MTGA } from "../mtga.js";
+import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../types/row.js";
-import { parseKeyboardEvent } from "./utils.js";
+import { getRows } from "../utils/row.js";
+import { parseKeyboardEvent } from "../utils/event.js";
 
 const IS_SUPPORTED = !!navigator.clipboard?.writeText;
 
-const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent): Promise<void> {
+const onKeydown = async function (this: LineCopyModule, e: KeyboardEvent): Promise<void> {
   if (e.defaultPrevented) {
     return;
   }
@@ -43,14 +43,14 @@ const onKeydownAsync = async function (this: LineCopyModule, e: KeyboardEvent): 
   }
 
   await navigator.clipboard.writeText(data);
-}
+};
 
 export class LineCopyModule extends MTGAModule {
   constructor(parent: MTGA) {
     super(parent, LineCopyModule.name);
   }
 
-  onKeydownAsync: typeof onKeydownAsync = onKeydownAsync;
+  onKeydown: typeof onKeydown = onKeydown;
 
   static name = "LineCopy";
 
