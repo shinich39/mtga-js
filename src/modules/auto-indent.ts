@@ -1,8 +1,8 @@
 import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
-import { isClosing, getIndent } from "../utils/pair.js";
 import { parseKeyboardEvent } from "../utils/event.js";
+import { getIndent, isClosing } from "../utils/pair.js";
 
 const onKeydown = function (this: AutoIndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {

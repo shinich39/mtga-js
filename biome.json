@@ -23,7 +23,12 @@
         "useConst": "off",
         "useAsConstAssertion": "off",
         "noNonNullAssertion": "off",
-        "useTemplate": "off"
+        "useTemplate": "off",
+        "noNegationElse": "off"
+      },
+      "complexity": {
+        "noUselessStringConcat": "off",
+        "useLiteralKeys": "off"
       },
       "suspicious": {
         "noExplicitAny": "off"
@@ -31,7 +36,8 @@
       "correctness": {
         "noUnusedImports": "off",
         "noUnusedVariables": "off",
-        "noUnusedFunctionParameters": "off"
+        "noUnusedFunctionParameters": "off",
+        "useParseIntRadix": "off"
       }
     }
   },

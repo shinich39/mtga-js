@@ -1,8 +1,8 @@
 import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
-import { getClosing, isOpening, isPair } from "../utils/pair.js";
 import { parseKeyboardEvent } from "../utils/event.js";
+import { getClosing, isOpening, isPair } from "../utils/pair.js";
 
 const closePairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {

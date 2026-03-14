@@ -1,9 +1,9 @@
 import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
-import { getRows } from "../utils/row.js";
 import { parseKeyboardEvent } from "../utils/event.js";
 import { getIndent } from "../utils/pair.js";
+import { getRows } from "../utils/row.js";
 
 const onKeydown = function (this: LineBreakModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {

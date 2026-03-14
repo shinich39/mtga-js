@@ -1,7 +1,7 @@
 import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
-import { getRows } from "../utils/row.js";
 import { parseKeyboardEvent } from "../utils/event.js";
+import { getRows } from "../utils/row.js";
 
 const onKeydown = function (this: IndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {

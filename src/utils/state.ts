@@ -26,7 +26,7 @@ export const getState = (el: HTMLTextAreaElement, withValue?: boolean): IState =
 
 export const setState = (el: HTMLTextAreaElement, state: IState): void => {
   let isChanged = false;
-  
+
   if (typeof state.value === "string") {
     if (el.value !== state.value) {
       el.value = state.value;
