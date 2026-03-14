@@ -1,4 +1,4 @@
-biome check --write --staged --no-errors-on-unmatched .
+npx lint-staged
 npx tsc --noEmit
 npm run build
 git add dist

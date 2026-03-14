@@ -32,6 +32,7 @@
     "@types/node": "^22.14.0",
     "esbuild": "^0.25.2",
     "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "nodemon": "^3.1.11",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
