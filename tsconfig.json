@@ -3,7 +3,6 @@
     "target": "es2022",
     "module": "esnext",
     "moduleResolution": "bundler",
-    "rootDir": "./src",
 
     "declaration": true,
     "declarationMap": true,
@@ -12,15 +11,13 @@
     "isolatedDeclarations": true,
 
     "verbatimModuleSyntax": true,
-    "paths": {
-      "@/*": ["./src/*"]
-    },
+    "types": ["node"],
 
     "strict": true,
     "erasableSyntaxOnly": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts"]
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -22,7 +22,7 @@
     "test": "tsx --test \"**/*.test.{js,jsx,ts,tsx}\"",
     "test:b": "playwright test",
     "dev": "nodemon --config nodemon.config.json",
-    "build": "node esbuild.config.js && tsc",
+    "build": "node esbuild.config.js && tsc -p tsconfig.build.json",
     "check": "biome check . --write",
     "prepare": "husky"
   },
@@ -35,6 +35,6 @@
     "lint-staged": "^16.4.0",
     "nodemon": "^3.1.11",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
