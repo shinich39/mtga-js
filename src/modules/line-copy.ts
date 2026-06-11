@@ -3,19 +3,17 @@ import { MTGAModule } from "../types/module.js";
 import { parseKeyboardEvent } from "../utils/event.js";
 import { getRows } from "../utils/row.js";
 
-const IS_SUPPORTED = !!navigator.clipboard?.writeText;
-
 const onKeydown = async function (this: LineCopyModule, e: KeyboardEvent): Promise<void> {
   if (e.defaultPrevented) {
     return;
   }
 
-  if (!IS_SUPPORTED) {
+  const mtga = this.parent;
+  const MTGAClass = mtga.constructor as typeof import("../index.js").MTGA;
+  if (!MTGAClass.isClipboardWriteSupported()) {
     console.warn(`navigator.clipboard.writeText not found`);
     return;
   }
-
-  const mtga = this.parent;
   const el = this.parent.element;
 
   const { key, altKey, ctrlKey, shiftKey } = parseKeyboardEvent(e);

@@ -22,14 +22,18 @@ export declare class MTGA {
     _pasteEvent: (e: ClipboardEvent) => void;
     _focusEvent: (e: FocusEvent) => void;
     _blurEvent: (e: FocusEvent) => void;
+    _selectionEvent: (e: MouseEvent) => void;
     static exists(el: HTMLTextAreaElement): boolean;
     static getMTGA(el: HTMLTextAreaElement): MTGA | undefined;
+    static isNavigatorSupported(): boolean;
+    static isClipboardWriteSupported(): boolean;
     static defaults: {
         eventListenerOptions: AddEventListenerOptions;
     };
     constructor(el: HTMLTextAreaElement);
     setEvents(): void;
     removeEvents(): void;
+    destroy(): void;
     setModuleOrder(): void;
     getModule<T extends MTGAModule>(name: string): T | undefined;
     setModule<T extends MTGAModule>(module: T): void;

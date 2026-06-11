@@ -4,4 +4,5 @@ export declare const parseKeyboardEvent: (e: KeyboardEvent) => {
     shiftKey: boolean;
     ctrlKey: boolean;
 };
+export declare const isComposingKeyboardEvent: (e: KeyboardEvent) => boolean;
 //# sourceMappingURL=event.d.ts.map

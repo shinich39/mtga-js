@@ -1,11 +1,58 @@
 import type { MTGA } from "../index.js";
 import { MTGAModule } from "../types/module.js";
 import type { IPairs } from "../types/pair.js";
-import { parseKeyboardEvent } from "../utils/event.js";
-import { getClosing, isOpening, isPair } from "../utils/pair.js";
+import { isComposingKeyboardEvent, parseKeyboardEvent } from "../utils/event.js";
+import { getClosing, getOpening, isClosing, isOpening, isPair } from "../utils/pair.js";
+
+const overtypeClosingHandler = function (this: AutoPairModule, e: KeyboardEvent) {
+  if (e.defaultPrevented) {
+    return;
+  }
+
+  if (isComposingKeyboardEvent(e)) {
+    return;
+  }
+
+  const mtga = this.parent;
+  const el = this.parent.element;
+  const pairs = this.pairs;
+
+  const { key, altKey, ctrlKey } = parseKeyboardEvent(e);
+  const isValid = !ctrlKey && !altKey && isClosing(pairs, key);
+  if (!isValid) {
+    return;
+  }
+
+  const { short, long, dir, isReversed } = mtga.getState();
+  if (short !== long) {
+    return;
+  }
+
+  const currChar = el.value.charAt(short);
+  if (currChar !== key) {
+    return;
+  }
+
+  if (!getOpening(pairs, key)) {
+    return;
+  }
+
+  e.preventDefault();
+
+  mtga.setState({
+    isReversed,
+    short: short + 1,
+    long: long + 1,
+    dir,
+  });
+};
 
 const closePairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
+    return;
+  }
+
+  if (isComposingKeyboardEvent(e)) {
     return;
   }
 
@@ -59,6 +106,10 @@ const clearPairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
     return;
   }
 
+  if (isComposingKeyboardEvent(e)) {
+    return;
+  }
+
   const mtga = this.parent;
   const el = this.parent.element;
   const pairs = this.pairs;
@@ -103,6 +154,7 @@ const clearPairHandler = function (this: AutoPairModule, e: KeyboardEvent) {
 };
 
 const onKeydown = function (this: AutoPairModule, e: KeyboardEvent): void {
+  overtypeClosingHandler.call(this, e);
   closePairHandler.call(this, e);
   clearPairHandler.call(this, e);
 };

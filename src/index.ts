@@ -40,6 +40,7 @@ export class MTGA {
   _pasteEvent: (e: ClipboardEvent) => void;
   _focusEvent: (e: FocusEvent) => void;
   _blurEvent: (e: FocusEvent) => void;
+  _selectionEvent: (e: MouseEvent) => void;
 
   static exists(el: HTMLTextAreaElement): boolean {
     return !!MTGA.getMTGA(el);
@@ -47,6 +48,14 @@ export class MTGA {
 
   static getMTGA(el: HTMLTextAreaElement): MTGA | undefined {
     return MTGAMap.get(el);
+  }
+
+  static isNavigatorSupported(): boolean {
+    return typeof navigator !== "undefined";
+  }
+
+  static isClipboardWriteSupported(): boolean {
+    return MTGA.isNavigatorSupported() && !!navigator.clipboard?.writeText;
   }
 
   static defaults: {
@@ -112,7 +121,7 @@ export class MTGA {
       }
     };
 
-    const _selectionEvent = (e: MouseEvent) => {
+    this._selectionEvent = (e: MouseEvent) => {
       this.addHistory(false);
     };
 
@@ -121,7 +130,7 @@ export class MTGA {
         this.addHistory(false);
         this.element.addEventListener(
           "pointerup",
-          _selectionEvent,
+          this._selectionEvent,
           MTGA.defaults.eventListenerOptions,
         );
       }, 0);
@@ -130,7 +139,7 @@ export class MTGA {
     this._blurEvent = (e) => {
       this.element.removeEventListener(
         "pointerup",
-        _selectionEvent,
+        this._selectionEvent,
         MTGA.defaults.eventListenerOptions,
       );
     };
@@ -151,11 +160,28 @@ export class MTGA {
   }
 
   removeEvents(): void {
-    this.element.removeEventListener("keydown", this._keydownEvent);
-    this.element.removeEventListener("keyup", this._keyupEvent);
-    this.element.removeEventListener("paste", this._pasteEvent);
-    this.element.removeEventListener("focus", this._focusEvent);
-    this.element.removeEventListener("blur", this._blurEvent);
+    this.element.removeEventListener(
+      "keydown",
+      this._keydownEvent,
+      MTGA.defaults.eventListenerOptions,
+    );
+    this.element.removeEventListener("keyup", this._keyupEvent, MTGA.defaults.eventListenerOptions);
+    this.element.removeEventListener("paste", this._pasteEvent, MTGA.defaults.eventListenerOptions);
+    this.element.removeEventListener("focus", this._focusEvent, MTGA.defaults.eventListenerOptions);
+    this.element.removeEventListener("blur", this._blurEvent, MTGA.defaults.eventListenerOptions);
+    this.element.removeEventListener(
+      "pointerup",
+      this._selectionEvent,
+      MTGA.defaults.eventListenerOptions,
+    );
+  }
+
+  destroy(): void {
+    this.removeEvents();
+    this.modules = {};
+    this.moduleOrder = [];
+    this._keydownState = null;
+    MTGAMap.delete(this.element);
   }
 
   setModuleOrder(): void {

@@ -3,8 +3,16 @@ import { getState } from "./state.js";
 
 export const getRows = (el: HTMLTextAreaElement): IRow[] => {
   const { short, long } = getState(el);
-  // const isRange = short !== long;
-  const arr = el.value.split(/\n/);
+  const arr: string[] = [];
+  let startIndex = 0;
+
+  for (const match of el.value.matchAll(/\r\n|\r|\n/g)) {
+    const endIndex = match.index! + match[0].length;
+    arr.push(el.value.substring(startIndex, endIndex));
+    startIndex = endIndex;
+  }
+
+  arr.push(el.value.substring(startIndex));
 
   const rows: IRow[] = [];
 
@@ -13,7 +21,7 @@ export const getRows = (el: HTMLTextAreaElement): IRow[] => {
     const item = arr[i];
 
     const isLastRow = i === arr.length - 1;
-    const value = isLastRow ? item : item + "\n";
+    const value = item;
 
     const startIndex = offset;
     const endIndex = startIndex + value.length;

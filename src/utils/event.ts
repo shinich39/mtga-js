@@ -1,5 +1,3 @@
-import type { IPairs } from "../types/pair.js";
-
 export const parseKeyboardEvent = (
   e: KeyboardEvent,
 ): {
@@ -20,3 +18,6 @@ export const parseKeyboardEvent = (
     ctrlKey,
   };
 };
+
+export const isComposingKeyboardEvent = (e: KeyboardEvent): boolean =>
+  e.isComposing || e.key === "Process" || e.keyCode === 229;

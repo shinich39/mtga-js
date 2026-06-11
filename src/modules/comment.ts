@@ -3,7 +3,34 @@ import { MTGAModule } from "../types/module.js";
 import { parseKeyboardEvent } from "../utils/event.js";
 import { getRows } from "../utils/row.js";
 
-// text...
+const getLeadingWhitespace = (value: string): string =>
+  value.match(/^[^\S\r\n]*/) ? value.match(/^[^\S\r\n]*/)![0] : "";
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getCommentParts = (value: string, baseIndent: string) => {
+  const base = value.startsWith(baseIndent) ? baseIndent : "";
+  const rest = value.substring(base.length);
+
+  return {
+    base,
+    rest,
+  };
+};
+
+const getSharedLeadingWhitespace = (values: string[]): string => {
+  const indents = values
+    .filter((value) => value.trim())
+    .map((value) => getLeadingWhitespace(value));
+
+  if (indents.length === 0) {
+    return "";
+  }
+
+  const minSize = Math.min(...indents.map((indent) => indent.length));
+  return indents.find((indent) => indent.length === minSize) || "";
+};
+
 const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   if (e.defaultPrevented) {
     return;
@@ -28,14 +55,15 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
   const selectedEmptyRows = selectedRows.filter((r) => !r.value.trim());
   const isMultiple = selectedRows.length > 1;
   const isIgnoreEmptyRows = isMultiple && selectedRows.length !== selectedEmptyRows.length;
+  const targetRows = isIgnoreEmptyRows ? selectedRows.filter((r) => r.value.trim()) : selectedRows;
+  const sharedLeadingWhitespace = getSharedLeadingWhitespace(targetRows.map((row) => row.value));
+  const sharedCommentPattern = new RegExp(
+    `^${escapeRegExp(sharedLeadingWhitespace)}${pattern.source}`,
+  );
 
   let shouldRemove = true;
-  for (const r of selectedRows) {
-    if (isIgnoreEmptyRows && selectedEmptyRows.some((_r) => _r.index === r.index)) {
-      continue;
-    }
-
-    if (!r.value.startsWith("//")) {
+  for (const r of targetRows) {
+    if (!sharedCommentPattern.test(r.value)) {
       shouldRemove = false;
       break;
     }
@@ -60,17 +88,23 @@ const singleLineHandler = function (this: CommentModule, e: KeyboardEvent) {
     let newValue: string;
     if (isMultiple) {
       if (shouldRemove) {
-        newValue = row.value.replace(pattern, "");
+        newValue = row.value.replace(sharedCommentPattern, sharedLeadingWhitespace);
       } else if (isIgnoreEmptyRows && selectedEmptyRows.some((r) => r.index === row.index)) {
         newValue = row.value;
       } else {
-        newValue = value + row.value;
+        const { base, rest } = getCommentParts(row.value, sharedLeadingWhitespace);
+        newValue = `${base}${value}${rest}`;
       }
     } else {
+      const rowLeadingWhitespace = getLeadingWhitespace(row.value);
+      const rowCommentPattern = new RegExp(
+        `^${escapeRegExp(rowLeadingWhitespace)}${pattern.source}`,
+      );
       if (shouldRemove) {
-        newValue = row.value.replace(pattern, "");
+        newValue = row.value.replace(rowCommentPattern, rowLeadingWhitespace);
       } else {
-        newValue = value + row.value;
+        const { base, rest } = getCommentParts(row.value, rowLeadingWhitespace);
+        newValue = `${base}${value}${rest}`;
       }
     }
 
@@ -174,7 +208,7 @@ export class CommentModule extends MTGAModule {
     pattern: RegExp;
     value: string;
   } = {
-    pattern: /^\/\/\s?/,
+    pattern: /\/\/\s?/,
     value: "// ",
   };
 
