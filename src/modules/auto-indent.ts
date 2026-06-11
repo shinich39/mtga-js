@@ -94,13 +94,16 @@ const enterHandler = function (this: AutoIndentModule, e: KeyboardEvent): void {
   const trimmedCurrentRow = currentRow.trimEnd();
   const prevChar = trimmedCurrentRow.charAt(trimmedCurrentRow.length - 1);
   const currChar = el.value.charAt(short);
+  const isWhitespaceOnlyBeforeClosing = !currentRow.trim().length && isClosing(pairs, currChar);
 
   let center = "\n";
   const right = el.value.substring(long);
   const nextIndent = isOpening(pairs, prevChar) ? baseIndent + indentUnit : baseIndent;
 
   let newShort = short + 1;
-  if (isClosing(pairs, currChar)) {
+  if (isWhitespaceOnlyBeforeClosing) {
+    center = "\n";
+  } else if (isClosing(pairs, currChar)) {
     center += nextIndent + "\n" + baseIndent;
     newShort += nextIndent.length;
   } else {

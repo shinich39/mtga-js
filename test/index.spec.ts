@@ -179,6 +179,49 @@ test("auto indent outdents before inserting a closing bracket", async ({ page })
   });
 });
 
+test("auto indent keeps closing bracket dedented after whitespace-only line", async ({ page }) => {
+  await page.goto("about:blank");
+  await page.addScriptTag({ path: "./dist/mtga.js" });
+
+  const result = await page.evaluate(() => {
+    const MTGA = window.mtgaJs.MTGA;
+    const AutoIndentModule = window.mtgaJs.AutoIndentModule;
+
+    const el = document.createElement("textarea");
+    document.body.appendChild(el);
+
+    el.value = "{\n  }";
+    el.setSelectionRange(4, 4);
+
+    const mtga = new MTGA(el);
+    const autoIndentModule = mtga.getModule<typeof mtga.modules[string]>(AutoIndentModule.name);
+
+    autoIndentModule?.onKeydown?.call(autoIndentModule, {
+      defaultPrevented: false,
+      key: "Enter",
+      altKey: false,
+      ctrlKey: false,
+      metaKey: false,
+      shiftKey: false,
+      preventDefault(this: { defaultPrevented: boolean }) {
+        this.defaultPrevented = true;
+      },
+    } as KeyboardEvent);
+
+    return {
+      value: el.value,
+      selectionStart: el.selectionStart,
+      selectionEnd: el.selectionEnd,
+    };
+  });
+
+  eq(result, {
+    value: "{\n  \n}",
+    selectionStart: 5,
+    selectionEnd: 5,
+  });
+});
+
 test("auto pair overtypes an existing closing character", async ({ page }) => {
   await page.goto("about:blank");
   await page.addScriptTag({ path: "./dist/mtga.js" });
