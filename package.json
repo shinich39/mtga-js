@@ -23,7 +23,7 @@
     "test:b": "playwright test",
     "dev": "nodemon --config nodemon.config.json",
     "build": "node esbuild.config.js && tsc -p tsconfig.build.json",
-    "check": "biome check . --write",
+    "check": "biome check --write .",
     "prepare": "husky"
   },
   "devDependencies": {
