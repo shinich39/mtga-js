@@ -7,6 +7,9 @@ import { getOpening, isClosing, isOpening, isPair } from "../utils/pair.js";
 const getLeadingWhitespace = (value: string): string =>
   value.match(/^[^\S\r\n]*/) ? value.match(/^[^\S\r\n]*/)![0] : "";
 
+const getOutdentedWhitespace = (value: string, indentUnit: string): string =>
+  value.length >= indentUnit.length ? value.slice(0, value.length - indentUnit.length) : "";
+
 const outdentClosingHandler = function (this: AutoIndentModule, e: KeyboardEvent): void {
   if (e.defaultPrevented) {
     return;
@@ -104,7 +107,10 @@ const enterHandler = function (this: AutoIndentModule, e: KeyboardEvent): void {
   if (isWhitespaceOnlyBeforeClosing) {
     center = "\n";
   } else if (isClosing(pairs, currChar)) {
-    center += nextIndent + "\n" + baseIndent;
+    const closingIndent = isOpening(pairs, prevChar)
+      ? baseIndent
+      : getOutdentedWhitespace(baseIndent, indentUnit);
+    center += nextIndent + "\n" + closingIndent;
     newShort += nextIndent.length;
   } else {
     center += nextIndent;

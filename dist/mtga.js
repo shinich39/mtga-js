@@ -248,6 +248,7 @@ var mtgaJs = (() => {
 
   // src/modules/auto-indent.ts
   var getLeadingWhitespace = (value) => value.match(/^[^\S\r\n]*/) ? value.match(/^[^\S\r\n]*/)[0] : "";
+  var getOutdentedWhitespace = (value, indentUnit) => value.length >= indentUnit.length ? value.slice(0, value.length - indentUnit.length) : "";
   var outdentClosingHandler = function(e) {
     if (e.defaultPrevented) {
       return;
@@ -325,7 +326,8 @@ var mtgaJs = (() => {
     if (isWhitespaceOnlyBeforeClosing) {
       center = "\n";
     } else if (isClosing(pairs, currChar)) {
-      center += nextIndent + "\n" + baseIndent;
+      const closingIndent = isOpening(pairs, prevChar) ? baseIndent : getOutdentedWhitespace(baseIndent, indentUnit);
+      center += nextIndent + "\n" + closingIndent;
       newShort += nextIndent.length;
     } else {
       center += nextIndent;

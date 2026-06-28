@@ -222,6 +222,49 @@ test("auto indent keeps closing bracket dedented after whitespace-only line", as
   });
 });
 
+test("auto indent dedents the closing bracket after splitting before it", async ({ page }) => {
+  await page.goto("about:blank");
+  await page.addScriptTag({ path: "./dist/mtga.js" });
+
+  const result = await page.evaluate(() => {
+    const MTGA = window.mtgaJs.MTGA;
+    const AutoIndentModule = window.mtgaJs.AutoIndentModule;
+
+    const el = document.createElement("textarea");
+    document.body.appendChild(el);
+
+    el.value = "{\n  Proin id leo nec nisi eleifend eleifend.}";
+    el.setSelectionRange(el.value.length - 1, el.value.length - 1);
+
+    const mtga = new MTGA(el);
+    const autoIndentModule = mtga.getModule<typeof mtga.modules[string]>(AutoIndentModule.name);
+
+    autoIndentModule?.onKeydown?.call(autoIndentModule, {
+      defaultPrevented: false,
+      key: "Enter",
+      altKey: false,
+      ctrlKey: false,
+      metaKey: false,
+      shiftKey: false,
+      preventDefault(this: { defaultPrevented: boolean }) {
+        this.defaultPrevented = true;
+      },
+    } as KeyboardEvent);
+
+    return {
+      value: el.value,
+      selectionStart: el.selectionStart,
+      selectionEnd: el.selectionEnd,
+    };
+  });
+
+  eq(result, {
+    value: "{\n  Proin id leo nec nisi eleifend eleifend.\n  \n}",
+    selectionStart: 47,
+    selectionEnd: 47,
+  });
+});
+
 test("auto pair overtypes an existing closing character", async ({ page }) => {
   await page.goto("about:blank");
   await page.addScriptTag({ path: "./dist/mtga.js" });
